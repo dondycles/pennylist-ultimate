@@ -48,7 +48,7 @@ export default function List() {
           settings={{ hide: listState.hidden, sign: true }}
         />
       </div>
-      <div className="flex-1 flex flex-col gap-[1px] overflow-auto">
+      <div className="flex-1 flex flex-col overflow-auto">
         {moneys?.map((money) => {
           return (
             <Money money={money} key={money.id}>
