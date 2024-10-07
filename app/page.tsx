@@ -16,7 +16,7 @@ export default async function Page() {
           overwhelming features and complex interfaces.
         </p>
         <Button asChild>
-          <Link href={"/sign-in"}>Get started</Link>
+          <Link href={process.env.SIGN_IN!}>Get started</Link>
         </Button>
       </div>
       <div className="space-y-4 max-w-[512px] w-full mx-auto h-fit">

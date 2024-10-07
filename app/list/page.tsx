@@ -8,24 +8,11 @@ import Nav, {
   NavHideBtn,
   NavUserBtn,
 } from "@/components/nav";
-import { ClerkLoaded, ClerkLoading, useUser } from "@clerk/nextjs";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ClerkLoaded, ClerkLoading } from "@clerk/nextjs";
 import List from "@/components/list";
-import { Suspense } from "react";
 import { Loader } from "lucide-react";
-import { useListState } from "@/store";
-import { useQuery } from "@tanstack/react-query";
-import { get_moneys } from "../actions/moneys";
 
 export default function ListPage() {
-  const listState = useListState();
-  const { isLoaded, user, isSignedIn } = useUser();
-  const {} = useQuery({
-    queryKey: ["list", user?.id, listState.asc, listState.sortBy],
-    enabled: isLoaded && isSignedIn && !!user,
-    queryFn: async () =>
-      await get_moneys({ asc: listState.asc, by: listState.sortBy }),
-  });
   return (
     <div className="w-full h-full max-w-[800px] mx-auto flex flex-col justify-start">
       <ClerkLoading>

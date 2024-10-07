@@ -27,6 +27,7 @@ import { darken_color } from "@/lib/automate-text-color";
 
 type MoneyBarProps = PropsWithChildren & {
   money: MoneyWithLogs;
+  specific: boolean;
 };
 
 const MoneyBarContext = createContext<
@@ -34,6 +35,7 @@ const MoneyBarContext = createContext<
       money: MoneyBarProps["money"];
       deleting: boolean;
       setDeleting: React.Dispatch<React.SetStateAction<boolean>>;
+      specific: boolean;
     }
   | undefined
 >(undefined);
@@ -44,10 +46,12 @@ function useMoneyBarContext() {
   return context;
 }
 
-export function Money({ children, money }: MoneyBarProps) {
+export function Money({ children, money, specific }: MoneyBarProps) {
   const [deleting, setDeleting] = useState(false);
   return (
-    <MoneyBarContext.Provider value={{ money, deleting, setDeleting }}>
+    <MoneyBarContext.Provider
+      value={{ money, deleting, setDeleting, specific }}
+    >
       {children}
     </MoneyBarContext.Provider>
   );
@@ -189,14 +193,16 @@ export function MoneyExternalLinkBtn() {
   );
 }
 export function MoneyEditBtn() {
-  const { money } = useMoneyBarContext();
+  const { money, specific } = useMoneyBarContext();
   const queryClient = useQueryClient();
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const darken = darken_color(money.color ?? "");
 
   function done() {
     setOpenEditDialog(false);
-    queryClient.invalidateQueries({ queryKey: ["list"] });
+    queryClient.invalidateQueries({
+      queryKey: [specific ? String(money.id) : "list"],
+    });
   }
   return (
     <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
@@ -226,7 +232,7 @@ export function MoneyEditBtn() {
 
 export function MoneyPaletteBtn() {
   const [openEditDialog, setOpenEditDialog] = useState(false);
-  const { money } = useMoneyBarContext();
+  const { money, specific } = useMoneyBarContext();
   const [colorPreview, setColorPreview] = useState(money.color);
   const queryClient = useQueryClient();
   const darken = darken_color(money.color ?? "");
@@ -234,7 +240,9 @@ export function MoneyPaletteBtn() {
   async function colorize(c: string) {
     await colorize_money(money, c);
     setOpenEditDialog(false);
-    queryClient.invalidateQueries({ queryKey: ["list"] });
+    queryClient.invalidateQueries({
+      queryKey: [specific ? String(money.id) : "list"],
+    });
   }
   return (
     <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
@@ -255,7 +263,7 @@ export function MoneyPaletteBtn() {
           </DialogDescription> */}
         </DialogHeader>
         <div className="flex flex-col gap-4 pt-0 text-sm">
-          <Money money={{ ...money, color: colorPreview }}>
+          <Money specific={specific} money={{ ...money, color: colorPreview }}>
             <MoneyBar className="p-4">
               <MoneyHeader />
               <MoneyAmount />

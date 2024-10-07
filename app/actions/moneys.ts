@@ -27,6 +27,17 @@ export const get_moneys = async (orderBy: {
   return moneys;
 };
 
+export const get_money = async (id: number) => {
+  const user = await auth_check();
+  const moneys = await db.query.moneysTable.findFirst({
+    with: {
+      money_log: true,
+    },
+    where: and(eq(moneysTable.lister, user.userId!), eq(moneysTable.id, id)),
+  });
+  return moneys;
+};
+
 export const add_money = async (money: z.infer<typeof addMoneySchema>) => {
   const user = await auth_check();
   const [m] = await db.insert(moneysTable).values(money).returning();

@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider afterSignOutUrl={"/"}>
+    <ClerkProvider>
       <html lang="en">
         <body
           className={`${readex.variable} ${raleway.variable} font-raleway font-medium antialiased h-[100dvh]`}

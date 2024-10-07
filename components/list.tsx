@@ -51,7 +51,11 @@ export default function List() {
       <div className="flex-1 flex flex-col overflow-auto gap-[1px]">
         {moneys?.map((money) => {
           return (
-            <Money money={money} key={`${money.id}-${money.last_update}`}>
+            <Money
+              specific={false}
+              money={money}
+              key={`${money.id}-${money.last_update}`}
+            >
               <MoneyBar>
                 <MoneyHeader />
                 <MoneyAmount />
