@@ -30,7 +30,7 @@ export default function ListPage() {
     <div className="w-full h-full max-w-[800px] mx-auto flex flex-col justify-start">
       <ClerkLoading>
         <div className="m-auto text-muted-foreground text-sm flex flex-col gap-4 items-center">
-          <p>Loading lister's info</p>
+          <p>Loading lister&apos;s info</p>
           <Loader className="animate-spin" />
         </div>
         <Nav>

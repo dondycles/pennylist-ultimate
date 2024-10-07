@@ -39,6 +39,7 @@ export default function List() {
   return (
     <div className="flex-1 flex flex-col overflow-auto">
       <div className="w-full p-6 py-12 bg-muted">
+        <p></p>
         <Amount
           className="text-4xl"
           amount={_.sum(moneys?.map((money) => money.amount) ?? [0])}
