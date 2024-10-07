@@ -1,0 +1,1 @@
+ALTER TABLE "logs_table" ADD PRIMARY KEY ("id");

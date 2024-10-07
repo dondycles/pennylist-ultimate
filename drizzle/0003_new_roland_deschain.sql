@@ -1,0 +1,1 @@
+ALTER TABLE "logs_table" ALTER COLUMN "action" SET NOT NULL;
