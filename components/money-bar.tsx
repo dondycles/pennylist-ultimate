@@ -125,7 +125,7 @@ export function MoneyDeleteBtn() {
           className="rounded-full"
           variant={"ghost"}
         >
-          <Trash color={money.color ?? ""} size={16} />
+          <Trash style={{ color: money.color ?? "" }} size={16} />
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -166,7 +166,7 @@ export function MoneyExternalLinkBtn() {
   return (
     <Button asChild size={"icon"} className="rounded-full" variant={"ghost"}>
       <Link href={`/list/money/${money.id}`}>
-        <ExternalLink color={money.color ?? ""} size={16} />
+        <ExternalLink style={{ color: money.color ?? "" }} size={16} />
       </Link>
     </Button>
   );
@@ -184,7 +184,7 @@ export function MoneyEditBtn() {
     <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
       <DialogTrigger asChild>
         <Button size={"icon"} className="rounded-full" variant={"ghost"}>
-          <Edit color={money.color ?? ""} size={16} />
+          <Edit style={{ color: money.color ?? "" }} size={16} />
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -216,10 +216,10 @@ export function MoneyPaletteBtn() {
     <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
       <DialogTrigger asChild>
         <Button size={"icon"} className="rounded-full" variant={"ghost"}>
-          <Palette color={money.color ?? ""} size={16} />
+          <Palette style={{ color: money.color ?? "" }} size={16} />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[75%]">
+      <DialogContent className="max-h-[75%] gap-0">
         <DialogHeader>
           <DialogTitle>Colorize money</DialogTitle>
           {/* <DialogDescription>
@@ -228,7 +228,7 @@ export function MoneyPaletteBtn() {
         </DialogHeader>
         <div className="flex flex-col gap-4 pt-0 text-sm">
           <Money money={money}>
-            <MoneyBar className="p-4 pt-0 ">
+            <MoneyBar className="p-4">
               <MoneyHeader />
               <MoneyAmount />
             </MoneyBar>
