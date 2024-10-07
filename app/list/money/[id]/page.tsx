@@ -5,7 +5,6 @@ import {
   MoneyBar,
   MoneyDeleteBtn,
   MoneyEditBtn,
-  MoneyExternalLinkBtn,
   MoneyHeader,
   MoneyPaletteBtn,
 } from "@/components/money-bar";

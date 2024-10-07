@@ -85,6 +85,10 @@ const config: Config = {
         readex: ["var(--font-readex)"],
         raleway: ["var(--font-raleway)"],
       },
+      gridTemplateColumns: {
+        "9": "repeat(9, minmax(0, 1fr))",
+        "18": "repeat(18, minmax(0, 1fr))",
+      },
     },
   },
   // eslint-disable-next-line @typescript-eslint/no-require-imports

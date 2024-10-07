@@ -105,3 +105,13 @@ export const delete_money = async (money: selectMoney) => {
     lister: user.userId!,
   });
 };
+
+export const colorize_money = async (money: selectMoney, color: string) => {
+  const user = await auth_check();
+  await db
+    .update(moneysTable)
+    .set({ color })
+    .where(
+      and(eq(moneysTable.id, money.id), eq(moneysTable.lister, user.userId))
+    );
+};

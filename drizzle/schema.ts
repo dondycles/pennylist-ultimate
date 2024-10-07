@@ -17,6 +17,7 @@ export const moneysTable = pgTable("moneys_table", {
   name: text("name").notNull(),
   amount: real("amount").notNull(),
   lister: text("lister").notNull(),
+  color: text("color"),
 });
 
 export const logsTable = pgTable("logs_table", {

@@ -7,10 +7,12 @@ export default function Amount({
   className,
   amount,
   settings,
+  color,
 }: {
   className?: ClassNameValue;
   amount: number;
   settings: { hide: boolean; decimals?: number; sign: boolean };
+  color?: string;
 }) {
   const stringedAmount = amount.toString();
   const asteriskedAmount = "*".repeat(stringedAmount.length);
@@ -24,7 +26,10 @@ export default function Amount({
   });
 
   return (
-    <span className={cn("text-2xl font-readex font-black", className)}>
+    <span
+      style={{ color: color ?? "" }}
+      className={cn("text-2xl font-readex font-black", className)}
+    >
       {settings?.hide
         ? asteriskedAmount
         : settings?.sign

@@ -15,11 +15,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { delete_money } from "@/app/actions/moneys";
+import { colorize_money, delete_money } from "@/app/actions/moneys";
 
 import EditMoneyForm from "./forms/edit-money";
 import { useQueryClient } from "@tanstack/react-query";
 import { useListState } from "@/store";
+import { ClassNameValue } from "tailwind-merge";
+import { cn } from "@/lib/utils";
+import { colors } from "@/lib/colors";
 
 type MoneyBarProps = PropsWithChildren & {
   money: MoneyWithLogs;
@@ -49,14 +52,24 @@ export function Money({ children, money }: MoneyBarProps) {
   );
 }
 
-export function MoneyBar({ children }: { children: React.ReactNode }) {
+export function MoneyBar({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: ClassNameValue;
+}) {
   const { money, deleting } = useMoneyBarContext();
   return (
     <div
       key={money.id}
-      className={`border-b w-full p-6 flex flex-col gap-2 ${
-        deleting && "animate-pulse scale-95"
-      }`}
+      style={{ backgroundColor: money.color + "20" }}
+      className={cn(
+        `border-b w-full p-6 flex flex-col gap-2 ${
+          deleting && "animate-pulse scale-95"
+        }`,
+        className
+      )}
     >
       {children}
     </div>
@@ -67,7 +80,9 @@ export function MoneyHeader() {
   const { money } = useMoneyBarContext();
   return (
     <div className={`flex items-baseline gap-2`}>
-      <span className="font-bold">{money.name}</span>
+      <span className={`font-bold`} style={{ color: money.color ?? "" }}>
+        {money.name}
+      </span>
       <Dot size={12} />
       <span className="text-muted-foreground text-xs">
         {new Date(money.created_at).toLocaleDateString()}
@@ -80,7 +95,11 @@ export function MoneyAmount() {
   const { money } = useMoneyBarContext();
   const { hidden } = useListState();
   return (
-    <Amount amount={money.amount} settings={{ hide: hidden, sign: true }} />
+    <Amount
+      color={money.color ?? ""}
+      amount={money.amount}
+      settings={{ hide: hidden, sign: true }}
+    />
   );
 }
 
@@ -106,7 +125,7 @@ export function MoneyDeleteBtn() {
           className="rounded-full"
           variant={"ghost"}
         >
-          <Trash size={16} />
+          <Trash color={money.color ?? ""} size={16} />
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -147,7 +166,7 @@ export function MoneyExternalLinkBtn() {
   return (
     <Button asChild size={"icon"} className="rounded-full" variant={"ghost"}>
       <Link href={`/list/money/${money.id}`}>
-        <ExternalLink size={16} />
+        <ExternalLink color={money.color ?? ""} size={16} />
       </Link>
     </Button>
   );
@@ -165,7 +184,7 @@ export function MoneyEditBtn() {
     <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
       <DialogTrigger asChild>
         <Button size={"icon"} className="rounded-full" variant={"ghost"}>
-          <Edit size={16} />
+          <Edit color={money.color ?? ""} size={16} />
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -184,9 +203,58 @@ export function MoneyEditBtn() {
 }
 
 export function MoneyPaletteBtn() {
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const { money } = useMoneyBarContext();
+  const queryClient = useQueryClient();
+
+  async function colorize(c: string) {
+    setOpenEditDialog(false);
+    await colorize_money(money, c);
+    queryClient.invalidateQueries({ queryKey: ["list"] });
+  }
   return (
-    <Button size={"icon"} className="rounded-full" variant={"ghost"}>
-      <Palette size={16} />
-    </Button>
+    <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
+      <DialogTrigger asChild>
+        <Button size={"icon"} className="rounded-full" variant={"ghost"}>
+          <Palette color={money.color ?? ""} size={16} />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[75%]">
+        <DialogHeader>
+          <DialogTitle>Colorize money</DialogTitle>
+          {/* <DialogDescription>
+            <p>Edit the color of this money.</p>
+          </DialogDescription> */}
+        </DialogHeader>
+        <div className="flex flex-col gap-4 pt-0 text-sm">
+          <Money money={money}>
+            <MoneyBar className="p-4 pt-0 ">
+              <MoneyHeader />
+              <MoneyAmount />
+            </MoneyBar>
+          </Money>
+          <DialogClose>
+            <div className="grid grid-cols-18 gap-1 pb-4 px-4 w-full ">
+              {Object.values(colors).map((color, i) => {
+                return (
+                  <div key={i}>
+                    {Object.values(color).map((c) => {
+                      return (
+                        <button
+                          onClick={() => colorize(c)}
+                          className="rounded w-full aspect-square hover:scale-125 scale-100 ease-in-out duration-150 transition-all"
+                          style={{ backgroundColor: c }}
+                          key={c}
+                        />
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          </DialogClose>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

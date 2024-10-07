@@ -1,0 +1,1 @@
+ALTER TABLE "moneys_table" ADD COLUMN "color" text;
