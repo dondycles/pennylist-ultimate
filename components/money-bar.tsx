@@ -23,6 +23,7 @@ import { useListState } from "@/store";
 import { ClassNameValue } from "tailwind-merge";
 import { cn } from "@/lib/utils";
 import { colors } from "@/lib/colors";
+import { darken_color } from "@/lib/automate-text-color";
 
 type MoneyBarProps = PropsWithChildren & {
   money: MoneyWithLogs;
@@ -65,7 +66,7 @@ export function MoneyBar({
       key={money.id}
       style={{ backgroundColor: money.color + "20" }}
       className={cn(
-        `border-b w-full p-6 flex flex-col gap-2 ${
+        `w-full p-6 flex flex-col gap-2 ${
           deleting && "animate-pulse scale-95"
         }`,
         className
@@ -78,9 +79,13 @@ export function MoneyBar({
 
 export function MoneyHeader() {
   const { money } = useMoneyBarContext();
+  const darken = darken_color(money.color ?? "");
   return (
     <div className={`flex items-baseline gap-2`}>
-      <span className={`font-bold`} style={{ color: money.color ?? "" }}>
+      <span
+        className={`font-bold ${darken}`}
+        style={{ color: money.color ?? "" }}
+      >
         {money.name}
       </span>
       <Dot size={12} />
@@ -94,8 +99,10 @@ export function MoneyHeader() {
 export function MoneyAmount() {
   const { money } = useMoneyBarContext();
   const { hidden } = useListState();
+  const darken = darken_color(money.color ?? "");
   return (
     <Amount
+      className={`${darken}`}
       color={money.color ?? ""}
       amount={money.amount}
       settings={{ hide: hidden, sign: true }}
@@ -110,6 +117,7 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
 export function MoneyDeleteBtn() {
   const { money, deleting, setDeleting } = useMoneyBarContext();
   const queryClient = useQueryClient();
+  const darken = darken_color(money.color ?? "");
   async function deleteMoney() {
     setDeleting(true);
     await delete_money(money);
@@ -125,7 +133,11 @@ export function MoneyDeleteBtn() {
           className="rounded-full"
           variant={"ghost"}
         >
-          <Trash style={{ color: money.color ?? "" }} size={16} />
+          <Trash
+            className={`${darken}`}
+            style={{ color: money.color ?? "" }}
+            size={16}
+          />
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -162,11 +174,16 @@ export function MoneyDeleteBtn() {
 
 export function MoneyExternalLinkBtn() {
   const { money } = useMoneyBarContext();
+  const darken = darken_color(money.color ?? "");
 
   return (
     <Button asChild size={"icon"} className="rounded-full" variant={"ghost"}>
       <Link href={`/list/money/${money.id}`}>
-        <ExternalLink style={{ color: money.color ?? "" }} size={16} />
+        <ExternalLink
+          className={`${darken}`}
+          style={{ color: money.color ?? "" }}
+          size={16}
+        />
       </Link>
     </Button>
   );
@@ -175,6 +192,7 @@ export function MoneyEditBtn() {
   const { money } = useMoneyBarContext();
   const queryClient = useQueryClient();
   const [openEditDialog, setOpenEditDialog] = useState(false);
+  const darken = darken_color(money.color ?? "");
 
   function done() {
     setOpenEditDialog(false);
@@ -184,7 +202,11 @@ export function MoneyEditBtn() {
     <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
       <DialogTrigger asChild>
         <Button size={"icon"} className="rounded-full" variant={"ghost"}>
-          <Edit style={{ color: money.color ?? "" }} size={16} />
+          <Edit
+            className={`${darken}`}
+            style={{ color: money.color ?? "" }}
+            size={16}
+          />
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -205,18 +227,24 @@ export function MoneyEditBtn() {
 export function MoneyPaletteBtn() {
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const { money } = useMoneyBarContext();
+  const [colorPreview, setColorPreview] = useState(money.color);
   const queryClient = useQueryClient();
+  const darken = darken_color(money.color ?? "");
 
   async function colorize(c: string) {
-    setOpenEditDialog(false);
     await colorize_money(money, c);
+    setOpenEditDialog(false);
     queryClient.invalidateQueries({ queryKey: ["list"] });
   }
   return (
     <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
       <DialogTrigger asChild>
         <Button size={"icon"} className="rounded-full" variant={"ghost"}>
-          <Palette style={{ color: money.color ?? "" }} size={16} />
+          <Palette
+            className={`${darken}`}
+            style={{ color: money.color ?? "" }}
+            size={16}
+          />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[75%] gap-0">
@@ -227,32 +255,50 @@ export function MoneyPaletteBtn() {
           </DialogDescription> */}
         </DialogHeader>
         <div className="flex flex-col gap-4 pt-0 text-sm">
-          <Money money={money}>
+          <Money money={{ ...money, color: colorPreview }}>
             <MoneyBar className="p-4">
               <MoneyHeader />
               <MoneyAmount />
             </MoneyBar>
           </Money>
-          <DialogClose>
-            <div className="grid grid-cols-18 gap-1 pb-4 px-4 w-full ">
-              {Object.values(colors).map((color, i) => {
-                return (
-                  <div key={i}>
-                    {Object.values(color).map((c) => {
-                      return (
-                        <button
-                          onClick={() => colorize(c)}
-                          className="rounded w-full aspect-square hover:scale-125 scale-100 ease-in-out duration-150 transition-all"
-                          style={{ backgroundColor: c }}
-                          key={c}
-                        />
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
-          </DialogClose>
+          <div className="grid grid-cols-18 gap-1 px-4 w-full">
+            {Object.values(colors).map((color, i) => {
+              return (
+                <div key={i}>
+                  {Object.values(color).map((c) => {
+                    return (
+                      <button
+                        onClick={() => setColorPreview(c)}
+                        className={`rounded-full w-full aspect-square z-0 hover:z-50 hover:scale-125 scale-100 ease-in-out duration-150 transition-all ${
+                          c === money.color && "border-4 border-primary"
+                        } ${
+                          c === colorPreview && "border-4 border-primary/50"
+                        }`}
+                        style={{ backgroundColor: c }}
+                        key={c}
+                      />
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+          <div className="px-4 pb-4 w-full flex flex-col gap-4">
+            <Button
+              onClick={() => colorize("")}
+              className="rounded-full w-full"
+              variant={"secondary"}
+            >
+              Set Default
+            </Button>
+            <Button
+              onClick={() => colorize(colorPreview ?? "")}
+              className={`rounded-full w-full`}
+              disabled={money.color === colorPreview}
+            >
+              Update Color
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

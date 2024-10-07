@@ -37,8 +37,8 @@ export default function List() {
       </div>
     );
   return (
-    <div className="flex-1 flex flex-col overflow-auto">
-      <div className="w-full p-6 py-12 bg-muted flex flex-col gap-2">
+    <div className="flex-1 flex flex-col overflow-auto gap-[1px]">
+      <div className="w-full p-6 py-12 flex flex-col gap-2 bg-muted">
         <p className="text-xs text-muted-foreground">
           {user?.username}&apos; total money
         </p>
@@ -48,10 +48,10 @@ export default function List() {
           settings={{ hide: listState.hidden, sign: true }}
         />
       </div>
-      <div className="flex-1 flex flex-col overflow-auto">
+      <div className="flex-1 flex flex-col overflow-auto gap-[1px]">
         {moneys?.map((money) => {
           return (
-            <Money money={money} key={money.id}>
+            <Money money={money} key={`${money.id}-${money.last_update}`}>
               <MoneyBar>
                 <MoneyHeader />
                 <MoneyAmount />

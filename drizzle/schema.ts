@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql, SQL } from "drizzle-orm";
 import {
   pgTable,
   serial,
@@ -18,6 +18,9 @@ export const moneysTable = pgTable("moneys_table", {
   amount: real("amount").notNull(),
   lister: text("lister").notNull(),
   color: text("color"),
+  last_update: timestamp("last_update", { withTimezone: true, mode: "string" })
+    .defaultNow()
+    .notNull(),
 });
 
 export const logsTable = pgTable("logs_table", {

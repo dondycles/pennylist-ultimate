@@ -7,7 +7,7 @@ import {
   selectMoney,
 } from "@/drizzle/schema";
 
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import auth_check from "./auth-check";
 
@@ -61,7 +61,7 @@ export const edit_money = async (
   if (money.latest.id !== money.prev.id) throw new Error("IDs did not match!");
   await db
     .update(moneysTable)
-    .set(money.latest)
+    .set({ ...money.latest, last_update: sql`NOW()` })
     .where(
       and(
         eq(moneysTable.id, money.prev.id),
@@ -110,7 +110,7 @@ export const colorize_money = async (money: selectMoney, color: string) => {
   const user = await auth_check();
   await db
     .update(moneysTable)
-    .set({ color })
+    .set({ color, last_update: sql`NOW()` })
     .where(
       and(eq(moneysTable.id, money.id), eq(moneysTable.lister, user.userId))
     );

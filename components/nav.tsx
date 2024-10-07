@@ -63,7 +63,7 @@ export function NavFilterBtn() {
             onClick={() => {
               listState.setState({ ...listState, sortBy: "created_at" });
             }}
-            value="date"
+            value="created_at"
           >
             Date Added
           </DropdownMenuRadioItem>
