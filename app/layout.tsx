@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/providers/theme";
 import QueryProvider from "@/components/providers/query";
+import { ListDataProvider } from "@/components/providers/list";
 
 const raleway = localFont({
   src: "./fonts/Raleway.ttf",
@@ -37,7 +38,9 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <QueryProvider>{children}</QueryProvider>
+            <QueryProvider>
+              <ListDataProvider>{children}</ListDataProvider>
+            </QueryProvider>
           </ThemeProvider>
         </body>
       </html>

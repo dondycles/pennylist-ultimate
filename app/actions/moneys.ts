@@ -19,7 +19,9 @@ export const get_moneys = async (orderBy: {
   const sortField = moneysTable[orderBy.by] || moneysTable.amount;
   const moneys = await db.query.moneysTable.findMany({
     with: {
-      money_log: true,
+      money_log: {
+        orderBy: [desc(logsTable.createdAt)],
+      },
     },
     where: eq(moneysTable.lister, user.userId!),
     orderBy: [orderBy.asc ? asc(sortField) : desc(sortField)],

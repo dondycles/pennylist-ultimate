@@ -12,6 +12,7 @@ import {
   EyeOff,
   LetterText,
   ListFilter,
+  LogOut,
   MoonIcon,
   Option,
   Settings,
@@ -21,7 +22,7 @@ import {
   User,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { UserButton, UserProfile } from "@clerk/nextjs";
+import { SignOutButton, UserButton, UserProfile } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useListState } from "@/store";
 import {
@@ -92,7 +93,7 @@ export function NavOptions({ children }: { children: React.ReactNode }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-40" align="start">
-        <DropdownMenuLabel>List Options</DropdownMenuLabel>
+        <DropdownMenuLabel>Options</DropdownMenuLabel>
         {children}
       </DropdownMenuContent>
     </DropdownMenu>
@@ -218,6 +219,12 @@ export function NavUserOption() {
         <User size={16} className="mr-2" />
         Account Settings
       </DropdownMenuItem>
+      <SignOutButton>
+        <DropdownMenuItem>
+          <LogOut size={16} className="mr-2" />
+          Sign Out
+        </DropdownMenuItem>
+      </SignOutButton>
     </>
   );
 }

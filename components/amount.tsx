@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useListState } from "@/store";
 import { ClassNameValue } from "tailwind-merge";
 
 export default function Amount({
@@ -11,9 +12,10 @@ export default function Amount({
 }: {
   className?: ClassNameValue;
   amount: number;
-  settings: { hide: boolean; decimals?: number; sign: boolean };
+  settings: { decimals?: number; sign: boolean };
   color?: string;
 }) {
+  const listState = useListState();
   const stringedAmount = amount.toString();
   const asteriskedAmount = "*".repeat(stringedAmount.length);
   const withSign = new Intl.NumberFormat("en-US", {
@@ -30,7 +32,7 @@ export default function Amount({
       style={{ color: color ?? "" }}
       className={cn("text-2xl font-readex font-black", className)}
     >
-      {settings?.hide
+      {listState?.hidden
         ? asteriskedAmount
         : settings?.sign
         ? withSign.format(amount)

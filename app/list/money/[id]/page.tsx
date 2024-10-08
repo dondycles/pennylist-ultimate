@@ -21,7 +21,7 @@ import Nav, {
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useUser } from "@clerk/nextjs";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 export default function MoneyPage({ params }: { params: { id: number } }) {
   const { isLoaded, user, isSignedIn } = useUser();

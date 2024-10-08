@@ -68,7 +68,10 @@ export function MoneyBar({
   return (
     <div
       key={money.id}
-      style={{ backgroundColor: money.color + "20" }}
+      style={{
+        borderBottomColor: money.color ?? "hsl(var(--border))",
+        borderBottomWidth: "1px",
+      }}
       className={cn(
         `w-full p-4 flex flex-col gap-2 ${
           deleting && "animate-pulse scale-95"
@@ -109,7 +112,7 @@ export function MoneyAmount() {
       className={`${darken}`}
       color={money.color ?? ""}
       amount={money.amount}
-      settings={{ hide: hidden, sign: true }}
+      settings={{ sign: true }}
     />
   );
 }
@@ -156,7 +159,7 @@ export function MoneyDeleteBtn() {
             <p>{money.name}</p>
             <Amount
               amount={money.amount}
-              settings={{ hide: false, sign: true }}
+              settings={{ sign: true }}
               className="text-lg"
             />
           </div>

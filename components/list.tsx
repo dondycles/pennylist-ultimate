@@ -1,5 +1,4 @@
 "use client";
-import Amount from "@/components/amount";
 import {
   Money,
   MoneyAmount,
@@ -11,22 +10,14 @@ import {
   MoneyEditBtn,
   MoneyBar,
 } from "@/components/money-bar";
-import { get_moneys } from "@/app/actions/moneys";
-import { useQuery } from "@tanstack/react-query";
-import { useListState } from "@/store";
-import { useUser } from "@clerk/nextjs";
 import { Skeleton } from "./ui/skeleton";
 import _ from "lodash";
+import { useContext } from "react";
+import { ListDataContext } from "./providers/list";
+import TotalMoney from "./total-money";
 
 export default function List() {
-  const listState = useListState();
-  const { isLoaded, user, isSignedIn } = useUser();
-  const { data: moneys, isLoading } = useQuery({
-    queryKey: ["list", user?.id, listState.asc, listState.sortBy],
-    enabled: isLoaded && isSignedIn && !!user,
-    queryFn: async () =>
-      await get_moneys({ asc: listState.asc, by: listState.sortBy }),
-  });
+  const { isLoading, moneys } = useContext(ListDataContext);
   if (isLoading)
     return (
       <div className="flex flex-col gap-[1px] h-full">
@@ -37,18 +28,9 @@ export default function List() {
       </div>
     );
   return (
-    <div className="flex-1 flex flex-col overflow-auto gap-[1px]">
-      <div className="w-full px-4 py-8  flex flex-col gap-2 bg-muted">
-        <p className="text-xs text-muted-foreground">
-          {user?.username}&apos; total money
-        </p>
-        <Amount
-          className="text-4xl"
-          amount={_.sum(moneys?.map((money) => money.amount) ?? [0])}
-          settings={{ hide: listState.hidden, sign: true }}
-        />
-      </div>
-      <div className="flex-1 flex flex-col overflow-auto gap-[1px]">
+    <div className="flex-1 flex flex-col overflow-auto">
+      <TotalMoney total={_.sum(moneys?.map((money) => money.amount) ?? [0])} />
+      <div className="flex-1 flex flex-col overflow-auto max-w-[800px] mx-auto w-screen">
         {moneys?.map((money) => {
           return (
             <Money
