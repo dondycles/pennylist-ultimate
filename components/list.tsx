@@ -30,10 +30,12 @@ export default function List() {
   return (
     <div className="flex-1 flex flex-col overflow-auto">
       <TotalMoney total={_.sum(moneys?.map((money) => money.amount) ?? [0])} />
-      <div className="flex-1 flex flex-col overflow-auto max-w-[800px] mx-auto w-screen">
+      <div className="flex-1 flex flex-col overflow-auto max-w-[800px] w-screen mx-auto gap-4">
+        <br />
         {moneys?.map((money) => {
           return (
             <Money
+              currentTotal={_.sum(moneys?.map((money) => money.amount) ?? [0])}
               specific={false}
               money={money}
               key={`${money.id}-${money.last_update}`}

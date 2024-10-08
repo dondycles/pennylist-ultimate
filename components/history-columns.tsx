@@ -46,21 +46,21 @@ export const historyColumns: ColumnDef<
     cell: ({ row }) => {
       return (
         <div className="truncate text-xs">
-          {row.original?.changes.prev.name !==
-          row.original?.changes.latest.name ? (
+          {row.original?.changes?.prev.name !==
+          row.original?.changes?.latest.name ? (
             <p>
               <span>{row.original?.changes.prev.name}</span>
               <span> to </span>
               <span>{row.original?.changes.latest.name}</span>
             </p>
           ) : null}
-          {row.original?.changes.prev.amount !==
-          row.original?.changes.latest.amount ? (
+          {row.original?.changes?.prev.amount !==
+          row.original?.changes?.latest.amount ? (
             <p>
               <span>
                 <Amount
                   className="text-xs"
-                  amount={row.original?.changes.prev.amount ?? 0}
+                  amount={row.original?.changes?.prev.amount ?? 0}
                   settings={{ sign: true }}
                 />
               </span>
@@ -68,7 +68,7 @@ export const historyColumns: ColumnDef<
               <span>
                 <Amount
                   className="text-xs"
-                  amount={row.original?.changes.latest.amount ?? 0}
+                  amount={row.original?.changes?.latest.amount ?? 0}
                   settings={{ sign: true }}
                 />
               </span>
@@ -76,6 +76,20 @@ export const historyColumns: ColumnDef<
           ) : null}
         </div>
       );
+    },
+  },
+  {
+    accessorKey: "currentTotal",
+    header: "Current Total",
+    cell: ({ row }) => {
+      if (row.original?.changes?.latest.total)
+        return (
+          <Amount
+            amount={row.original?.changes?.latest.total}
+            className="text-xs"
+            settings={{ sign: true }}
+          />
+        );
     },
   },
   {

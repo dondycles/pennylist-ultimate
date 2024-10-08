@@ -15,6 +15,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { add_money } from "@/app/actions/moneys";
 import { useUser } from "@clerk/nextjs";
+import { useContext } from "react";
+import { ListDataContext } from "../providers/list";
+import _ from "lodash";
 const formSchema = z.object({
   name: z.string().min(1).max(24),
   amount: z.coerce.number(),
@@ -23,6 +26,7 @@ const formSchema = z.object({
 
 export default function AddMoneyForm({ done }: { done: () => void }) {
   const { user, isLoaded } = useUser();
+  const { moneys } = useContext(ListDataContext);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -36,7 +40,7 @@ export default function AddMoneyForm({ done }: { done: () => void }) {
     if (!isLoaded) return;
     if (!user) return;
 
-    await add_money(values);
+    await add_money(values, _.sum(moneys?.map((m) => m.amount)));
 
     done();
   }

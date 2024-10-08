@@ -37,10 +37,12 @@ export const logsTable = pgTable("logs_table", {
     prev: {
       amount: number;
       name: string;
+      total: number;
     };
     latest: {
       amount: number;
       name: string;
+      total: number;
     };
   }>(),
   money_id: serial("money_id"),

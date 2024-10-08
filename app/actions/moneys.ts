@@ -18,11 +18,6 @@ export const get_moneys = async (orderBy: {
   const user = await auth_check();
   const sortField = moneysTable[orderBy.by] || moneysTable.amount;
   const moneys = await db.query.moneysTable.findMany({
-    with: {
-      money_log: {
-        orderBy: [desc(logsTable.createdAt)],
-      },
-    },
     where: eq(moneysTable.lister, user.userId!),
     orderBy: [orderBy.asc ? asc(sortField) : desc(sortField)],
   });
@@ -40,7 +35,10 @@ export const get_money = async (id: number) => {
   return moneys;
 };
 
-export const add_money = async (money: z.infer<typeof addMoneySchema>) => {
+export const add_money = async (
+  money: z.infer<typeof addMoneySchema>,
+  currentTotal: number
+) => {
   const user = await auth_check();
   const [m] = await db.insert(moneysTable).values(money).returning();
   await db.insert(logsTable).values({
@@ -48,10 +46,12 @@ export const add_money = async (money: z.infer<typeof addMoneySchema>) => {
       latest: {
         amount: m.amount,
         name: m.name,
+        total: currentTotal + m.amount,
       },
       prev: {
-        amount: m.amount,
-        name: m.name,
+        amount: 0,
+        name: "",
+        total: currentTotal,
       },
     },
     action: "add",
@@ -66,7 +66,8 @@ export const edit_money = async (
     prev: z.infer<typeof addMoneySchema>;
     latest: z.infer<typeof addMoneySchema>;
   },
-  reason: string
+  reason: string,
+  currentTotal: number
 ) => {
   const user = await auth_check();
   if (!money.latest.id || !money.prev.id)
@@ -84,8 +85,11 @@ export const edit_money = async (
 
   await db.insert(logsTable).values({
     changes: {
-      latest: { ...money.latest },
-      prev: { ...money.prev },
+      latest: {
+        ...money.latest,
+        total: currentTotal + (money.latest.amount - money.prev.amount),
+      },
+      prev: { ...money.prev, total: currentTotal },
     },
     action: "edit",
     reason: reason,
@@ -94,7 +98,10 @@ export const edit_money = async (
   });
 };
 
-export const delete_money = async (money: selectMoney) => {
+export const delete_money = async (
+  money: selectMoney,
+  currentTotal: number
+) => {
   const user = await auth_check();
   await db
     .delete(moneysTable)
@@ -106,10 +113,12 @@ export const delete_money = async (money: selectMoney) => {
       latest: {
         amount: 0,
         name: money.name,
+        total: currentTotal - money.amount,
       },
       prev: {
         amount: money.amount,
         name: money.name,
+        total: currentTotal,
       },
     },
     action: "delete",

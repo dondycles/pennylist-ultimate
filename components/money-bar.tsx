@@ -26,8 +26,9 @@ import { colors } from "@/lib/colors";
 import { darken_color } from "@/lib/darken-color";
 
 type MoneyBarProps = PropsWithChildren & {
-  money: MoneyWithLogs;
+  money: Omit<MoneyWithLogs, "money_log">;
   specific: boolean;
+  currentTotal: number;
 };
 
 const MoneyBarContext = createContext<
@@ -36,6 +37,7 @@ const MoneyBarContext = createContext<
       deleting: boolean;
       setDeleting: React.Dispatch<React.SetStateAction<boolean>>;
       specific: boolean;
+      currentTotal: number;
     }
   | undefined
 >(undefined);
@@ -46,11 +48,16 @@ function useMoneyBarContext() {
   return context;
 }
 
-export function Money({ children, money, specific }: MoneyBarProps) {
+export function Money({
+  children,
+  money,
+  specific,
+  currentTotal,
+}: MoneyBarProps) {
   const [deleting, setDeleting] = useState(false);
   return (
     <MoneyBarContext.Provider
-      value={{ money, deleting, setDeleting, specific }}
+      value={{ money, deleting, setDeleting, specific, currentTotal }}
     >
       {children}
     </MoneyBarContext.Provider>
@@ -105,7 +112,6 @@ export function MoneyHeader() {
 
 export function MoneyAmount() {
   const { money } = useMoneyBarContext();
-  const { hidden } = useListState();
   const darken = darken_color(money.color ?? "");
   return (
     <Amount
@@ -122,13 +128,14 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
 }
 
 export function MoneyDeleteBtn() {
-  const { money, deleting, setDeleting } = useMoneyBarContext();
+  const { money, deleting, setDeleting, currentTotal } = useMoneyBarContext();
   const queryClient = useQueryClient();
   const darken = darken_color(money.color ?? "");
   async function deleteMoney() {
     setDeleting(true);
-    await delete_money(money);
+    await delete_money(money, currentTotal);
     queryClient.invalidateQueries({ queryKey: ["list"] });
+    queryClient.invalidateQueries({ queryKey: ["logs"] });
   }
 
   return (
@@ -204,7 +211,7 @@ export function MoneyExternalLinkBtn() {
   );
 }
 export function MoneyEditBtn() {
-  const { money, specific } = useMoneyBarContext();
+  const { money, specific, currentTotal } = useMoneyBarContext();
   const queryClient = useQueryClient();
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const darken = darken_color(money.color ?? "");
@@ -214,6 +221,7 @@ export function MoneyEditBtn() {
     queryClient.invalidateQueries({
       queryKey: [specific ? String(money.id) : "list"],
     });
+    queryClient.invalidateQueries({ queryKey: ["logs"] });
   }
   return (
     <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
@@ -238,7 +246,11 @@ export function MoneyEditBtn() {
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 p-4 pt-0 text-sm">
-          <EditMoneyForm money={money} done={done} />
+          <EditMoneyForm
+            currentTotal={currentTotal}
+            money={money}
+            done={done}
+          />
         </div>
       </DialogContent>
     </Dialog>
@@ -247,7 +259,7 @@ export function MoneyEditBtn() {
 
 export function MoneyPaletteBtn() {
   const [openEditDialog, setOpenEditDialog] = useState(false);
-  const { money, specific } = useMoneyBarContext();
+  const { money, specific, currentTotal } = useMoneyBarContext();
   const [colorPreview, setColorPreview] = useState(money.color);
   const queryClient = useQueryClient();
   const darken = darken_color(money.color ?? "");
@@ -258,6 +270,7 @@ export function MoneyPaletteBtn() {
     queryClient.invalidateQueries({
       queryKey: [specific ? String(money.id) : "list"],
     });
+    queryClient.invalidateQueries({ queryKey: ["logs"] });
   }
   return (
     <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
@@ -282,7 +295,11 @@ export function MoneyPaletteBtn() {
           </DialogDescription> */}
         </DialogHeader>
         <div className="flex flex-col gap-4 pt-0 text-sm">
-          <Money specific={specific} money={{ ...money, color: colorPreview }}>
+          <Money
+            currentTotal={currentTotal}
+            specific={specific}
+            money={{ ...money, color: colorPreview }}
+          >
             <MoneyBar className="p-4">
               <MoneyHeader />
               <MoneyAmount />

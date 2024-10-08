@@ -27,9 +27,11 @@ const formSchema = z.object({
 export default function EditMoneyForm({
   done,
   money,
+  currentTotal,
 }: {
   done: () => void;
   money: selectMoney;
+  currentTotal: number;
 }) {
   const { user, isLoaded } = useUser();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -42,7 +44,11 @@ export default function EditMoneyForm({
       return done();
     if (!isLoaded) return;
     if (!user) return;
-    await edit_money({ latest: latest, prev: money }, latest.reason ?? "N/A");
+    await edit_money(
+      { latest: latest, prev: money },
+      latest.reason ?? "N/A",
+      currentTotal
+    );
     done();
   }
 

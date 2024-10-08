@@ -49,3 +49,25 @@ export const useListState = create<ListState>()(
     }
   )
 );
+
+type ChartsState = {
+  progressDays: "7" | "14" | "28" | "365";
+  setState: ({
+    progressDays,
+  }: {
+    progressDays: "7" | "14" | "28" | "365";
+  }) => void;
+};
+
+export const useChartsState = create<ChartsState>()(
+  persist(
+    (set) => ({
+      progressDays: "7",
+      setState: (state) => set(() => ({ ...state })),
+    }),
+    {
+      name: "charts-state",
+      storage: createJSONStorage(() => storage),
+    }
+  )
+);

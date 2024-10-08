@@ -6,6 +6,7 @@ import { ListDataContext } from "./providers/list";
 import { HistoryTable } from "./history-table";
 import { historyColumns } from "./history-columns";
 import TotalMoney from "./total-money";
+import DailyProgress from "./daily-progress";
 
 export default function Charts() {
   const { isLoading, moneys, logs } = useContext(ListDataContext);
@@ -21,7 +22,9 @@ export default function Charts() {
   return (
     <div className="flex-1 flex flex-col overflow-auto ">
       <TotalMoney total={_.sum(moneys?.map((money) => money.amount) ?? [0])} />
-      <div className="flex-1 flex flex-col overflow-auto max-w-[800px] w-screen mx-auto">
+      <div className="flex-1 flex flex-col overflow-auto max-w-[800px] w-screen mx-auto gap-4">
+        <br />
+        <DailyProgress />
         <HistoryTable columns={historyColumns} data={logs ?? []} />
       </div>
     </div>

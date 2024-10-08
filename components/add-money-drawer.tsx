@@ -19,6 +19,7 @@ export default function AddMoneyDrawer() {
   function done() {
     setOpen(false);
     queryClient.invalidateQueries({ queryKey: ["list"] });
+    queryClient.invalidateQueries({ queryKey: ["logs"] });
   }
   return (
     <Drawer onOpenChange={setOpen} open={open}>
