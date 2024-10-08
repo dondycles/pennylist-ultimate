@@ -14,6 +14,7 @@ import { useContext } from "react";
 import { ListDataContext } from "./providers/list";
 import TotalMoney from "./total-money";
 import Loader from "./loader";
+import Scrollable from "./scrollable";
 
 export default function List() {
   const { isLoading, moneys, currentTotal } = useContext(ListDataContext);
@@ -21,7 +22,7 @@ export default function List() {
   return (
     <div className="flex-1 flex flex-col overflow-auto">
       <TotalMoney total={currentTotal} />
-      <div className="flex-1 flex flex-col overflow-auto max-w-[800px] w-screen mx-auto gap-4">
+      <Scrollable>
         {moneys?.map((money) => {
           return (
             <Money
@@ -43,7 +44,7 @@ export default function List() {
             </Money>
           );
         })}
-      </div>
+      </Scrollable>
     </div>
   );
 }

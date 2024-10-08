@@ -6,6 +6,7 @@ import { historyColumns } from "./history-columns";
 import TotalMoney from "./total-money";
 import DailyProgress from "./daily-progress";
 import Loader from "./loader";
+import Scrollable from "./scrollable";
 
 export default function Charts() {
   const { isLoading, logs, currentTotal } = useContext(ListDataContext);
@@ -13,10 +14,10 @@ export default function Charts() {
   return (
     <div className="flex-1 flex flex-col overflow-auto ">
       <TotalMoney total={currentTotal} />
-      <div className="flex-1 flex flex-col overflow-auto max-w-[800px] w-screen mx-auto gap-4">
+      <Scrollable>
         <DailyProgress />
         <HistoryTable columns={historyColumns} data={logs ?? []} />
-      </div>
+      </Scrollable>
     </div>
   );
 }

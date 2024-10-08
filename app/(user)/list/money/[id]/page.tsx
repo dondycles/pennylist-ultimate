@@ -15,6 +15,7 @@ import {
 } from "@/components/money-bar";
 
 import { ListDataContext } from "@/components/providers/list";
+import Scrollable from "@/components/scrollable";
 
 import { useUser } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
@@ -37,7 +38,7 @@ export default function MoneyPage({ params }: { params: { id: number } }) {
 
   if (isLoading) return <Loader />;
   return (
-    <div className="flex-1 flex flex-col overflow-auto max-w-[800px] mx-auto ">
+    <Scrollable>
       {money && (
         <Money
           currentTotal={currentTotal}
@@ -57,6 +58,6 @@ export default function MoneyPage({ params }: { params: { id: number } }) {
         </Money>
       )}
       <HistoryTable columns={historyColumns} data={logs ?? []} />
-    </div>
+    </Scrollable>
   );
 }
