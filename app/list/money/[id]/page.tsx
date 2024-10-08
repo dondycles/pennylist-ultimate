@@ -10,8 +10,14 @@ import {
   MoneyHeader,
   MoneyPaletteBtn,
 } from "@/components/money-bar";
-import Nav, { NavBackBtn, NavHideBtn, NavUserBtn } from "@/components/nav";
-import { ThemeToggle } from "@/components/theme-toggle";
+import Nav, {
+  NavBackBtn,
+  NavBar,
+  NavHideOption,
+  NavOptions,
+  NavThemeOptions,
+  NavUserOption,
+} from "@/components/nav";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useUser } from "@clerk/nextjs";
@@ -52,10 +58,14 @@ export default function MoneyPage({ params }: { params: { id: number } }) {
         )}
       </div>
       <Nav>
-        <NavBackBtn />
-        <NavHideBtn />
-        <ThemeToggle />
-        <NavUserBtn />
+        <NavBar>
+          <NavBackBtn />
+          <NavOptions>
+            <NavHideOption />
+            <NavThemeOptions />
+            <NavUserOption />
+          </NavOptions>
+        </NavBar>
       </Nav>
     </div>
   );

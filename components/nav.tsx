@@ -1,115 +1,216 @@
 "use client";
 import {
+  Bolt,
+  Calendar,
+  CaseUpper,
+  ChartArea,
+  ChartNoAxesColumnIncreasing,
+  ChartScatter,
   ChevronLeft,
+  DollarSign,
   Eye,
   EyeOff,
+  LetterText,
   ListFilter,
+  MoonIcon,
+  Option,
+  Settings,
   SortAsc,
   SortDesc,
+  SunIcon,
+  User,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton, UserProfile } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useListState } from "@/store";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { useTheme } from "next-themes";
+import { createContext, useContext, useState } from "react";
+import { Dialog, DialogContent } from "./ui/dialog";
+import Link from "next/link";
 
-export default function Nav({ children }: { children: React.ReactNode }) {
-  return <nav className="flex justify-evenly gap-2 p-4">{children}</nav>;
+const NavContext = createContext<
+  | {
+      showProfile: boolean;
+      setShowProfile: React.Dispatch<React.SetStateAction<boolean>>;
+    }
+  | undefined
+>(undefined);
+
+function useNavContext() {
+  const context = useContext(NavContext);
+  if (!context) throw new Error("Money context missing!");
+  return context;
 }
 
-export function NavFilterBtn() {
-  const listState = useListState();
+export default function Nav({ children }: { children: React.ReactNode }) {
+  const [showProfile, setShowProfile] = useState(false);
+  return (
+    <NavContext.Provider value={{ setShowProfile, showProfile }}>
+      {children}
+    </NavContext.Provider>
+  );
+}
+export function NavBar({ children }: { children: React.ReactNode }) {
+  const { showProfile, setShowProfile } = useNavContext();
+  return (
+    <nav className="flex justify-evenly gap-2 p-4">
+      {children}{" "}
+      <Dialog open={showProfile} onOpenChange={setShowProfile}>
+        <DialogContent className="w-fit max-w-fit">
+          <UserProfile routing="virtual" />
+        </DialogContent>
+      </Dialog>
+    </nav>
+  );
+}
+
+export function NavOptions({ children }: { children: React.ReactNode }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button className="rounded-full" size={"icon"} variant={"ghost"}>
-          <ListFilter size={24} />
+          <Bolt size={24} />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
-        <DropdownMenuLabel>Sorting</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuRadioGroup value={String(listState.asc)}>
-          <DropdownMenuRadioItem
-            onClick={() => {
-              listState.setState({ ...listState, asc: true });
-            }}
-            value="true"
-          >
-            <SortAsc className="mr-1" size={16} />
-            Ascending
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem
-            onClick={() => {
-              listState.setState({ ...listState, asc: false });
-            }}
-            value="false"
-          >
-            <SortDesc className="mr-1" size={16} />
-            Descending
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuRadioGroup value={listState.sortBy}>
-          <DropdownMenuRadioItem
-            onClick={() => {
-              listState.setState({ ...listState, sortBy: "created_at" });
-            }}
-            value="created_at"
-          >
-            Date Added
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem
-            onClick={() => {
-              listState.setState({ ...listState, sortBy: "amount" });
-            }}
-            value="amount"
-          >
-            Amount
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem
-            onClick={() => {
-              listState.setState({ ...listState, sortBy: "name" });
-            }}
-            value="name"
-          >
-            Name
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
+      <DropdownMenuContent className="w-40" align="start">
+        <DropdownMenuLabel>List Options</DropdownMenuLabel>
+        {children}
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
 
-export function NavHideBtn() {
+export function NavFilterOptions() {
   const listState = useListState();
   return (
-    <Button
-      onClick={() =>
-        listState.setState({ ...listState, hidden: !listState.hidden })
-      }
-      className="rounded-full"
-      size={"icon"}
-      variant={"ghost"}
-    >
-      {listState.hidden ? <Eye size={24} /> : <EyeOff size={24} />}
-    </Button>
+    <>
+      <DropdownMenuSeparator />
+      <DropdownMenuLabel className="text-muted-foreground text-xs">
+        Ordering
+      </DropdownMenuLabel>
+      <DropdownMenuRadioGroup value={String(listState.asc)}>
+        <DropdownMenuRadioItem
+          onClick={() => {
+            listState.setState({ ...listState, asc: true });
+          }}
+          value="true"
+        >
+          <SortAsc className="mr-2" size={16} />
+          Ascending
+        </DropdownMenuRadioItem>
+        <DropdownMenuRadioItem
+          onClick={() => {
+            listState.setState({ ...listState, asc: false });
+          }}
+          value="false"
+        >
+          <SortDesc className="mr-2" size={16} />
+          Descending
+        </DropdownMenuRadioItem>
+      </DropdownMenuRadioGroup>
+      <DropdownMenuSeparator />
+      <DropdownMenuLabel className="text-muted-foreground text-xs">
+        Sorting
+      </DropdownMenuLabel>
+      <DropdownMenuRadioGroup value={listState.sortBy}>
+        <DropdownMenuRadioItem
+          onClick={() => {
+            listState.setState({ ...listState, sortBy: "created_at" });
+          }}
+          value="created_at"
+        >
+          <Calendar className="mr-2" size={16} />
+          Date Added
+        </DropdownMenuRadioItem>
+        <DropdownMenuRadioItem
+          onClick={() => {
+            listState.setState({ ...listState, sortBy: "amount" });
+          }}
+          value="amount"
+        >
+          <DollarSign className="mr-2" size={16} />
+          Amount
+        </DropdownMenuRadioItem>
+        <DropdownMenuRadioItem
+          onClick={() => {
+            listState.setState({ ...listState, sortBy: "name" });
+          }}
+          value="name"
+        >
+          <LetterText className="mr-2" size={16} /> Name
+        </DropdownMenuRadioItem>
+      </DropdownMenuRadioGroup>
+    </>
   );
 }
 
-export function NavUserBtn() {
+export function NavHideOption() {
+  const listState = useListState();
   return (
-    <Button className="rounded-full" size={"icon"} variant={"ghost"}>
-      <UserButton />
-    </Button>
+    <>
+      <DropdownMenuSeparator />
+      <DropdownMenuLabel className="text-muted-foreground text-xs">
+        Privacy
+      </DropdownMenuLabel>
+      <DropdownMenuRadioGroup value={String(listState.hidden)}>
+        <DropdownMenuRadioItem
+          onClick={() =>
+            listState.setState({ ...listState, hidden: !listState.hidden })
+          }
+          value="true"
+        >
+          <EyeOff size={16} className="mr-2" />
+          Hide Values
+        </DropdownMenuRadioItem>
+      </DropdownMenuRadioGroup>
+    </>
+  );
+}
+
+export function NavThemeOptions() {
+  const { setTheme, theme } = useTheme();
+
+  return (
+    <>
+      <DropdownMenuSeparator />
+      <DropdownMenuLabel className="text-muted-foreground text-xs">
+        Theme
+      </DropdownMenuLabel>
+      <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+        <DropdownMenuRadioItem value="dark">
+          <MoonIcon size={16} className="mr-2" />
+          Dark Mode
+        </DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value="light">
+          <SunIcon size={16} className="mr-2" />
+          Light Mode
+        </DropdownMenuRadioItem>
+      </DropdownMenuRadioGroup>
+    </>
+  );
+}
+
+export function NavUserOption() {
+  const { setShowProfile } = useNavContext();
+  return (
+    <>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem onClick={() => setShowProfile(true)}>
+        <User size={16} className="mr-2" />
+        Account Settings
+      </DropdownMenuItem>
+    </>
   );
 }
 
@@ -123,6 +224,16 @@ export function NavBackBtn() {
       variant={"ghost"}
     >
       <ChevronLeft size={24} />
+    </Button>
+  );
+}
+
+export function NavChartBtn() {
+  return (
+    <Button asChild className="rounded-full" size={"icon"} variant={"ghost"}>
+      <Link href={"/chart"}>
+        <ChartNoAxesColumnIncreasing size={24} />
+      </Link>
     </Button>
   );
 }
