@@ -92,7 +92,7 @@ export function NavOptions({ children }: { children: React.ReactNode }) {
           <Bolt size={24} />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-40" align="start">
+      <DropdownMenuContent className="w-40" align="end" sideOffset={16}>
         <DropdownMenuLabel>Options</DropdownMenuLabel>
         {children}
       </DropdownMenuContent>
