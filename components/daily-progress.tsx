@@ -56,10 +56,11 @@ const chartConfig = {
   },
   currentTotal: {
     label: "Total Money",
-    color: "hsl(var(--chart-3))",
+    color: "hsl(var(--primary))",
   },
   gainOrLoss: {
     label: "Difference",
+    color: "hsl(var(--chart-3))",
   },
 } satisfies ChartConfig;
 
@@ -78,7 +79,14 @@ export default function DailyProgress() {
       <CardHeader className="flex flex-row justify-between gap-4 items-center">
         <div className="space-y-1.5">
           <CardTitle>Daily Progress</CardTitle>
-          <CardDescription>Last 7 days</CardDescription>
+          <CardDescription>
+            {differences.isZero
+              ? "Nothing changed"
+              : differences.isUp
+              ? `Trending up by ${differences.value}`
+              : `Trending down by ${differences.value}`}{" "}
+            compared to last {chartsState.progressDays} days
+          </CardDescription>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -142,13 +150,14 @@ export default function DailyProgress() {
             <Bar
               dataKey="currentTotal"
               fill="var(--color-currentTotal)"
-              radius={4}
+              radius={[8, 8, 0, 0]}
             />
             <Area
               dataKey="gainOrLoss"
-              stroke="hsl(var(--muted-foreground))"
+              stroke="var(--color-gainOrLoss)"
               strokeWidth={0.5}
               fillOpacity={1}
+              fill="var(--color-gainOrLoss)"
               type="monotone"
             />
             <Line
@@ -166,15 +175,6 @@ export default function DailyProgress() {
           </ComposedChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 font-medium leading-none">
-          Trending up by 100 this month <TrendingUp className="h-4 w-4" />
-        </div>
-        {differences.value}
-        {/* <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
-        </div> */}
-      </CardFooter>
     </Card>
   );
 }

@@ -1,29 +1,23 @@
 "use client";
 import {
+  AlignJustify,
   Bolt,
   Calendar,
-  CaseUpper,
-  ChartArea,
   ChartNoAxesColumnIncreasing,
-  ChartScatter,
-  ChevronLeft,
   DollarSign,
-  Eye,
   EyeOff,
+  Home,
   LetterText,
-  ListFilter,
+  List,
   LogOut,
   MoonIcon,
-  Option,
-  Settings,
   SortAsc,
   SortDesc,
   SunIcon,
   User,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { SignOutButton, UserButton, UserProfile } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+import { SignOutButton, UserProfile } from "@clerk/nextjs";
 import { useListState } from "@/store";
 import {
   DropdownMenu,
@@ -36,10 +30,12 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { useTheme } from "next-themes";
-import { createContext, useContext, useState } from "react";
+import { createContext, forwardRef, useContext, useState } from "react";
 import { Dialog, DialogContent } from "./ui/dialog";
 import Link from "next/link";
-
+import { AnimatePresence, motion as m } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { ClassNameValue } from "tailwind-merge";
 const NavContext = createContext<
   | {
       showProfile: boolean;
@@ -62,11 +58,28 @@ export default function Nav({ children }: { children: React.ReactNode }) {
     </NavContext.Provider>
   );
 }
-export function NavBar({ children }: { children: React.ReactNode }) {
+export const NavBar = forwardRef(function NavBar(
+  {
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: ClassNameValue;
+  },
+  ref: React.Ref<HTMLDivElement>
+) {
   const { showProfile, setShowProfile } = useNavContext();
   return (
-    <nav className="flex justify-evenly gap-2 p-4">
-      {children}{" "}
+    <nav className="flex justify-evenly gap-2 p-4 fixed bottom-0 left-0 right-0 bg-background/10 backdrop-blur w-full  h-[72px]">
+      <m.div
+        ref={ref}
+        layout
+        className={cn("w-full h-full relative ", className)}
+      >
+        <AnimatePresence initial={false} mode="popLayout">
+          {children}
+        </AnimatePresence>
+      </m.div>
       <Dialog open={showProfile} onOpenChange={setShowProfile}>
         <DialogContent className="w-fit max-w-fit flex h-[75dvh]">
           <UserProfile
@@ -82,7 +95,7 @@ export function NavBar({ children }: { children: React.ReactNode }) {
       </Dialog>
     </nav>
   );
-}
+});
 
 export function NavOptions({ children }: { children: React.ReactNode }) {
   return (
@@ -229,16 +242,12 @@ export function NavUserOption() {
   );
 }
 
-export function NavBackBtn() {
-  const router = useRouter();
+export function NavListBtn() {
   return (
-    <Button
-      onClick={() => router.back()}
-      className="rounded-full"
-      size={"icon"}
-      variant={"ghost"}
-    >
-      <ChevronLeft size={24} />
+    <Button asChild className="rounded-full" size={"icon"} variant={"ghost"}>
+      <Link href={"/list"}>
+        <AlignJustify size={24} />
+      </Link>
     </Button>
   );
 }
