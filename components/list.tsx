@@ -38,7 +38,7 @@ export default function List() {
     );
   return (
     <div className="flex-1 flex flex-col overflow-auto gap-[1px]">
-      <div className="w-full p-6 py-12 flex flex-col gap-2 bg-muted">
+      <div className="w-full px-4 py-8  flex flex-col gap-2 bg-muted">
         <p className="text-xs text-muted-foreground">
           {user?.username}&apos; total money
         </p>

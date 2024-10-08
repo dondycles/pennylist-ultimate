@@ -23,7 +23,7 @@ import { useListState } from "@/store";
 import { ClassNameValue } from "tailwind-merge";
 import { cn } from "@/lib/utils";
 import { colors } from "@/lib/colors";
-import { darken_color } from "@/lib/automate-text-color";
+import { darken_color } from "@/lib/darken-color";
 
 type MoneyBarProps = PropsWithChildren & {
   money: MoneyWithLogs;
@@ -70,7 +70,7 @@ export function MoneyBar({
       key={money.id}
       style={{ backgroundColor: money.color + "20" }}
       className={cn(
-        `w-full p-6 flex flex-col gap-2 ${
+        `w-full p-4 flex flex-col gap-2 ${
           deleting && "animate-pulse scale-95"
         }`,
         className
@@ -85,7 +85,7 @@ export function MoneyHeader() {
   const { money } = useMoneyBarContext();
   const darken = darken_color(money.color ?? "");
   return (
-    <div className={`flex items-baseline gap-2`}>
+    <div key={money.color} className={`flex items-baseline gap-2`}>
       <span
         className={`font-bold ${darken}`}
         style={{ color: money.color ?? "" }}
@@ -132,9 +132,9 @@ export function MoneyDeleteBtn() {
     <Dialog>
       <DialogTrigger asChild>
         <Button
-          disabled={deleting}
           size={"icon"}
-          className="rounded-full"
+          disabled={deleting}
+          className="rounded-full size-6 aspect-square"
           variant={"ghost"}
         >
           <Trash
@@ -181,8 +181,16 @@ export function MoneyExternalLinkBtn() {
   const darken = darken_color(money.color ?? "");
 
   return (
-    <Button asChild size={"icon"} className="rounded-full" variant={"ghost"}>
-      <Link href={`/list/money/${money.id}`}>
+    <Button
+      size={"icon"}
+      className="rounded-full size-6 aspect-square"
+      variant={"ghost"}
+      asChild
+    >
+      <Link
+        href={`/list/money/${money.id}`}
+        className="rounded-full h-fit aspect-square"
+      >
         <ExternalLink
           className={`${darken}`}
           style={{ color: money.color ?? "" }}
@@ -207,7 +215,11 @@ export function MoneyEditBtn() {
   return (
     <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
       <DialogTrigger asChild>
-        <Button size={"icon"} className="rounded-full" variant={"ghost"}>
+        <Button
+          size={"icon"}
+          className="rounded-full size-6 aspect-square"
+          variant={"ghost"}
+        >
           <Edit
             className={`${darken}`}
             style={{ color: money.color ?? "" }}
@@ -247,7 +259,11 @@ export function MoneyPaletteBtn() {
   return (
     <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
       <DialogTrigger asChild>
-        <Button size={"icon"} className="rounded-full" variant={"ghost"}>
+        <Button
+          size={"icon"}
+          className="rounded-full size-6 aspect-square"
+          variant={"ghost"}
+        >
           <Palette
             className={`${darken}`}
             style={{ color: money.color ?? "" }}

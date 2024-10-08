@@ -22,7 +22,7 @@ import {
 } from "./ui/dropdown-menu";
 
 export default function Nav({ children }: { children: React.ReactNode }) {
-  return <nav className="flex justify-evenly gap-2 p-6">{children}</nav>;
+  return <nav className="flex justify-evenly gap-2 p-4">{children}</nav>;
 }
 
 export function NavFilterBtn() {
