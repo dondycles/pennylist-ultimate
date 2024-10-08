@@ -27,10 +27,9 @@ import { useUser } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 import { useContext } from "react";
 
-import _ from "lodash";
 export default function MoneyPage({ params }: { params: { id: number } }) {
   const { isLoaded, user, isSignedIn } = useUser();
-  const { moneys } = useContext(ListDataContext);
+  const { currentTotal } = useContext(ListDataContext);
   const { data: money, isLoading } = useQuery({
     queryKey: [params.id],
     enabled: isLoaded && isSignedIn && !!user,
@@ -57,7 +56,7 @@ export default function MoneyPage({ params }: { params: { id: number } }) {
       <div className="flex-1 flex flex-col overflow-auto">
         {money && (
           <Money
-            currentTotal={_.sum(moneys?.map((m) => m.amount))}
+            currentTotal={currentTotal}
             specific={true}
             money={money}
             key={money.id}

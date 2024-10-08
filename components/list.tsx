@@ -11,13 +11,12 @@ import {
   MoneyBar,
 } from "@/components/money-bar";
 import { Skeleton } from "./ui/skeleton";
-import _ from "lodash";
 import { useContext } from "react";
 import { ListDataContext } from "./providers/list";
 import TotalMoney from "./total-money";
 
 export default function List() {
-  const { isLoading, moneys } = useContext(ListDataContext);
+  const { isLoading, moneys, currentTotal } = useContext(ListDataContext);
   if (isLoading)
     return (
       <div className="flex flex-col gap-[1px] h-full">
@@ -29,13 +28,13 @@ export default function List() {
     );
   return (
     <div className="flex-1 flex flex-col overflow-auto">
-      <TotalMoney total={_.sum(moneys?.map((money) => money.amount) ?? [0])} />
+      <TotalMoney total={currentTotal} />
       <div className="flex-1 flex flex-col overflow-auto max-w-[800px] w-screen mx-auto gap-4">
         <br />
         {moneys?.map((money) => {
           return (
             <Money
-              currentTotal={_.sum(moneys?.map((money) => money.amount) ?? [0])}
+              currentTotal={currentTotal}
               specific={false}
               money={money}
               key={`${money.id}-${money.last_update}`}

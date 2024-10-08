@@ -1,6 +1,5 @@
 "use client";
 import { Skeleton } from "./ui/skeleton";
-import _ from "lodash";
 import { useContext } from "react";
 import { ListDataContext } from "./providers/list";
 import { HistoryTable } from "./history-table";
@@ -9,7 +8,7 @@ import TotalMoney from "./total-money";
 import DailyProgress from "./daily-progress";
 
 export default function Charts() {
-  const { isLoading, moneys, logs } = useContext(ListDataContext);
+  const { isLoading, logs, currentTotal } = useContext(ListDataContext);
   if (isLoading)
     return (
       <div className="flex flex-col gap-[1px] h-full">
@@ -21,7 +20,7 @@ export default function Charts() {
     );
   return (
     <div className="flex-1 flex flex-col overflow-auto ">
-      <TotalMoney total={_.sum(moneys?.map((money) => money.amount) ?? [0])} />
+      <TotalMoney total={currentTotal} />
       <div className="flex-1 flex flex-col overflow-auto max-w-[800px] w-screen mx-auto gap-4">
         <br />
         <DailyProgress />

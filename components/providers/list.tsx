@@ -6,18 +6,21 @@ import { MoneyWithLogs } from "@/drizzle/infered-types";
 import { useListState } from "@/store";
 import { useUser } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
+import _ from "lodash";
 import { createContext } from "react";
 
 type ListDataContext = {
   moneys: Omit<MoneyWithLogs, "money_log">[] | undefined;
   isLoading: boolean;
   logs: (MoneyWithLogs["money_log"][0] & { name: string })[] | undefined;
+  currentTotal: number;
 };
 
 export const ListDataContext = createContext<ListDataContext>({
   moneys: undefined,
   isLoading: true,
   logs: undefined,
+  currentTotal: 0,
 });
 
 export function ListDataProvider({ children }: { children: React.ReactNode }) {
@@ -35,12 +38,15 @@ export function ListDataProvider({ children }: { children: React.ReactNode }) {
     queryFn: async () => await get_logs(),
   });
 
+  const currentTotal = _.sum(moneys?.map((m) => m.amount));
+
   return (
     <ListDataContext.Provider
       value={{
         moneys,
         logs,
         isLoading: !isLoaded || logsLoading || moneysLoading,
+        currentTotal,
       }}
     >
       {children}

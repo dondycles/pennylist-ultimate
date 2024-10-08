@@ -1,6 +1,14 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import {
+  Area,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  XAxis,
+} from "recharts";
 
 import {
   Card,
@@ -33,7 +41,8 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { useChartsState } from "@/store";
-
+import { getDifferences } from "@/lib/get-differences";
+import _ from "lodash";
 export const description = "A multiple bar chart";
 
 const chartConfig = {
@@ -49,12 +58,20 @@ const chartConfig = {
     label: "Total Money",
     color: "hsl(var(--chart-3))",
   },
+  gainOrLoss: {
+    label: "Difference",
+  },
 } satisfies ChartConfig;
 
 export default function DailyProgress() {
-  const { logs } = useContext(ListDataContext);
+  const { logs, currentTotal } = useContext(ListDataContext);
   const chartsState = useChartsState();
   const chartData = getDailyProgress(logs ?? []);
+  const differences = getDifferences(
+    logs ?? [],
+    currentTotal,
+    chartsState.progressDays
+  );
 
   return (
     <Card>
@@ -65,7 +82,10 @@ export default function DailyProgress() {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant={"outline"} className="rounded-full">
+            <Button
+              variant={"secondary"}
+              className="rounded-full text-muted-foreground text-sm"
+            >
               Set Days ({chartsState.progressDays})
             </Button>
           </DropdownMenuTrigger>
@@ -91,7 +111,7 @@ export default function DailyProgress() {
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <BarChart
+          <ComposedChart
             accessibilityLayer
             data={chartData.slice(
               chartData.length - Number(chartsState.progressDays),
@@ -120,26 +140,40 @@ export default function DailyProgress() {
             />
             <ChartLegend content={<ChartLegendContent />} />
             <Bar
-              dataKey="expensesSum"
-              fill="var(--color-expensesSum)"
-              radius={100}
-            />
-            <Bar dataKey="gainsSum" fill="var(--color-gainsSum)" radius={100} />
-            <Bar
               dataKey="currentTotal"
               fill="var(--color-currentTotal)"
-              radius={100}
+              radius={4}
             />
-          </BarChart>
+            <Area
+              dataKey="gainOrLoss"
+              stroke="hsl(var(--muted-foreground))"
+              strokeWidth={0.5}
+              fillOpacity={1}
+              type="monotone"
+            />
+            <Line
+              dataKey="expensesSum"
+              stroke="var(--color-expensesSum)"
+              strokeWidth={2}
+              type="monotone"
+            />
+            <Line
+              dataKey="gainsSum"
+              stroke="var(--color-gainsSum)"
+              strokeWidth={2}
+              type="monotone"
+            />
+          </ComposedChart>
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
         <div className="flex gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+          Trending up by 100 this month <TrendingUp className="h-4 w-4" />
         </div>
-        <div className="leading-none text-muted-foreground">
+        {differences.value}
+        {/* <div className="leading-none text-muted-foreground">
           Showing total visitors for the last 6 months
-        </div>
+        </div> */}
       </CardFooter>
     </Card>
   );
