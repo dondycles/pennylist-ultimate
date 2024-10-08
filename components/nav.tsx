@@ -67,8 +67,16 @@ export function NavBar({ children }: { children: React.ReactNode }) {
     <nav className="flex justify-evenly gap-2 p-4">
       {children}{" "}
       <Dialog open={showProfile} onOpenChange={setShowProfile}>
-        <DialogContent className="w-fit max-w-fit">
-          <UserProfile routing="virtual" />
+        <DialogContent className="w-fit max-w-fit flex h-[75dvh]">
+          <UserProfile
+            routing="virtual"
+            appearance={{
+              elements: {
+                rootBox: "h-full",
+                cardBox: "h-full",
+              },
+            }}
+          />
         </DialogContent>
       </Dialog>
     </nav>
