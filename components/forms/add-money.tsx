@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { add_money } from "@/app/actions/moneys";
-import { useUser } from "@clerk/nextjs";
 import { useContext } from "react";
 import { ListDataContext } from "../providers/list";
 const formSchema = z.object({
@@ -24,8 +23,7 @@ const formSchema = z.object({
 });
 
 export default function AddMoneyForm({ done }: { done: () => void }) {
-  const { user, isLoaded } = useUser();
-  const { currentTotal } = useContext(ListDataContext);
+  const { currentTotal, user } = useContext(ListDataContext);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -36,11 +34,8 @@ export default function AddMoneyForm({ done }: { done: () => void }) {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!isLoaded) return;
     if (!user) return;
-
     await add_money(values, currentTotal);
-
     done();
   }
 

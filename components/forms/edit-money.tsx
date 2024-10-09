@@ -14,8 +14,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { edit_money } from "@/app/actions/moneys";
-import { useUser } from "@clerk/nextjs";
 import { selectMoney } from "@/drizzle/schema";
+import { useContext } from "react";
+import { ListDataContext } from "../providers/list";
 
 const formSchema = z.object({
   id: z.number().min(1),
@@ -33,7 +34,7 @@ export default function EditMoneyForm({
   money: selectMoney;
   currentTotal: number;
 }) {
-  const { user, isLoaded } = useUser();
+  const { user } = useContext(ListDataContext);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { ...money, reason: undefined },
@@ -42,7 +43,6 @@ export default function EditMoneyForm({
   async function onSubmit(latest: z.infer<typeof formSchema>) {
     if (money.amount === latest.amount && money.name === latest.name)
       return done();
-    if (!isLoaded) return;
     if (!user) return;
     await edit_money(
       { latest: latest, prev: money },

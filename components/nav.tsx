@@ -73,7 +73,7 @@ export const NavBar = forwardRef(function NavBar(
         ref={ref}
         layout
         className={cn(
-          "h-full relative max-w-[800px] w-screen duration-500 delay-500 ",
+          "h-full relative max-w-[800px] w-screen duration-500",
           className
         )}
       >
@@ -81,6 +81,7 @@ export const NavBar = forwardRef(function NavBar(
           {children}
         </AnimatePresence>
       </m.div>
+
       <Dialog open={showProfile} onOpenChange={setShowProfile}>
         <DialogContent className="w-fit max-w-fit flex h-[75dvh]">
           <UserProfile
@@ -107,7 +108,6 @@ export function NavOptions({ children }: { children: React.ReactNode }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-40" align="end" sideOffset={16}>
-        <DropdownMenuLabel>Options</DropdownMenuLabel>
         {children}
       </DropdownMenuContent>
     </DropdownMenu>
@@ -118,7 +118,6 @@ export function NavFilterOptions() {
   const listState = useListState();
   return (
     <>
-      <DropdownMenuSeparator />
       <DropdownMenuLabel className="text-muted-foreground text-xs">
         Ordering
       </DropdownMenuLabel>
@@ -182,7 +181,6 @@ export function NavHideOption() {
   const listState = useListState();
   return (
     <>
-      <DropdownMenuSeparator />
       <DropdownMenuLabel className="text-muted-foreground text-xs">
         Privacy
       </DropdownMenuLabel>

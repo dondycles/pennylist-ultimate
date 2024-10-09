@@ -16,20 +16,18 @@ import {
 
 import { ListDataContext } from "@/components/providers/list";
 
-import { useUser } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 import { useContext } from "react";
 
 export default function MoneyPage({ params }: { params: { id: number } }) {
-  const { isLoaded, user, isSignedIn } = useUser();
-  const { currentTotal } = useContext(ListDataContext);
+  const { currentTotal, user, isLoading } = useContext(ListDataContext);
   const {
     data: money,
     isFetched,
-    isLoading,
+    isLoading: moneyLoading,
   } = useQuery({
     queryKey: [params.id],
-    enabled: isLoaded && isSignedIn && !!user,
+    enabled: isLoading && !!user,
     queryFn: async () => await get_money(params.id),
     staleTime: 0,
     gcTime: 0,
@@ -40,7 +38,7 @@ export default function MoneyPage({ params }: { params: { id: number } }) {
     money: log.changes.latest.name,
   }));
 
-  if (isLoading) return <Loader />;
+  if (moneyLoading) return <Loader />;
   if (isFetched && !money) return <p>This money does not exist.</p>;
   if (isFetched)
     return (

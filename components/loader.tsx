@@ -9,7 +9,7 @@ export default function Loader() {
           return (
             <Skeleton
               key={`skeleton-${i}`}
-              className="w-full h-36 border-b bg-transparent rounded-none flex flex-col p-4 gap-4"
+              className="w-full h-36 border-b last:border-b-0 bg-transparent rounded-none flex flex-col p-4 gap-4"
             >
               <Skeleton className="w-36 h-6" />
               <Skeleton className="w-36 h-6" />

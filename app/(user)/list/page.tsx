@@ -20,7 +20,7 @@ export default function List() {
   if (isLoading) return <Loader />;
   return (
     <>
-      <TotalMoney total={currentTotal} />
+      <TotalMoney />
       {moneys?.map((money) => {
         return (
           <Money

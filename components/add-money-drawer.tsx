@@ -24,7 +24,7 @@ export default function AddMoneyDrawer() {
   return (
     <Drawer onOpenChange={setOpen} open={open}>
       <DrawerTrigger asChild>
-        <Button className="rounded-full" variant={"default"}>
+        <Button className="rounded-full flex-1" variant={"default"}>
           <Plus size={24} />
         </Button>
       </DrawerTrigger>

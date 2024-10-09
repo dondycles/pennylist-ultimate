@@ -8,12 +8,13 @@ import { useUser } from "@clerk/nextjs";
 import { useQueries } from "@tanstack/react-query";
 import _ from "lodash";
 import { createContext } from "react";
-
+import { UserResource } from "@clerk/types";
 type ListDataContext = {
   moneys: Omit<MoneyWithLogs, "money_log">[] | undefined;
   isLoading: boolean;
   logs: (MoneyWithLogs["money_log"][0] & { money: string })[] | undefined;
   currentTotal: number;
+  user: UserResource | null | undefined;
 };
 
 export const ListDataContext = createContext<ListDataContext>({
@@ -21,12 +22,12 @@ export const ListDataContext = createContext<ListDataContext>({
   isLoading: true,
   logs: undefined,
   currentTotal: 0,
+  user: undefined,
 });
 
 export function ListDataProvider({ children }: { children: React.ReactNode }) {
   const listState = useListState();
   const { isLoaded: userLoaded, user, isSignedIn } = useUser();
-
   const res = useQueries({
     queries: [
       {
@@ -48,6 +49,7 @@ export function ListDataProvider({ children }: { children: React.ReactNode }) {
   return (
     <ListDataContext.Provider
       value={{
+        user: user,
         moneys: res[0].data,
         logs: res[1].data,
         isLoading: !userLoaded || res.some((res) => res.isLoading),

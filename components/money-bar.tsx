@@ -74,12 +74,12 @@ export function MoneyBar({
   return (
     <div
       key={money.id}
-      style={{
-        borderBottomColor: money.color ?? "hsl(var(--border))",
-        borderBottomWidth: "1px",
-      }}
+      // style={{
+      //   borderBottomColor: money.color ?? "hsl(var(--border))",
+      //   borderBottomWidth: "1px",
+      // }}
       className={cn(
-        `w-full p-4 flex flex-col gap-2 ${
+        `w-full p-4 flex flex-col gap-2 border-b last:border-b-0 ${
           deleting && "animate-pulse scale-95"
         }`,
         className
@@ -93,16 +93,28 @@ export function MoneyBar({
 export function MoneyHeader() {
   const { money } = useMoneyBarContext();
   const darken = useDarkenColor(money.color ?? "");
+  const color = [
+    money.color ? money.color + "88" : "hsl(var(--muted-foreground))",
+    money.color ?? "hsl(var(--foreground))",
+  ];
   return (
     <div key={money.color} className={`flex items-baseline gap-2`}>
-      <span
-        className={`font-bold ${darken}`}
-        style={{ color: money.color ?? "" }}
-      >
+      <span className={`font-bold ${darken}`} style={{ color: color[1] }}>
         {money.name}
       </span>
-      <Dot size={12} />
-      <span className="text-muted-foreground text-xs">
+      <Dot
+        style={{
+          color: color[0],
+        }}
+        size={12}
+      />
+
+      <span
+        style={{
+          color: color[0],
+        }}
+        className=" text-xs"
+      >
         {new Date(money.created_at).toLocaleDateString()}
       </span>
     </div>
@@ -211,7 +223,7 @@ export function MoneyExternalLinkBtn() {
       >
         <ExternalLink
           className={`${darken}`}
-          style={{ color: money.color ?? "" }}
+          style={{ color: money.color ?? "hsl(var(--foreground))" }}
           size={16}
         />
       </Link>
@@ -244,7 +256,7 @@ export function MoneyEditBtn() {
         >
           <Edit
             className={`${darken}`}
-            style={{ color: money.color ?? "" }}
+            style={{ color: money.color ?? "hsl(var(--foreground))" }}
             size={16}
           />
         </Button>
@@ -296,7 +308,7 @@ export function MoneyPaletteBtn() {
         >
           <Palette
             className={`${darken}`}
-            style={{ color: money.color ?? "" }}
+            style={{ color: money.color ?? "hsl(var(--foreground))" }}
             size={16}
           />
         </Button>
@@ -324,7 +336,7 @@ export function MoneyPaletteBtn() {
                     return (
                       <button
                         onClick={() => setColorPreview(c)}
-                        className={`rounded-full w-full aspect-square z-0 hover:z-50 hover:scale-125 scale-100 ease-in-out duration-150 transition-all ${
+                        className={`rounded-full w-full aspect-square ${
                           c === money.color && "border-4 border-primary"
                         } ${
                           c === colorPreview && "border-4 border-primary/50"
