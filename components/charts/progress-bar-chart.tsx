@@ -17,8 +17,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useContext } from "react";
-import { ListDataContext } from "../providers/list";
 import { toMonthWord } from "@/lib/utils";
 import { Button } from "../ui/button";
 import {
@@ -30,6 +28,8 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useChartsState } from "@/store";
+import { Progress } from "@/lib/types";
+import { Differences } from "@/hooks/useGetDifferences";
 
 const chartConfig = {
   expensesSum: {
@@ -50,10 +50,14 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function DailyProgress() {
-  const { dailyData, monthlyData, differences } = useContext(ListDataContext);
+export default function ProgressBarChart({
+  chartData,
+  differences,
+}: {
+  chartData: Progress[];
+  differences: Differences;
+}) {
   const chartsState = useChartsState();
-  const chartData = chartsState.type === "monthly" ? monthlyData : dailyData;
 
   return (
     <motion.div

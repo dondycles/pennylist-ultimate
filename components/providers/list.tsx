@@ -66,7 +66,6 @@ export function ListDataProvider({ children }: { children: React.ReactNode }) {
   });
 
   const currentTotal = _.sum(res[0].data?.map((m) => m.amount));
-
   const monthlyData = useGetMonthlyProgress(res[1].data ?? []);
   const dailyData = useGetDailyProgress(res[1].data ?? []);
   const differences = useGetDifferences(

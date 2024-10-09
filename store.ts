@@ -1,6 +1,11 @@
 import { create } from "zustand";
 import { persist, createJSONStorage, StateStorage } from "zustand/middleware";
 import { get, set, del } from "idb-keyval";
+import { MoneyWithLogs } from "./drizzle/infered-types";
+
+interface MoneyTransfer extends Omit<MoneyWithLogs, "money_log"> {
+  transferAmount: number | undefined | null;
+}
 const storage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
     // console.log(name, "has been retrieved");
@@ -18,22 +23,35 @@ const storage: StateStorage = {
 
 type ListState = {
   minimizeTotalMoney: boolean;
+  isTransferring: boolean;
   view: "list" | "grid";
   hidden: boolean;
   sortBy: "created_at" | "amount" | "name";
   asc: boolean;
+  transferrings: {
+    root: MoneyTransfer;
+    branches: MoneyTransfer[];
+  } | null;
+  setTransferValue: (value: number, id: number) => void;
   setState: ({
     view,
     hidden,
     sortBy,
     asc,
     minimizeTotalMoney,
+    isTransferring,
+    transferrings,
   }: {
     view: "list" | "grid";
     hidden: boolean;
     sortBy: "created_at" | "amount" | "name";
     asc: boolean;
     minimizeTotalMoney: boolean;
+    isTransferring: boolean;
+    transferrings: {
+      root: MoneyTransfer;
+      branches: MoneyTransfer[];
+    } | null;
   }) => void;
 };
 
@@ -45,7 +63,27 @@ export const useListState = create<ListState>()(
       sortBy: "created_at",
       view: "list",
       minimizeTotalMoney: false,
+      isTransferring: false,
+      transferrings: null,
       setState: (state) => set(() => ({ ...state })),
+      setTransferValue: (value, id) =>
+        set(({ transferrings }) => {
+          if (!transferrings) return {};
+          const branch = transferrings?.branches.find((b) => b.id === id);
+          if (!branch) return {};
+          const newBranchesData = transferrings?.branches.filter(
+            (b) => b.id !== id
+          );
+          return {
+            transferrings: {
+              branches: [
+                ...newBranchesData,
+                { ...branch, transferAmount: value },
+              ],
+              root: transferrings?.root,
+            },
+          };
+        }),
     }),
     {
       name: "list-state",

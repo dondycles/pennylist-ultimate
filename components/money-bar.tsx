@@ -3,7 +3,16 @@
 import { MoneyWithLogs } from "@/drizzle/infered-types";
 import { createContext, PropsWithChildren, useContext, useState } from "react";
 import Amount from "./amount";
-import { Dot, Edit, ExternalLink, Palette, Trash } from "lucide-react";
+import {
+  ArrowRightLeft,
+  ArrowUpToLine,
+  Dot,
+  Edit,
+  ExternalLink,
+  Palette,
+  Split,
+  Trash,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import {
@@ -23,6 +32,9 @@ import { ClassNameValue } from "tailwind-merge";
 import { cn } from "@/lib/utils";
 import { colors } from "@/lib/colors";
 import { useDarkenColor } from "@/hooks/useDarkenColor";
+import { useListState } from "@/store";
+import { Input } from "./ui/input";
+import _ from "lodash";
 
 type MoneyBarProps = PropsWithChildren & {
   money: Omit<MoneyWithLogs, "money_log">;
@@ -108,14 +120,14 @@ export function MoneyHeader() {
         }}
         size={12}
       />
-
       <span
         style={{
           color: color[0],
         }}
         className=" text-xs"
       >
-        {new Date(money.created_at).toLocaleDateString()}
+        {/* {new Date(money.created_at).toLocaleDateString()} */}
+        {money.id}
       </span>
     </div>
   );
@@ -124,13 +136,95 @@ export function MoneyHeader() {
 export function MoneyAmount() {
   const { money } = useMoneyBarContext();
   const darken = useDarkenColor(money.color ?? "");
+  const listState = useListState();
+
+  const root = listState.transferrings?.root;
+  const branch = listState.transferrings?.branches.find(
+    (b) => b.id === money.id
+  );
+  const isRoot = root?.id === money.id;
+  const isInBranch = listState.transferrings?.branches.find(
+    (b) => b.id === money.id
+  );
+  const branchesDemandedAmounts = _.sum(
+    listState.transferrings?.branches.map((b) => b.transferAmount)
+  );
+  const negative = money.amount - branchesDemandedAmounts <= 0;
+
   return (
-    <Amount
-      className={`${darken}`}
-      color={money.color ?? ""}
-      amount={money.amount}
-      settings={{ sign: true }}
-    />
+    <div>
+      {isInBranch ? (
+        <div className="flex flex-col gap-4">
+          <Amount
+            className={`${darken}`}
+            color={money.color ?? ""}
+            amount={money.amount + (branch?.transferAmount ?? 0)}
+            settings={{ sign: true }}
+          />
+          <div className="flex flex-col gap-4">
+            <div className="space-y-1.5">
+              <p className="text-muted-foreground text-xs">
+                Receiving from {root?.name}
+              </p>
+              <Input
+                value={
+                  (branch?.transferAmount ?? 0) <= 0
+                    ? undefined
+                    : branch?.transferAmount ?? 0
+                }
+                onChange={(v) => {
+                  if (!Number(v.currentTarget.value))
+                    return listState.setTransferValue(0, money.id);
+                  listState.setTransferValue(
+                    Number(v.currentTarget.value),
+                    money.id
+                  );
+                }}
+                placeholder={`Amount to receive from ${root?.name}`}
+                className="rounded-full bg-muted"
+              />
+            </div>
+            <div className="flex flex-col xs:flex-row xs:items-end gap-4">
+              <div className="space-y-1.5 flex-1 xs:max-w-32">
+                <p className="text-muted-foreground text-xs truncate">
+                  Receiving transfer fee (optional)
+                </p>
+                <Input
+                  placeholder={`Fee (optional)`}
+                  className="rounded-full bg-muted"
+                />
+              </div>
+              <div className="space-y-1.5 flex-1">
+                <p className="text-muted-foreground text-xs">
+                  Reason (optional)
+                </p>
+                <Input
+                  placeholder="Reason (optional)"
+                  className="rounded-full bg-muted"
+                />
+              </div>
+            </div>
+            <Button className="rounded-full flex-1 w-fit mx-auto gap-2">
+              Proceed Transfer <ArrowRightLeft size={16} />
+            </Button>
+          </div>
+        </div>
+      ) : isRoot ? (
+        <Amount
+          className={`${darken}`}
+          color={negative ? "hsl(var(--destructive))" : money.color ?? ""}
+          amount={Number(money.amount - branchesDemandedAmounts)}
+          settings={{ sign: true }}
+        />
+      ) : (
+        <Amount
+          className={`${darken}`}
+          color={money.color ?? ""}
+          amount={money.amount}
+          settings={{ sign: true }}
+        />
+      )}
+    </div>
   );
 }
 
@@ -142,6 +236,7 @@ export function MoneyDeleteBtn() {
   const { money, deleting, setDeleting, currentTotal, specific } =
     useMoneyBarContext();
   const queryClient = useQueryClient();
+  const listState = useListState();
   const darken = useDarkenColor(money.color ?? "");
   async function deleteMoney() {
     setDeleting(true);
@@ -149,6 +244,31 @@ export function MoneyDeleteBtn() {
     if (specific) {
       queryClient.resetQueries({ queryKey: [String(money.id)] });
     }
+
+    if (listState.transferrings) {
+      const root = listState.transferrings?.root;
+      const isRoot = root?.id === money.id;
+      const isInBranch = listState.transferrings?.branches.find(
+        (b) => b.id === money.id
+      );
+      const branches = listState.transferrings.branches.filter(
+        (b) => b.id !== money.id
+      );
+      if (isInBranch)
+        listState.setState({
+          ...listState,
+          transferrings: {
+            ...listState.transferrings,
+            branches,
+          },
+        });
+      if (isRoot)
+        listState.setState({
+          ...listState,
+          transferrings: null,
+        });
+    }
+
     queryClient.invalidateQueries({
       queryKey: ["list"],
     });
@@ -369,5 +489,76 @@ export function MoneyPaletteBtn() {
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export function MoneyTransferBtn() {
+  const { money } = useMoneyBarContext();
+  const listState = useListState();
+  const darken = useDarkenColor(money.color ?? "");
+
+  const isRoot = listState.transferrings?.root.id === money.id;
+  const isInBranch = listState.transferrings?.branches.find(
+    (b) => b.id === money.id
+  );
+
+  function transfer() {
+    if (!listState.transferrings)
+      return listState.setState({
+        ...listState,
+        transferrings: {
+          root: { ...money, transferAmount: 0 },
+          branches: [],
+        },
+      });
+
+    if (isRoot)
+      return listState.setState({ ...listState, transferrings: null });
+
+    if (isInBranch) {
+      const branches = listState.transferrings.branches.filter(
+        (b) => b.id !== money.id
+      );
+
+      return listState.setState({
+        ...listState,
+        transferrings: {
+          ...listState.transferrings,
+          branches,
+        },
+      });
+    }
+
+    listState.setState({
+      ...listState,
+      transferrings: {
+        ...listState.transferrings,
+        branches: [
+          ...listState.transferrings.branches,
+          { ...money, transferAmount: 0 },
+        ],
+      },
+    });
+  }
+
+  return (
+    <Button
+      size={"icon"}
+      className="rounded-full size-6 aspect-square"
+      variant={"ghost"}
+      onClick={transfer}
+    >
+      {isRoot ? (
+        <Split className={`text-orange-400`} size={16} />
+      ) : isInBranch ? (
+        <ArrowUpToLine className={`text-blue-400 rotate-180`} size={16} />
+      ) : (
+        <ArrowRightLeft
+          className={`${darken}`}
+          style={{ color: money.color ?? "hsl(var(--foreground))" }}
+          size={16}
+        />
+      )}
+    </Button>
   );
 }
