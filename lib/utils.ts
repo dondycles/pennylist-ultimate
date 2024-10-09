@@ -20,6 +20,5 @@ export const toMonthWord = (date: string): string => {
     "Nov",
     "Dec",
   ];
-
   return monthNames[month];
 };

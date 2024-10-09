@@ -1,11 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { MoneyWithLogs } from "@/drizzle/infered-types";
 import { ColumnDef } from "@tanstack/react-table";
-import Amount from "./amount";
+import Amount from "../amount";
 import { ChevronsDown, ChevronsUp, ChevronsUpDown } from "lucide-react";
 
 export const historyColumns: ColumnDef<
-  (MoneyWithLogs["money_log"][0] & { name: string }) | undefined
+  (MoneyWithLogs["money_log"][0] & { money: string }) | undefined
 >[] = [
   {
     accessorKey: "action",
@@ -17,11 +17,11 @@ export const historyColumns: ColumnDef<
     },
   },
   {
-    accessorKey: "name",
+    accessorKey: "money",
     header: "Money",
     cell: ({ row }) => {
       return (
-        <p className="capitalize text-xs truncate">{row.original?.name}</p>
+        <p className="capitalize text-xs truncate">{row.original?.money}</p>
       );
     },
   },

@@ -10,7 +10,9 @@ type Progress = {
   currentTotal: number;
 };
 
-export const getDailyProgress = (logs: MoneyWithLogs["money_log"] | null) => {
+export const useGetDailyProgress = (
+  logs: MoneyWithLogs["money_log"] | null
+) => {
   if (!logs) return [];
 
   // all data will be coming from logs, since logs has all the movements in money

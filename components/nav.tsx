@@ -6,9 +6,7 @@ import {
   ChartNoAxesColumnIncreasing,
   DollarSign,
   EyeOff,
-  Home,
   LetterText,
-  List,
   LogOut,
   MoonIcon,
   SortAsc,
@@ -70,11 +68,14 @@ export const NavBar = forwardRef(function NavBar(
 ) {
   const { showProfile, setShowProfile } = useNavContext();
   return (
-    <nav className="flex justify-evenly gap-2 p-4 fixed bottom-0 left-0 right-0 bg-background/10 backdrop-blur w-full  h-[72px]">
+    <nav className="flex justify-evenly gap-2 w-full h-14 bg-background overflow-hidden">
       <m.div
         ref={ref}
         layout
-        className={cn("w-full h-full relative ", className)}
+        className={cn(
+          "h-full relative max-w-[800px] w-screen duration-500 delay-500 ",
+          className
+        )}
       >
         <AnimatePresence initial={false} mode="popLayout">
           {children}

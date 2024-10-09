@@ -11,5 +11,5 @@ export const get_logs = async () => {
     where: eq(logsTable.lister, user.userId!),
     orderBy: desc(logsTable.createdAt),
   });
-  return logs.map((log) => ({ ...log, name: log.changes.latest.name }));
+  return logs.map((log) => ({ ...log, money: log.changes.latest.name }));
 };

@@ -10,9 +10,10 @@ import Nav, {
   NavHideOption,
   NavThemeOptions,
 } from "@/components/nav";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { motion as m } from "framer-motion";
 import { useMeasure } from "@uidotdev/usehooks";
+import Scrollable from "@/components/scrollable";
 
 export default function UserLayout({
   children,
@@ -20,7 +21,6 @@ export default function UserLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [navBar, { width }] = useMeasure();
   const calculateWidth = () => {
     if (pathname === "/list") return width! / 3 - 1;
@@ -37,18 +37,16 @@ export default function UserLayout({
     Boolean(pathname.match("/list")) &&
     !Boolean(pathname.startsWith("/list/money/"));
   return (
-    <div className="w-full h-full flex flex-col justify-start">
-      {children}
+    <main className="w-full h-full flex-1 flex flex-col justify-start overflow-auto">
+      <Scrollable>{children}</Scrollable>
       <Nav>
         <NavBar
           ref={navBar}
-          className={`max-w-[800px] w-screen gap-1 duration-500 delay-500 ${
-            !width ? "opacity-0" : "opacity-100"
-          }`}
+          className={`${!width ? "opacity-0" : "opacity-100"}`}
         >
           <m.div
             key={"list-btn"}
-            className={`flex justify-center absolute left-0`}
+            className={`flex justify-center absolute left-0 bottom-2`}
             animate={{
               translateX: showListBtn ? 0 : -72,
               width: calculatedWidth,
@@ -60,7 +58,7 @@ export default function UserLayout({
             <NavListBtn />
           </m.div>
           <m.div
-            className={`flex justify-center absolute left-0 translate-y-0`}
+            className={`flex justify-center absolute left-0 translate-y-0  bottom-2`}
             key={"chart-btn"}
             animate={{
               width: calculatedWidth,
@@ -77,7 +75,7 @@ export default function UserLayout({
             <NavChartBtn />
           </m.div>
           <m.div
-            className={`flex justify-center absolute right-[50%]`}
+            className={`flex justify-center absolute right-[50%]  bottom-2`}
             key={"add-btn"}
             animate={{
               translateY: showAddBtn ? 0 : 72,
@@ -90,7 +88,7 @@ export default function UserLayout({
             <AddMoneyDrawer />
           </m.div>
           <m.div
-            className={`flex justify-center absolute right-0`}
+            className={`flex justify-center absolute right-0  bottom-2`}
             key={"options"}
             animate={{
               width: calculatedWidth,
@@ -105,6 +103,6 @@ export default function UserLayout({
           </m.div>
         </NavBar>
       </Nav>
-    </div>
+    </main>
   );
 }

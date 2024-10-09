@@ -52,10 +52,13 @@ export const useListState = create<ListState>()(
 
 type ChartsState = {
   progressDays: "7" | "14" | "28" | "365";
+  type: "monthly" | "daily";
   setState: ({
     progressDays,
+    type,
   }: {
     progressDays: "7" | "14" | "28" | "365";
+    type: "monthly" | "daily";
   }) => void;
 };
 
@@ -63,6 +66,7 @@ export const useChartsState = create<ChartsState>()(
   persist(
     (set) => ({
       progressDays: "7",
+      type: "daily",
       setState: (state) => set(() => ({ ...state })),
     }),
     {

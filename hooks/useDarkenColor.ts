@@ -1,6 +1,6 @@
-import { colors } from "./colors";
+import { colors } from "../lib/colors";
 
-export const darken_color = (c: string) => {
+export const useDarkenColor = (c: string) => {
   const filtered_colors: string[] = [];
   Object.values(colors).map((color) => {
     filtered_colors.push(color[100], color[200], color[300], color[400]);

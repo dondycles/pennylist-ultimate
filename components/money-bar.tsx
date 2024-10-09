@@ -19,11 +19,10 @@ import { colorize_money, delete_money } from "@/app/actions/moneys";
 
 import EditMoneyForm from "./forms/edit-money";
 import { useQueryClient } from "@tanstack/react-query";
-import { useListState } from "@/store";
 import { ClassNameValue } from "tailwind-merge";
 import { cn } from "@/lib/utils";
 import { colors } from "@/lib/colors";
-import { darken_color } from "@/lib/darken-color";
+import { useDarkenColor } from "@/hooks/useDarkenColor";
 
 type MoneyBarProps = PropsWithChildren & {
   money: Omit<MoneyWithLogs, "money_log">;
@@ -93,7 +92,7 @@ export function MoneyBar({
 
 export function MoneyHeader() {
   const { money } = useMoneyBarContext();
-  const darken = darken_color(money.color ?? "");
+  const darken = useDarkenColor(money.color ?? "");
   return (
     <div key={money.color} className={`flex items-baseline gap-2`}>
       <span
@@ -112,7 +111,7 @@ export function MoneyHeader() {
 
 export function MoneyAmount() {
   const { money } = useMoneyBarContext();
-  const darken = darken_color(money.color ?? "");
+  const darken = useDarkenColor(money.color ?? "");
   return (
     <Amount
       className={`${darken}`}
@@ -128,13 +127,22 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
 }
 
 export function MoneyDeleteBtn() {
-  const { money, deleting, setDeleting, currentTotal } = useMoneyBarContext();
+  const { money, deleting, setDeleting, currentTotal, specific } =
+    useMoneyBarContext();
   const queryClient = useQueryClient();
-  const darken = darken_color(money.color ?? "");
+  const darken = useDarkenColor(money.color ?? "");
   async function deleteMoney() {
     setDeleting(true);
     await delete_money(money, currentTotal);
-    queryClient.invalidateQueries({ queryKey: ["list"] });
+    if (specific) {
+      queryClient.resetQueries({ queryKey: [String(money.id)] });
+    }
+    queryClient.invalidateQueries({
+      queryKey: ["list"],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [String(money.id)],
+    });
     queryClient.invalidateQueries({ queryKey: ["logs"] });
   }
 
@@ -188,7 +196,7 @@ export function MoneyDeleteBtn() {
 
 export function MoneyExternalLinkBtn() {
   const { money } = useMoneyBarContext();
-  const darken = darken_color(money.color ?? "");
+  const darken = useDarkenColor(money.color ?? "");
 
   return (
     <Button
@@ -211,15 +219,18 @@ export function MoneyExternalLinkBtn() {
   );
 }
 export function MoneyEditBtn() {
-  const { money, specific, currentTotal } = useMoneyBarContext();
+  const { money, currentTotal } = useMoneyBarContext();
   const queryClient = useQueryClient();
   const [openEditDialog, setOpenEditDialog] = useState(false);
-  const darken = darken_color(money.color ?? "");
+  const darken = useDarkenColor(money.color ?? "");
 
   function done() {
     setOpenEditDialog(false);
     queryClient.invalidateQueries({
-      queryKey: [specific ? String(money.id) : "list"],
+      queryKey: ["list"],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [String(money.id)],
     });
     queryClient.invalidateQueries({ queryKey: ["logs"] });
   }
@@ -262,13 +273,16 @@ export function MoneyPaletteBtn() {
   const { money, specific, currentTotal } = useMoneyBarContext();
   const [colorPreview, setColorPreview] = useState(money.color);
   const queryClient = useQueryClient();
-  const darken = darken_color(money.color ?? "");
+  const darken = useDarkenColor(money.color ?? "");
 
   async function colorize(c: string) {
     await colorize_money(money, c);
     setOpenEditDialog(false);
     queryClient.invalidateQueries({
-      queryKey: [specific ? String(money.id) : "list"],
+      queryKey: ["list"],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [String(money.id)],
     });
     queryClient.invalidateQueries({ queryKey: ["logs"] });
   }
@@ -290,9 +304,6 @@ export function MoneyPaletteBtn() {
       <DialogContent className="max-h-[75%] gap-0">
         <DialogHeader>
           <DialogTitle>Colorize money</DialogTitle>
-          {/* <DialogDescription>
-            <p>Edit the color of this money.</p>
-          </DialogDescription> */}
         </DialogHeader>
         <div className="flex flex-col gap-4 pt-0 text-sm">
           <Money

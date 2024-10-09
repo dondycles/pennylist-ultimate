@@ -1,7 +1,7 @@
 import { MoneyWithLogs } from "@/drizzle/infered-types";
-import { getDailyProgress } from "./get-daily-progress";
+import { useGetDailyProgress } from "./useGetDailyProgress";
 import _ from "lodash";
-export const getDifferences = (
+export const useGetDifferences = (
   logs: MoneyWithLogs["money_log"] | null,
   currentTotal: number,
   days: "1" | "7" | "14" | "28" | "365"
@@ -10,23 +10,22 @@ export const getDifferences = (
 
   const numberedDays = Number(days);
 
-  const reversedDailyTotal = getDailyProgress(logs).toReversed();
+  const reversedDailyTotal = useGetDailyProgress(logs).toReversed();
 
   // Helper function to calculate the sum of totals over a given range
-  const calculateSum = (start: number, end: number) => {
-    return _.sum(
-      getDailyProgress(logs)
-        .toReversed()
-        .splice(start, end)
-        .map((d) => d.currentTotal)
-    );
+  const useCalculateSum = (start: number, end: number) => {
+    const dailyProgress = useGetDailyProgress(logs)
+      .toReversed()
+      .splice(start, end)
+      .map((d) => d.currentTotal);
+    return _.sum(dailyProgress);
   };
 
   // Calculate sums for each week range
 
-  const sumCurrentSpan = calculateSum(0, numberedDays);
+  const sumCurrentSpan = useCalculateSum(0, numberedDays);
 
-  const sumPastSpan = calculateSum(numberedDays, numberedDays);
+  const sumPastSpan = useCalculateSum(numberedDays, numberedDays);
   // Calculate percentage differences
   const calculatePercentageDifference = (current: number, past: number) => {
     return ((current - past) / current) * 100;
