@@ -17,6 +17,7 @@ const storage: StateStorage = {
 };
 
 type ListState = {
+  minimizeTotalMoney: boolean;
   view: "list" | "grid";
   hidden: boolean;
   sortBy: "created_at" | "amount" | "name";
@@ -26,11 +27,13 @@ type ListState = {
     hidden,
     sortBy,
     asc,
+    minimizeTotalMoney,
   }: {
     view: "list" | "grid";
     hidden: boolean;
     sortBy: "created_at" | "amount" | "name";
     asc: boolean;
+    minimizeTotalMoney: boolean;
   }) => void;
 };
 
@@ -41,6 +44,7 @@ export const useListState = create<ListState>()(
       hidden: false,
       sortBy: "created_at",
       view: "list",
+      minimizeTotalMoney: false,
       setState: (state) => set(() => ({ ...state })),
     }),
     {

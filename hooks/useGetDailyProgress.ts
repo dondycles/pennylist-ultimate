@@ -1,14 +1,6 @@
 import { MoneyWithLogs } from "@/drizzle/infered-types";
+import { Progress } from "@/lib/types";
 import _ from "lodash";
-type Progress = {
-  expenses: { amount: number; reason: string; date: string }[];
-  gains: { amount: number; reason: string; date: string }[];
-  date: string;
-  expensesSum: number;
-  gainsSum: number;
-  gainOrLoss: number;
-  currentTotal: number;
-};
 
 export const useGetDailyProgress = (
   logs: MoneyWithLogs["money_log"] | null

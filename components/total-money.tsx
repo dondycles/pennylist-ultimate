@@ -2,16 +2,77 @@
 import { useContext } from "react";
 import Amount from "./amount";
 import { ListDataContext } from "./providers/list";
+import { motion } from "framer-motion";
+import { useListState } from "@/store";
+import { Button } from "./ui/button";
+import { ChevronDown, ChevronUp } from "lucide-react";
 export default function TotalMoney() {
-  const { currentTotal } = useContext(ListDataContext);
+  const { currentTotal, yesterdayDiff, user } = useContext(ListDataContext);
+  const listState = useListState();
   return (
-    <div className="w-full px-4 py-6   flex flex-col items-center gap-2 bg-muted/50 rounded-b-3xl shadow-lg max-w-[800px] mx-auto z-50">
-      <Amount
-        className="text-4xl"
-        amount={currentTotal}
-        settings={{ sign: true }}
-      />
-      <p className="text-xs text-muted-foreground"> {}Total Money</p>
-    </div>
+    <motion.div
+      animate={{
+        height: listState.minimizeTotalMoney ? 34 : 152,
+      }}
+      transition={{
+        ease: "anticipate",
+      }}
+      className="w-full flex flex-col gap-4 items-center px-4 py-6 bg-muted/50 rounded-b-3xl shadow-lg max-w-[800px] mx-auto z-50 overflow-hidden relative"
+    >
+      <motion.p
+        animate={{
+          opacity: listState.minimizeTotalMoney ? 0 : 1,
+          translateY: listState.minimizeTotalMoney ? -10 : 0,
+        }}
+        className="text-xs text-muted-foreground"
+      >
+        {user?.username}&apos;s total money
+      </motion.p>
+      <motion.div
+        animate={{
+          scale: listState.minimizeTotalMoney ? 0.5 : 1,
+          translateY: listState.minimizeTotalMoney ? -52 : 0,
+        }}
+        transition={{
+          ease: "backInOut",
+        }}
+      >
+        <Amount
+          className="text-4xl"
+          amount={currentTotal}
+          settings={{ sign: true }}
+        />
+      </motion.div>
+      <motion.p
+        animate={{
+          opacity: listState.minimizeTotalMoney ? 0 : 1,
+        }}
+        className="text-xs text-muted-foreground"
+      >
+        {yesterdayDiff.isZero
+          ? "Nothing changed"
+          : yesterdayDiff.isUp
+          ? `Up by ${yesterdayDiff.value}`
+          : `Down by ${yesterdayDiff.value}`}{" "}
+        compared to yesterday
+      </motion.p>
+      <Button
+        size={"icon"}
+        variant={"ghost"}
+        className="absolute right-4 bottom-[50%] translate-y-[50%] rounded-full text-muted-foreground"
+        onClick={() =>
+          listState.setState({
+            ...listState,
+            minimizeTotalMoney: !listState.minimizeTotalMoney,
+          })
+        }
+      >
+        {listState.minimizeTotalMoney ? (
+          <ChevronDown size={16} />
+        ) : (
+          <ChevronUp size={16} />
+        )}
+      </Button>
+    </motion.div>
   );
 }

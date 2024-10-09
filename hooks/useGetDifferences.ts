@@ -1,6 +1,7 @@
 import { MoneyWithLogs } from "@/drizzle/infered-types";
 import { useGetDailyProgress } from "./useGetDailyProgress";
 import _ from "lodash";
+
 export const useGetDifferences = (
   logs: MoneyWithLogs["money_log"] | null,
   currentTotal: number,
@@ -52,3 +53,5 @@ export const useGetDifferences = (
     isZero: numValue === 0,
   };
 };
+
+export type Differences = ReturnType<typeof useGetDifferences>;

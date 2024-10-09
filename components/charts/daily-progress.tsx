@@ -17,7 +17,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useGetDailyProgress } from "@/hooks/useGetDailyProgress";
 import { useContext } from "react";
 import { ListDataContext } from "../providers/list";
 import { toMonthWord } from "@/lib/utils";
@@ -31,9 +30,6 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useChartsState } from "@/store";
-import { useGetDifferences } from "@/hooks/useGetDifferences";
-import { useGetMonthlyProgress } from "@/hooks/useGetMonthlyProgress";
-export const description = "A multiple bar chart";
 
 const chartConfig = {
   expensesSum: {
@@ -55,16 +51,9 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function DailyProgress() {
-  const { logs, currentTotal } = useContext(ListDataContext);
+  const { dailyData, monthlyData, differences } = useContext(ListDataContext);
   const chartsState = useChartsState();
-  const monthlyData = useGetMonthlyProgress(logs ?? []);
-  const dailyData = useGetDailyProgress(logs ?? []);
   const chartData = chartsState.type === "monthly" ? monthlyData : dailyData;
-  const differences = useGetDifferences(
-    logs ?? [],
-    currentTotal,
-    chartsState.progressDays
-  );
 
   return (
     <motion.div
@@ -177,6 +166,8 @@ export default function DailyProgress() {
                       ? `${toMonthWord(value)} ${new Date(
                           value
                         ).getDate()}, ${new Date(value).getFullYear()}`
+                      : i % 2 === 0
+                      ? ""
                       : new Date(value).getDate().toString();
                   return value;
                 }}
@@ -187,11 +178,13 @@ export default function DailyProgress() {
               />
               <ChartLegend content={<ChartLegendContent />} />
               <Bar
+                isAnimationActive={false}
                 dataKey="currentTotal"
                 fill="var(--color-currentTotal)"
                 radius={[8, 8, 0, 0]}
               />
               <Area
+                isAnimationActive={false}
                 dataKey="gainOrLoss"
                 stroke="var(--color-gainOrLoss)"
                 strokeWidth={0.5}
@@ -200,12 +193,14 @@ export default function DailyProgress() {
                 type="monotone"
               />
               <Line
+                isAnimationActive={false}
                 dataKey="expensesSum"
                 stroke="var(--color-expensesSum)"
                 strokeWidth={2}
                 type="monotone"
               />
               <Line
+                isAnimationActive={false}
                 dataKey="gainsSum"
                 stroke="var(--color-gainsSum)"
                 strokeWidth={2}

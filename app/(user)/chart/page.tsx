@@ -9,7 +9,7 @@ import Loader from "@/components//loader";
 import { Separator } from "@/components/ui/separator";
 
 export default function Charts() {
-  const { isLoading, logs, currentTotal } = useContext(ListDataContext);
+  const { isLoading, logs } = useContext(ListDataContext);
   if (isLoading) return <Loader />;
   return (
     <>
