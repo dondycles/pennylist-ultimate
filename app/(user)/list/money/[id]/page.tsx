@@ -20,17 +20,15 @@ import { useQuery } from "@tanstack/react-query";
 import { useContext } from "react";
 
 export default function MoneyPage({ params }: { params: { id: number } }) {
-  const { currentTotal, user, isLoading } = useContext(ListDataContext);
+  const { currentTotal, user } = useContext(ListDataContext);
   const {
     data: money,
     isFetched,
     isLoading: moneyLoading,
   } = useQuery({
     queryKey: [params.id],
-    enabled: isLoading && !!user,
+    enabled: !!user,
     queryFn: async () => await get_money(params.id),
-    staleTime: 0,
-    gcTime: 0,
   });
 
   const logs = money?.money_log.map((log) => ({
@@ -40,32 +38,31 @@ export default function MoneyPage({ params }: { params: { id: number } }) {
 
   if (moneyLoading) return <Loader />;
   if (isFetched && !money) return <p>This money does not exist.</p>;
-  if (isFetched)
-    return (
-      <>
-        {money && (
-          <Money
-            currentTotal={currentTotal}
-            specific={true}
-            money={money}
-            key={money.id}
-          >
-            <MoneyBar>
-              <MoneyHeader />
-              <MoneyAmount />
-              <MoneyActions>
-                <MoneyPaletteBtn />
-                <MoneyEditBtn />
-                <MoneyDeleteBtn />
-              </MoneyActions>
-            </MoneyBar>
-          </Money>
-        )}
-        <HistoryTable
-          defaultSearchBy="reason"
-          columns={historyColumns}
-          data={logs ?? []}
-        />
-      </>
-    );
+  return (
+    <>
+      {money && (
+        <Money
+          currentTotal={currentTotal}
+          specific={true}
+          money={money}
+          key={money.id}
+        >
+          <MoneyBar>
+            <MoneyHeader />
+            <MoneyAmount />
+            <MoneyActions>
+              <MoneyPaletteBtn />
+              <MoneyEditBtn />
+              <MoneyDeleteBtn />
+            </MoneyActions>
+          </MoneyBar>
+        </Money>
+      )}
+      <HistoryTable
+        defaultSearchBy="reason"
+        columns={historyColumns}
+        data={logs ?? []}
+      />
+    </>
+  );
 }

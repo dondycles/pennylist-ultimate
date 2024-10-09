@@ -7,10 +7,13 @@ import { useListState } from "@/store";
 import { Button } from "./ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 export default function TotalMoney() {
-  const { currentTotal, yesterdayDiff, user } = useContext(ListDataContext);
+  const { currentTotal, yesterdayDiff, user, isLoading } =
+    useContext(ListDataContext);
   const listState = useListState();
+  if (isLoading) return;
   return (
     <motion.div
+      initial={false}
       animate={{
         height: listState.minimizeTotalMoney ? 34 : 152,
       }}

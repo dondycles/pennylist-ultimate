@@ -14,6 +14,7 @@ import { usePathname } from "next/navigation";
 import { motion as m } from "framer-motion";
 import { useMeasure } from "@uidotdev/usehooks";
 import Scrollable from "@/components/scrollable";
+import TotalMoney from "@/components/total-money";
 
 export default function UserLayout({
   children,
@@ -38,7 +39,10 @@ export default function UserLayout({
     !Boolean(pathname.startsWith("/list/money/"));
   return (
     <main className="w-full h-full flex-1 flex flex-col justify-start overflow-auto">
-      <Scrollable>{children}</Scrollable>
+      <Scrollable>
+        <TotalMoney />
+        {children}
+      </Scrollable>
       <Nav>
         <NavBar
           ref={navBar}

@@ -13,7 +13,6 @@ export default function Charts() {
   if (isLoading) return <Loader />;
   return (
     <>
-      <TotalMoney />
       <DailyProgress />
       <Separator />
       <HistoryTable
