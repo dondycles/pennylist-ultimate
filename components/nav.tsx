@@ -291,6 +291,11 @@ export default function AnimatedNav() {
   const branches = listState.transferrings?.branches;
   const branchesDemandSum = _.sum(branches?.map((b) => b.transferAmount));
 
+  const variants = {
+    close: { opacity: 0, translateY: 72 },
+    open: { opacity: 1, translateY: 0 },
+  };
+
   function removeRoot() {
     listState.setState({ ...listState, transferrings: null });
   }
@@ -354,9 +359,10 @@ export default function AnimatedNav() {
         {listState.transferrings ? (
           <m.div
             key={"transferring"}
-            initial={{ opacity: 0, translateY: 72 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            exit={{ opacity: 0, translateY: 72 }}
+            initial={"close"}
+            animate={"open"}
+            exit={"close"}
+            variants={variants}
             className="w-full h-full flex flex-col justify-end gap-4 py-2 px-4"
           >
             <div className="flex flex-col gap-2">
@@ -418,9 +424,10 @@ export default function AnimatedNav() {
         ) : (
           <m.div
             key={"!transferring"}
-            initial={{ opacity: 0, translateY: 72 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            exit={{ opacity: 0, translateY: 72 }}
+            initial={"close"}
+            animate={"open"}
+            exit={"close"}
+            variants={variants}
             className="h-full w-full relative "
           >
             <m.div

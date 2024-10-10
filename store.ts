@@ -3,7 +3,7 @@ import { persist, createJSONStorage, StateStorage } from "zustand/middleware";
 import { get, set, del } from "idb-keyval";
 import { MoneyWithLogs } from "./drizzle/infered-types";
 
-interface MoneyTransfer extends Omit<MoneyWithLogs, "money_log"> {
+export interface MoneyTransfer extends Omit<MoneyWithLogs, "money_log"> {
   transferAmount: number | undefined | null;
   reason: string;
   fee: number;
@@ -23,7 +23,7 @@ const storage: StateStorage = {
   },
 };
 
-type ListState = {
+export type ListState = {
   minimizeTotalMoney: boolean;
   isTransferring: boolean;
   view: "list" | "grid";
@@ -113,6 +113,8 @@ export const useListState = create<ListState>()(
     }
   )
 );
+
+export type UseListState = typeof useListState;
 
 type ChartsState = {
   progressDays: "7" | "14" | "28" | "365";
