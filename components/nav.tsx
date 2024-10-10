@@ -290,7 +290,6 @@ export default function AnimatedNav() {
   const root = listState.transferrings?.root;
   const branches = listState.transferrings?.branches;
   const branchesDemandSum = _.sum(branches?.map((b) => b.transferAmount));
-
   const variants = {
     close: { opacity: 0, translateY: 72 },
     open: { opacity: 1, translateY: 0 },
@@ -368,6 +367,7 @@ export default function AnimatedNav() {
             <div className="flex flex-col gap-2">
               <div className="flex flex-row gap-2 items-end">
                 <Badge
+                  variant={"secondary"}
                   className="font-bold text-base gap-1"
                   style={{ color: root?.color ?? "hsl(var(--foreground))" }}
                 >

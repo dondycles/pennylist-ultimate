@@ -6,6 +6,7 @@ import Amount from "./amount";
 import {
   ArrowRightLeft,
   ArrowUpToLine,
+  CornerRightDown,
   Dot,
   Edit,
   ExternalLink,
@@ -83,7 +84,7 @@ function useMoneyTransferringDetails(
   const branchesDemandedAmounts = _.sum(
     listState.transferrings?.branches.map((b) => b.transferAmount)
   );
-  const isRootNegative = money.amount - branchesDemandedAmounts < 0;
+  const isRootNegative = (root?.amount ?? 0) - branchesDemandedAmounts < 0;
   return {
     root,
     branch,
@@ -134,9 +135,9 @@ export function MoneyBar({
   return (
     <m.div
       layout
-      key={`${money.id}-${money.last_update}`}
+      key={`${money.id}-${money.last_update}  `}
       className={cn(
-        `w-full py-4 flex flex-col gap-2 border-b bg-background last:border-b-0 ${
+        `w-full py-4 flex flex-col gap-2 border-b last:border-b-0 ${
           deleting && "animate-pulse scale-95"
         }`,
         className
@@ -148,7 +149,11 @@ export function MoneyBar({
 }
 
 export function MoneyHeader() {
-  const { money, darken } = useMoneyBarContext();
+  const {
+    money,
+    darken,
+    transferState: { isRoot },
+  } = useMoneyBarContext();
   const color = [
     money.color ? money.color + "88" : "hsl(var(--muted-foreground))",
     money.color ?? "hsl(var(--foreground))",
@@ -176,6 +181,9 @@ export function MoneyHeader() {
       >
         {new Date(money.created_at).toLocaleDateString()}
       </span>
+      {/* {isRoot && (
+        <CornerRightDown size={16} className="text-muted-foreground" />
+      )} */}
     </m.div>
   );
 }
@@ -721,7 +729,7 @@ export function MoneyTransferBtn() {
       onClick={transfer}
     >
       {isRoot ? (
-        <Split className={`text-orange-400`} size={16} />
+        <CornerRightDown className={`text-yellow-400`} size={16} />
       ) : isInBranch ? (
         <ArrowUpToLine className={`text-blue-400 rotate-180`} size={16} />
       ) : (
