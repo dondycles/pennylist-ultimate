@@ -52,12 +52,7 @@ export default function AddMoneyForm({ done }: { done: () => void }) {
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input
-                  autoFocus
-                  className="rounded-full"
-                  placeholder="GCash"
-                  {...field}
-                />
+                <Input autoFocus placeholder="GCash" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -70,7 +65,7 @@ export default function AddMoneyForm({ done }: { done: () => void }) {
             <FormItem>
               <FormLabel>Amount</FormLabel>
               <FormControl>
-                <Input className="rounded-full" placeholder="117" {...field} />
+                <Input min={0} type="number" placeholder="117" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -79,7 +74,7 @@ export default function AddMoneyForm({ done }: { done: () => void }) {
         <Button
           disabled={form.formState.isSubmitting}
           type="submit"
-          className="mb-0 mt-auto rounded-full"
+          className="mb-0 mt-auto"
         >
           Add
         </Button>

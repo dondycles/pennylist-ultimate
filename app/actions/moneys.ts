@@ -98,6 +98,46 @@ export const edit_money = async (
   });
 };
 
+export const transfer_money = async (
+  money: {
+    prev: z.infer<typeof addMoneySchema>;
+    latest: z.infer<typeof addMoneySchema>;
+  },
+  reason: string,
+  currentTotal: number
+) => {
+  const user = await auth_check();
+  if (!money.latest.id || !money.prev.id)
+    throw new Error("Money's ID is missing!");
+  if (money.latest.id !== money.prev.id) throw new Error("IDs did not match!");
+
+  await db
+    .update(moneysTable)
+    .set({ ...money.latest, last_update: sql`NOW()` })
+    .where(
+      and(
+        eq(moneysTable.id, money.prev.id),
+        eq(moneysTable.lister, user.userId!)
+      )
+    );
+
+  await db.insert(logsTable).values({
+    changes: {
+      latest: {
+        ...money.latest,
+        total: currentTotal,
+      },
+      prev: { ...money.prev, total: currentTotal },
+    },
+    action: "transfer",
+    reason: reason,
+    money_id: money.prev.id,
+    lister: user.userId!,
+  });
+
+  console.log("transferred");
+};
+
 export const delete_money = async (
   money: selectMoney,
   currentTotal: number

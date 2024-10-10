@@ -1,9 +1,11 @@
 "use client";
 import {
   AlignJustify,
+  ArrowRightLeft,
   Bolt,
   Calendar,
   ChartNoAxesColumnIncreasing,
+  CornerRightDown,
   DollarSign,
   EyeOff,
   LetterText,
@@ -13,6 +15,7 @@ import {
   SortDesc,
   SunIcon,
   User,
+  X,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { SignOutButton, UserProfile } from "@clerk/nextjs";
@@ -34,6 +37,14 @@ import Link from "next/link";
 import { AnimatePresence, motion as m } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { ClassNameValue } from "tailwind-merge";
+import { transfer_money } from "@/app/actions/moneys";
+import { usePathname } from "next/navigation";
+import { ListDataContext } from "./providers/list";
+import { useQueryClient } from "@tanstack/react-query";
+import { useMeasure } from "@uidotdev/usehooks";
+import AddMoneyDrawer from "./add-money-drawer";
+import _ from "lodash";
+import { Badge } from "./ui/badge";
 const NavContext = createContext<
   | {
       showProfile: boolean;
@@ -48,7 +59,7 @@ function useNavContext() {
   return context;
 }
 
-export default function Nav({ children }: { children: React.ReactNode }) {
+export function Nav({ children }: { children: React.ReactNode }) {
   const [showProfile, setShowProfile] = useState(false);
   return (
     <NavContext.Provider value={{ setShowProfile, showProfile }}>
@@ -68,18 +79,13 @@ export const NavBar = forwardRef(function NavBar(
 ) {
   const { showProfile, setShowProfile } = useNavContext();
   return (
-    <nav className="flex justify-evenly gap-2 w-full h-14 bg-background overflow-hidden">
+    <nav className="flex justify-evenly gap-2 w-full bg-background overflow-hidden">
       <m.div
         ref={ref}
         layout
-        className={cn(
-          "h-full relative max-w-[800px] w-screen duration-500",
-          className
-        )}
+        className={cn("h-full max-w-[800px] w-screen duration-500", className)}
       >
-        <AnimatePresence initial={false} mode="popLayout">
-          {children}
-        </AnimatePresence>
+        <AnimatePresence mode="popLayout">{children}</AnimatePresence>
       </m.div>
 
       <Dialog open={showProfile} onOpenChange={setShowProfile}>
@@ -103,7 +109,7 @@ export function NavOptions({ children }: { children: React.ReactNode }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="rounded-full" size={"icon"} variant={"ghost"}>
+        <Button size={"icon"} variant={"ghost"}>
           <Bolt size={24} />
         </Button>
       </DropdownMenuTrigger>
@@ -243,7 +249,7 @@ export function NavUserOption() {
 
 export function NavListBtn() {
   return (
-    <Button asChild className="rounded-full" size={"icon"} variant={"ghost"}>
+    <Button asChild size={"icon"} variant={"ghost"}>
       <Link href={"/list"}>
         <AlignJustify size={24} />
       </Link>
@@ -253,10 +259,240 @@ export function NavListBtn() {
 
 export function NavChartBtn() {
   return (
-    <Button asChild className="rounded-full" size={"icon"} variant={"ghost"}>
+    <Button asChild size={"icon"} variant={"ghost"}>
       <Link href={"/chart"}>
         <ChartNoAxesColumnIncreasing size={24} />
       </Link>
     </Button>
+  );
+}
+
+export default function AnimatedNav() {
+  const pathname = usePathname();
+  const { currentTotal } = useContext(ListDataContext);
+  const queryClient = useQueryClient();
+  const [navBar, { width }] = useMeasure();
+  const listState = useListState();
+  const calculateWidth = () => {
+    if (pathname === "/list") return width! / 3 - 1;
+    if (pathname.startsWith("/list/money/")) return width! / 3 - 1;
+    if (pathname === "/chart") return width! / 2 - 1;
+    return width! / 4 - 1;
+  };
+  const calculatedWidth = calculateWidth();
+  const showListBtn =
+    !Boolean(pathname.match("/list")) ||
+    Boolean(pathname.startsWith("/list/money/"));
+  const showChartBtn = !Boolean(pathname.match("/chart"));
+  const showAddBtn =
+    Boolean(pathname.match("/list")) &&
+    !Boolean(pathname.startsWith("/list/money/"));
+  const root = listState.transferrings?.root;
+  const branches = listState.transferrings?.branches;
+  const branchesDemandSum = _.sum(branches?.map((b) => b.transferAmount));
+
+  function removeRoot() {
+    listState.setState({ ...listState, transferrings: null });
+  }
+
+  function removeBranch(id: number) {
+    if (!listState.transferrings) return;
+    const branches = listState.transferrings.branches.filter(
+      (b) => b.id !== id
+    );
+
+    listState.setState({
+      ...listState,
+      transferrings: {
+        ...listState.transferrings,
+        branches,
+      },
+    });
+  }
+
+  async function transfer() {
+    if (!branches) return alert("!branches");
+    if (!root) return alert("!root");
+    if (root.amount - branchesDemandSum < 0) return alert("root is negative");
+
+    await transfer_money(
+      {
+        prev: root,
+        latest: {
+          ...root,
+          amount: root.amount - branchesDemandSum,
+        },
+      },
+      root.reason,
+      currentTotal - root.fee
+    );
+
+    for (const branch of branches) {
+      await transfer_money(
+        {
+          prev: branch,
+          latest: {
+            ...branch,
+            amount: branch.amount + (branch.transferAmount ?? 0),
+          },
+        },
+        branch.reason,
+        currentTotal - branch.fee
+      );
+    }
+    queryClient.refetchQueries();
+    listState.setState({ ...listState, transferrings: null });
+  }
+  return (
+    <Nav>
+      <NavBar
+        ref={navBar}
+        className={`${!width ? "opacity-0" : "opacity-100"} ${
+          listState.transferrings ? "h-fit" : "h-[58px]"
+        }`}
+      >
+        {listState.transferrings ? (
+          <m.div
+            key={"transferring"}
+            initial={{ opacity: 0, translateY: 72 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            exit={{ opacity: 0, translateY: 72 }}
+            className="w-full h-full flex flex-col justify-end gap-4 py-2 px-4"
+          >
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-row gap-2 items-end">
+                <Badge
+                  className="font-bold text-base gap-1"
+                  style={{ color: root?.color ?? "hsl(var(--foreground))" }}
+                >
+                  <span>{root?.name}</span>
+                  <button onClick={removeRoot}>
+                    <X className="text-destructive" size={16} />
+                  </button>
+                </Badge>
+                <CornerRightDown className="text-muted-foreground" size={16} />
+              </div>
+              {listState.transferrings.branches.length !== 0 ? (
+                <div className="flex gap-2">
+                  {listState.transferrings.branches.map((b) => {
+                    return (
+                      <Badge
+                        variant={"outline"}
+                        key={b.id}
+                        style={{ color: b?.color ?? "hsl(var(--foreground))" }}
+                        className="gap-1"
+                      >
+                        <span>{b?.name}</span>
+
+                        <button onClick={() => removeBranch(b?.id)}>
+                          <X className="text-destructive" size={16} />
+                        </button>
+                      </Badge>
+                    );
+                  })}
+                </div>
+              ) : (
+                "..."
+              )}
+            </div>
+            <div className="flex flex-row gap-4 ">
+              <Button
+                disabled={listState.transferrings.branches.length === 0}
+                onClick={transfer}
+                className="flex gap-2 flex-1"
+              >
+                Proceed Transfer
+                <ArrowRightLeft size={16} />{" "}
+              </Button>
+              <Button
+                onClick={() =>
+                  listState.setState({ ...listState, transferrings: null })
+                }
+                variant={"destructive"}
+                size="icon"
+              >
+                <X size={16} />
+              </Button>
+            </div>
+          </m.div>
+        ) : (
+          <m.div
+            key={"!transferring"}
+            initial={{ opacity: 0, translateY: 72 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            exit={{ opacity: 0, translateY: 72 }}
+            className="h-full w-full relative "
+          >
+            <m.div
+              key={"pages-btn"}
+              initial={false}
+              className={`flex justify-center absolute left-0 bottom-2 h-10 `}
+              animate={{
+                width:
+                  showListBtn && showChartBtn
+                    ? calculatedWidth * 2
+                    : calculatedWidth,
+              }}
+            >
+              <div className="flex-1 relative">
+                <m.div
+                  className="absolute bottom-[50%] translate-x-[-50%] translate-y-[50%]"
+                  initial={false}
+                  animate={{
+                    opacity: showListBtn ? 1 : 0,
+                    pointerEvents: showListBtn ? "all" : "none",
+                    left: showListBtn && showChartBtn ? "25%" : "50%",
+                  }}
+                  key={"list-btn"}
+                >
+                  <NavListBtn />
+                </m.div>
+                <m.div
+                  className="absolute bottom-[50%] translate-x-[-50%]  translate-y-[50%]"
+                  initial={false}
+                  animate={{
+                    opacity: showChartBtn ? 1 : 0,
+                    pointerEvents: showChartBtn ? "all" : "none",
+                    left: showListBtn && showChartBtn ? "75%" : "50%",
+                  }}
+                  key={"charts-btn"}
+                >
+                  <NavChartBtn />
+                </m.div>
+              </div>
+            </m.div>
+            <m.div
+              className={`flex justify-center absolute right-[50%] bottom-2 z-50`}
+              key={"add-btn"}
+              initial={false}
+              animate={{
+                translateY: showAddBtn ? 0 : 72,
+                translateX: "50%",
+                width: calculatedWidth,
+                opacity: showAddBtn ? 1 : 0,
+                pointerEvents: showAddBtn ? "all" : "none",
+              }}
+            >
+              <AddMoneyDrawer />
+            </m.div>
+            <m.div
+              className={`flex justify-center absolute right-0 bottom-2`}
+              key={"options"}
+              initial={false}
+              animate={{
+                width: calculatedWidth,
+              }}
+            >
+              <NavOptions>
+                {pathname === "/list" ? <NavFilterOptions /> : null}
+                <NavHideOption />
+                <NavThemeOptions />
+                <NavUserOption />
+              </NavOptions>
+            </m.div>
+          </m.div>
+        )}
+      </NavBar>
+    </Nav>
   );
 }

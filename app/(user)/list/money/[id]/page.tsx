@@ -20,7 +20,7 @@ import { useGetDailyProgress } from "@/hooks/useGetDailyProgress";
 import { useGetDifferences } from "@/hooks/useGetDifferences";
 import { useGetMonthlyProgress } from "@/hooks/useGetMonthlyProgress";
 import { useChartsState } from "@/store";
-
+import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { useContext } from "react";
 
@@ -52,9 +52,18 @@ export default function MoneyPage({ params }: { params: { id: number } }) {
   const chartData = chartsState.type === "daily" ? dailyData : monthlyData;
 
   if (moneyLoading) return <Loader />;
-  if (isFetched && !money) return <p>This money does not exist.</p>;
+  if (isFetched && !money)
+    return (
+      <p className="text-muted-foreground text-xs mt-4 text-center">
+        This money does not exist.
+      </p>
+    );
   return (
-    <>
+    <motion.div
+      initial={{ opacity: 0, translateY: 20 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      exit={{ opacity: 0, translateY: 20 }}
+    >
       {money && (
         <Money
           currentTotal={currentTotal}
@@ -79,6 +88,6 @@ export default function MoneyPage({ params }: { params: { id: number } }) {
         columns={historyColumns}
         data={logs ?? []}
       />
-    </>
+    </motion.div>
   );
 }

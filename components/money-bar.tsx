@@ -25,7 +25,7 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { colorize_money, delete_money } from "@/app/actions/moneys";
-
+import { AnimatePresence, motion as m } from "framer-motion";
 import EditMoneyForm from "./forms/edit-money";
 import { useQueryClient } from "@tanstack/react-query";
 import { ClassNameValue } from "tailwind-merge";
@@ -84,21 +84,18 @@ export function MoneyBar({
 }) {
   const { money, deleting } = useMoneyBarContext();
   return (
-    <div
-      key={money.id}
-      // style={{
-      //   borderBottomColor: money.color ?? "hsl(var(--border))",
-      //   borderBottomWidth: "1px",
-      // }}
+    <m.div
+      layout
+      key={`${money.id}-${money.last_update}`}
       className={cn(
-        `w-full p-4 flex flex-col gap-2 border-b last:border-b-0 ${
+        `w-full p-4 flex flex-col gap-2 border-b bg-background last:border-b-0 ${
           deleting && "animate-pulse scale-95"
         }`,
         className
       )}
     >
       {children}
-    </div>
+    </m.div>
   );
 }
 
@@ -110,7 +107,11 @@ export function MoneyHeader() {
     money.color ?? "hsl(var(--foreground))",
   ];
   return (
-    <div key={money.color} className={`flex items-baseline gap-2`}>
+    <m.div
+      layout
+      key={`${money.id}-${money.color}`}
+      className={`flex items-baseline gap-2 h-fit`}
+    >
       <span className={`font-bold ${darken}`} style={{ color: color[1] }}>
         {money.name}
       </span>
@@ -126,10 +127,9 @@ export function MoneyHeader() {
         }}
         className=" text-xs"
       >
-        {/* {new Date(money.created_at).toLocaleDateString()} */}
-        {money.id}
+        {new Date(money.created_at).toLocaleDateString()}
       </span>
-    </div>
+    </m.div>
   );
 }
 
@@ -149,39 +149,80 @@ export function MoneyAmount() {
   const branchesDemandedAmounts = _.sum(
     listState.transferrings?.branches.map((b) => b.transferAmount)
   );
-  const negative = money.amount - branchesDemandedAmounts <= 0;
+  const negative = money.amount - branchesDemandedAmounts < 0;
 
   return (
-    <div>
-      {isInBranch ? (
-        <div className="flex flex-col gap-4">
-          <Amount
-            className={`${darken}`}
-            color={money.color ?? ""}
-            amount={money.amount + (branch?.transferAmount ?? 0)}
-            settings={{ sign: true }}
-          />
-          <div className="flex flex-col gap-4">
+    <m.div
+      key={`amount-${money.id}`}
+      layout
+      className="flex flex-col overflow-hidden"
+    >
+      <m.div layout>
+        <Amount
+          className={`${darken}`}
+          color={negative ? "hsl(var(--destructive))" : money.color ?? ""}
+          amount={Number(
+            money.amount +
+              (isInBranch
+                ? branch?.transferAmount ?? 0
+                : isRoot
+                ? -branchesDemandedAmounts
+                : 0)
+          )}
+          settings={{ sign: true }}
+        />
+      </m.div>
+      <AnimatePresence initial={false}>
+        {isInBranch ? (
+          <m.div
+            layout
+            initial={{
+              height: "0px",
+              opacity: 0,
+              marginTop: 0,
+            }}
+            animate={{
+              height: "auto",
+              opacity: 1,
+              marginTop: 8,
+            }}
+            exit={{
+              height: "0px",
+              opacity: 0,
+              marginTop: 0,
+            }}
+            transition={{ duration: 0.8, ease: [0.04, 0.62, 0.23, 0.98] }}
+            key={"branch"}
+            className="flex flex-col gap-4"
+          >
             <div className="space-y-1.5">
               <p className="text-muted-foreground text-xs">
                 Receiving from {root?.name}
               </p>
               <Input
+                type="number"
+                min={0}
                 value={
-                  (branch?.transferAmount ?? 0) <= 0
+                  Number(branch?.transferAmount) <= 0
                     ? undefined
                     : branch?.transferAmount ?? 0
                 }
                 onChange={(v) => {
                   if (!Number(v.currentTarget.value))
-                    return listState.setTransferValue(0, money.id);
-                  listState.setTransferValue(
-                    Number(v.currentTarget.value),
-                    money.id
+                    return listState.setTransfereesState(
+                      0,
+                      money.id,
+                      branch?.reason ?? "",
+                      branch?.fee ?? 0
+                    );
+                  listState.setTransfereesState(
+                    Number(v.target.value),
+                    money.id,
+                    branch?.reason ?? "",
+                    branch?.fee ?? 0
                   );
                 }}
                 placeholder={`Amount to receive from ${root?.name}`}
-                className="rounded-full bg-muted"
               />
             </div>
             <div className="flex flex-col xs:flex-row xs:items-end gap-4">
@@ -190,8 +231,27 @@ export function MoneyAmount() {
                   Receiving transfer fee (optional)
                 </p>
                 <Input
+                  type="number"
+                  min={0}
+                  value={
+                    Number(branch?.fee) <= 0 ? undefined : branch?.fee ?? 0
+                  }
+                  onChange={(v) => {
+                    if (!Number(v.currentTarget.value))
+                      return listState.setTransfereesState(
+                        branch?.transferAmount ?? 0,
+                        money.id,
+                        branch?.reason ?? "",
+                        0
+                      );
+                    listState.setTransfereesState(
+                      branch?.transferAmount ?? 0,
+                      money.id,
+                      branch?.reason ?? "",
+                      Number(v.target.value)
+                    );
+                  }}
                   placeholder={`Fee (optional)`}
-                  className="rounded-full bg-muted"
                 />
               </div>
               <div className="space-y-1.5 flex-1">
@@ -199,37 +259,101 @@ export function MoneyAmount() {
                   Reason (optional)
                 </p>
                 <Input
+                  value={branch?.reason ?? ""}
+                  onChange={(v) =>
+                    listState.setTransfereesState(
+                      branch?.transferAmount ?? 0,
+                      money.id,
+                      v.currentTarget.value,
+                      branch?.fee ?? 0
+                    )
+                  }
                   placeholder="Reason (optional)"
-                  className="rounded-full bg-muted"
                 />
               </div>
             </div>
-            <Button className="rounded-full flex-1 w-fit mx-auto gap-2">
-              Proceed Transfer <ArrowRightLeft size={16} />
-            </Button>
-          </div>
-        </div>
-      ) : isRoot ? (
-        <Amount
-          className={`${darken}`}
-          color={negative ? "hsl(var(--destructive))" : money.color ?? ""}
-          amount={Number(money.amount - branchesDemandedAmounts)}
-          settings={{ sign: true }}
-        />
-      ) : (
-        <Amount
-          className={`${darken}`}
-          color={money.color ?? ""}
-          amount={money.amount}
-          settings={{ sign: true }}
-        />
-      )}
-    </div>
+          </m.div>
+        ) : isRoot ? (
+          <m.div
+            layout
+            initial={{
+              height: 0,
+              opacity: 0,
+              marginTop: 0,
+            }}
+            animate={{
+              height: "auto",
+              opacity: 1,
+              marginTop: 8,
+            }}
+            exit={{
+              height: 0,
+              opacity: 0,
+              marginTop: 0,
+            }}
+            transition={{ duration: 0.8, ease: [0.04, 0.62, 0.23, 0.98] }}
+            key={"root"}
+          >
+            <div className="flex flex-col xs:flex-row xs:items-end gap-4">
+              <div className="space-y-1.5 flex-1 xs:max-w-32">
+                <p className="text-muted-foreground text-xs truncate">
+                  Receiving transfer fee (optional)
+                </p>
+                <Input
+                  type="number"
+                  min={0}
+                  value={Number(root?.fee) <= 0 ? undefined : root?.fee ?? 0}
+                  onChange={(v) => {
+                    if (!Number(v.currentTarget.value))
+                      return listState.setRootState(
+                        root.id,
+                        root?.reason ?? "",
+                        0
+                      );
+                    listState.setRootState(
+                      root.id,
+                      root?.reason ?? "",
+                      Number(v.target.value)
+                    );
+                  }}
+                  placeholder={`Fee (optional)`}
+                />
+              </div>
+              <div className="space-y-1.5 flex-1">
+                <p className="text-muted-foreground text-xs">
+                  Reason (optional)
+                </p>
+                <Input
+                  value={root?.reason ?? ""}
+                  onChange={(v) =>
+                    listState.setRootState(
+                      root.id,
+                      v.currentTarget.value,
+                      root?.fee ?? 0
+                    )
+                  }
+                  placeholder="Reason (optional)"
+                />
+              </div>
+            </div>
+          </m.div>
+        ) : null}
+      </AnimatePresence>
+    </m.div>
   );
 }
 
 export function MoneyActions({ children }: { children: React.ReactNode }) {
-  return <div className={`flex flex-row gap-6 mt-4`}>{children}</div>;
+  const { money } = useMoneyBarContext();
+  return (
+    <m.div
+      key={`actions-${money.id}`}
+      layout
+      className={`flex flex-row gap-6 mt-4`}
+    >
+      {children}
+    </m.div>
+  );
 }
 
 export function MoneyDeleteBtn() {
@@ -276,6 +400,8 @@ export function MoneyDeleteBtn() {
       queryKey: [String(money.id)],
     });
     queryClient.invalidateQueries({ queryKey: ["logs"] });
+
+    listState.setState({ ...listState, transferrings: null });
   }
 
   return (
@@ -283,8 +409,8 @@ export function MoneyDeleteBtn() {
       <DialogTrigger asChild>
         <Button
           size={"icon"}
-          disabled={deleting}
-          className="rounded-full size-6 aspect-square"
+          disabled={deleting || listState.transferrings !== null}
+          className="size-6 aspect-square"
           variant={"ghost"}
         >
           <Trash
@@ -302,7 +428,7 @@ export function MoneyDeleteBtn() {
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 p-4 pt-0 text-sm">
-          <div className="flex items-center justify-between border py-2 px-6 rounded-full">
+          <div className="flex items-center justify-between border py-2 px-6">
             <p>{money.name}</p>
             <Amount
               amount={money.amount}
@@ -312,7 +438,7 @@ export function MoneyDeleteBtn() {
           </div>
           <DialogClose asChild disabled={deleting}>
             <Button
-              className="rounded-full w-full"
+              className="w-full"
               onClick={deleteMoney}
               variant={"destructive"}
               disabled={deleting}
@@ -329,17 +455,23 @@ export function MoneyDeleteBtn() {
 export function MoneyExternalLinkBtn() {
   const { money } = useMoneyBarContext();
   const darken = useDarkenColor(money.color ?? "");
+  const listState = useListState();
 
   return (
     <Button
       size={"icon"}
-      className="rounded-full size-6 aspect-square"
+      className="size-6 aspect-square "
       variant={"ghost"}
+      disabled={listState.transferrings !== null}
       asChild
     >
       <Link
         href={`/list/money/${money.id}`}
-        className="rounded-full h-fit aspect-square"
+        className={`rounded-full h-fit aspect-square 
+          
+          ${
+            listState.transferrings !== null && "pointer-events-none opacity-50"
+          }`}
       >
         <ExternalLink
           className={`${darken}`}
@@ -352,6 +484,7 @@ export function MoneyExternalLinkBtn() {
 }
 export function MoneyEditBtn() {
   const { money, currentTotal } = useMoneyBarContext();
+  const listState = useListState();
   const queryClient = useQueryClient();
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const darken = useDarkenColor(money.color ?? "");
@@ -365,14 +498,17 @@ export function MoneyEditBtn() {
       queryKey: [String(money.id)],
     });
     queryClient.invalidateQueries({ queryKey: ["logs"] });
+
+    listState.setState({ ...listState, transferrings: null });
   }
   return (
     <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
       <DialogTrigger asChild>
         <Button
           size={"icon"}
-          className="rounded-full size-6 aspect-square"
+          className="size-6 aspect-square"
           variant={"ghost"}
+          disabled={listState.transferrings !== null}
         >
           <Edit
             className={`${darken}`}
@@ -402,6 +538,7 @@ export function MoneyEditBtn() {
 
 export function MoneyPaletteBtn() {
   const [openEditDialog, setOpenEditDialog] = useState(false);
+  const listState = useListState();
   const { money, specific, currentTotal } = useMoneyBarContext();
   const [colorPreview, setColorPreview] = useState(money.color);
   const queryClient = useQueryClient();
@@ -417,14 +554,17 @@ export function MoneyPaletteBtn() {
       queryKey: [String(money.id)],
     });
     queryClient.invalidateQueries({ queryKey: ["logs"] });
+
+    listState.setState({ ...listState, transferrings: null });
   }
   return (
     <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
       <DialogTrigger asChild>
         <Button
           size={"icon"}
-          className="rounded-full size-6 aspect-square"
+          className="size-6 aspect-square"
           variant={"ghost"}
+          disabled={listState.transferrings !== null}
         >
           <Palette
             className={`${darken}`}
@@ -473,14 +613,14 @@ export function MoneyPaletteBtn() {
           <div className="px-4 pb-4 w-full flex flex-col gap-4">
             <Button
               onClick={() => colorize("")}
-              className="rounded-full w-full"
+              className="w-full"
               variant={"secondary"}
             >
               Set Default
             </Button>
             <Button
               onClick={() => colorize(colorPreview ?? "")}
-              className={`rounded-full w-full`}
+              className="w-full"
               disabled={money.color === colorPreview}
             >
               Update Color
@@ -507,7 +647,7 @@ export function MoneyTransferBtn() {
       return listState.setState({
         ...listState,
         transferrings: {
-          root: { ...money, transferAmount: 0 },
+          root: { ...money, transferAmount: 0, reason: "", fee: 0 },
           branches: [],
         },
       });
@@ -535,7 +675,7 @@ export function MoneyTransferBtn() {
         ...listState.transferrings,
         branches: [
           ...listState.transferrings.branches,
-          { ...money, transferAmount: 0 },
+          { ...money, transferAmount: 0, reason: "", fee: 0 },
         ],
       },
     });
@@ -544,7 +684,7 @@ export function MoneyTransferBtn() {
   return (
     <Button
       size={"icon"}
-      className="rounded-full size-6 aspect-square"
+      className="size-6 aspect-square"
       variant={"ghost"}
       onClick={transfer}
     >

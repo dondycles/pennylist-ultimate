@@ -98,12 +98,11 @@ export function HistoryTable<TData, TValue>({
             onChange={(event) =>
               table.getColumn(searchBy)?.setFilterValue(event.target.value)
             }
-            className="bg-muted rounded-full border-none"
           />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                className="rounded-full text-muted-foreground gap-1"
+                className="text-muted-foreground gap-1 border border-input"
                 variant={"secondary"}
               >
                 <span>by</span>
@@ -182,14 +181,14 @@ export function HistoryTable<TData, TValue>({
             size="icon"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className={"h-8 w-8 rounded-full"}
+            className="h-8 w-8"
           >
             <ArrowLeftIcon className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
             size="icon"
-            className={"h-8 w-8 rounded-full"}
+            className="h-8 w-8"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >

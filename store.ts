@@ -5,18 +5,20 @@ import { MoneyWithLogs } from "./drizzle/infered-types";
 
 interface MoneyTransfer extends Omit<MoneyWithLogs, "money_log"> {
   transferAmount: number | undefined | null;
+  reason: string;
+  fee: number;
 }
 const storage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
-    // console.log(name, "has been retrieved");
+    console.log(name, "has been retrieved");
     return (await get(name)) || null;
   },
   setItem: async (name: string, value: string): Promise<void> => {
-    // console.log(name, "with value", value, "has been saved");
+    console.log(name, "with value", value, "has been saved");
     await set(name, value);
   },
   removeItem: async (name: string): Promise<void> => {
-    // console.log(name, "has been deleted");
+    console.log(name, "has been deleted");
     await del(name);
   },
 };
@@ -32,7 +34,13 @@ type ListState = {
     root: MoneyTransfer;
     branches: MoneyTransfer[];
   } | null;
-  setTransferValue: (value: number, id: number) => void;
+  setTransfereesState: (
+    value: number,
+    id: number,
+    reason: string,
+    fee: number
+  ) => void;
+  setRootState: (id: number, reason: string, fee: number) => void;
   setState: ({
     view,
     hidden,
@@ -66,7 +74,7 @@ export const useListState = create<ListState>()(
       isTransferring: false,
       transferrings: null,
       setState: (state) => set(() => ({ ...state })),
-      setTransferValue: (value, id) =>
+      setTransfereesState: (value, id, reason, fee) =>
         set(({ transferrings }) => {
           if (!transferrings) return {};
           const branch = transferrings?.branches.find((b) => b.id === id);
@@ -78,9 +86,23 @@ export const useListState = create<ListState>()(
             transferrings: {
               branches: [
                 ...newBranchesData,
-                { ...branch, transferAmount: value },
+                { ...branch, transferAmount: value, reason, fee },
               ],
               root: transferrings?.root,
+            },
+          };
+        }),
+      setRootState: (id, reason, fee) =>
+        set(({ transferrings }) => {
+          if (!transferrings) return {};
+          const root = transferrings?.root;
+          if (!root) return {};
+          if (root.id !== id) return {};
+
+          return {
+            transferrings: {
+              root: { ...transferrings?.root, fee, reason },
+              branches: transferrings.branches,
             },
           };
         }),

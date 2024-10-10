@@ -20,7 +20,7 @@ export default function TotalMoney() {
       transition={{
         ease: "anticipate",
       }}
-      className="w-full flex flex-col gap-4 items-center px-4 py-6 bg-muted/50 rounded-b-3xl shadow-lg max-w-[800px] mx-auto z-50 overflow-hidden relative"
+      className="w-full flex flex-col gap-4 items-center px-4 py-6  rounded-b-3xl shadow-lg max-w-[800px] mx-auto z-50 overflow-hidden relative bg-muted/50"
     >
       <motion.p
         animate={{
@@ -62,7 +62,7 @@ export default function TotalMoney() {
       <Button
         size={"icon"}
         variant={"ghost"}
-        className="absolute right-4 bottom-[50%] translate-y-[50%] rounded-full text-muted-foreground"
+        className="absolute right-4 bottom-[50%] translate-y-[50%] text-muted-foreground"
         onClick={() =>
           listState.setState({
             ...listState,

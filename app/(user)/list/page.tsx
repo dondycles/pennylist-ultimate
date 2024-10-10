@@ -14,33 +14,38 @@ import {
 import { useContext } from "react";
 import { ListDataContext } from "@/components/providers/list";
 import Loader from "@/components/loader";
-import { useListState } from "@/store";
-
+import { motion } from "framer-motion";
 export default function List() {
   const { isLoading, moneys, currentTotal } = useContext(ListDataContext);
-  const listState = useListState();
   if (isLoading) return <Loader />;
-
-  return moneys?.map((money) => {
-    return (
-      <Money
-        currentTotal={currentTotal}
-        specific={false}
-        money={money}
-        key={`${money.id}-${money.last_update}`}
-      >
-        <MoneyBar>
-          <MoneyHeader />
-          <MoneyAmount />
-          <MoneyActions>
-            <MoneyExternalLinkBtn />
-            <MoneyPaletteBtn />
-            <MoneyTransferBtn />
-            <MoneyEditBtn />
-            <MoneyDeleteBtn />
-          </MoneyActions>
-        </MoneyBar>
-      </Money>
-    );
-  });
+  return (
+    <motion.div
+      initial={{ opacity: 0, translateY: 20 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      exit={{ opacity: 0, translateY: 20 }}
+    >
+      {moneys?.map((m) => {
+        return (
+          <Money
+            currentTotal={currentTotal}
+            specific={false}
+            money={m}
+            key={`${m.id}-${m.last_update}`}
+          >
+            <MoneyBar>
+              <MoneyHeader />
+              <MoneyAmount />
+              <MoneyActions>
+                <MoneyExternalLinkBtn />
+                <MoneyPaletteBtn />
+                <MoneyTransferBtn />
+                <MoneyEditBtn />
+                <MoneyDeleteBtn />
+              </MoneyActions>
+            </MoneyBar>
+          </Money>
+        );
+      })}
+    </motion.div>
+  );
 }

@@ -87,7 +87,7 @@ export default function ProgressBarChart({
             <DropdownMenuTrigger asChild>
               <Button
                 variant={"secondary"}
-                className="rounded-full text-muted-foreground text-sm gap-1"
+                className="text-muted-foreground text-sm gap-1 border border-input"
               >
                 <span className="capitalize">{chartsState.type}</span>
                 {chartsState.type === "daily" && (

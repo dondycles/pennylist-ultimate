@@ -3,7 +3,7 @@ import { Skeleton } from "./ui/skeleton";
 export default function Loader() {
   return (
     <div className="flex flex-col max-w-[800px] mx-auto w-screen">
-      <Skeleton className="w-full h-28 rounded-b-3xl shadow-lg" />
+      {/* <Skeleton className="w-full h-28 rounded-b-3xl shadow-lg" /> */}
       <div className="flex flex-col gap-1">
         {Array.from({ length: 3 }, (_, i) => {
           return (
