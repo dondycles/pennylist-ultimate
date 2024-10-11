@@ -136,7 +136,7 @@ export function MoneyBar({
       layout
       key={`${money.id}-${money.last_update}  `}
       className={cn(
-        `w-full py-4 flex flex-col gap-2 border-b last:border-b-0 ${
+        `w-full py-4 flex flex-col gap-2 border-b last:border-b-0 first:mt-4 ${
           deleting && "animate-pulse scale-95"
         }`,
         className

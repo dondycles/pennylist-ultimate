@@ -41,7 +41,7 @@ import { transfer_money } from "@/app/actions/moneys";
 import { usePathname } from "next/navigation";
 import { ListDataContext } from "./providers/list";
 import { useQueryClient } from "@tanstack/react-query";
-import { useList, useMeasure } from "@uidotdev/usehooks";
+import { useMeasure } from "@uidotdev/usehooks";
 import AddMoneyDrawer from "./add-money-drawer";
 import _ from "lodash";
 import { Badge } from "./ui/badge";
