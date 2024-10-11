@@ -23,6 +23,7 @@ export default function TotalMoney() {
       className="w-full flex flex-col gap-4 items-center px-4 py-6  rounded-b-3xl shadow-lg max-w-[800px] mx-auto z-50 overflow-hidden relative bg-muted/50"
     >
       <motion.p
+        initial={false}
         animate={{
           opacity: listState.minimizeTotalMoney ? 0 : 1,
           translateY: listState.minimizeTotalMoney ? -10 : 0,
@@ -32,6 +33,7 @@ export default function TotalMoney() {
         {user?.username}&apos;s total money
       </motion.p>
       <motion.div
+        initial={false}
         animate={{
           scale: listState.minimizeTotalMoney ? 0.5 : 1,
           translateY: listState.minimizeTotalMoney ? -52 : 0,
@@ -47,6 +49,7 @@ export default function TotalMoney() {
         />
       </motion.div>
       <motion.p
+        initial={false}
         animate={{
           opacity: listState.minimizeTotalMoney ? 0 : 1,
         }}

@@ -23,6 +23,7 @@ import { useChartsState } from "@/store";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { useContext } from "react";
+import Scrollable from "@/components/scrollable";
 
 export default function MoneyPage({ params }: { params: { id: number } }) {
   const { currentTotal, user } = useContext(ListDataContext);
@@ -59,35 +60,37 @@ export default function MoneyPage({ params }: { params: { id: number } }) {
       </p>
     );
   return (
-    <motion.div
-      initial={{ opacity: 0, translateY: 20 }}
-      animate={{ opacity: 1, translateY: 0 }}
-      exit={{ opacity: 0, translateY: 20 }}
-    >
-      {money && (
-        <Money
-          currentTotal={currentTotal}
-          specific={true}
-          money={money}
-          key={money.id}
-        >
-          <MoneyBar>
-            <MoneyHeader />
-            <MoneyAmount />
-            <MoneyActions>
-              <MoneyPaletteBtn />
-              <MoneyEditBtn />
-              <MoneyDeleteBtn />
-            </MoneyActions>
-          </MoneyBar>
-        </Money>
-      )}
-      <ProgressBarChart chartData={chartData} differences={differences} />
-      <HistoryTable
-        defaultSearchBy="reason"
-        columns={historyColumns}
-        data={logs ?? []}
-      />
-    </motion.div>
+    <Scrollable>
+      <motion.div
+        initial={{ opacity: 0, translateY: 20 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        exit={{ opacity: 0, translateY: 20 }}
+      >
+        {money && (
+          <Money
+            currentTotal={currentTotal}
+            specific={true}
+            money={money}
+            key={money.id}
+          >
+            <MoneyBar>
+              <MoneyHeader />
+              <MoneyAmount />
+              <MoneyActions>
+                <MoneyPaletteBtn />
+                <MoneyEditBtn />
+                <MoneyDeleteBtn />
+              </MoneyActions>
+            </MoneyBar>
+          </Money>
+        )}
+        <ProgressBarChart chartData={chartData} differences={differences} />
+        <HistoryTable
+          defaultSearchBy="reason"
+          columns={historyColumns}
+          data={logs ?? []}
+        />
+      </motion.div>
+    </Scrollable>
   );
 }

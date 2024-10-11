@@ -8,10 +8,13 @@ import {
   ArrowUpToLine,
   CornerRightDown,
   Dot,
-  Edit,
   ExternalLink,
+  MessageCircle,
+  MessageCircleMore,
   Palette,
+  Pencil,
   Trash,
+  X,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import Link from "next/link";
@@ -42,11 +45,26 @@ type MoneyBarProps = PropsWithChildren & {
   currentTotal: number;
 };
 
+const variants = {
+  close: {
+    height: 0,
+    opacity: 0,
+    marginTop: 0,
+  },
+  open: {
+    height: "auto",
+    opacity: 1,
+    marginTop: 8,
+  },
+};
+
 const MoneyBarContext = createContext<
   | {
       money: MoneyBarProps["money"];
       deleting: boolean;
       setDeleting: React.Dispatch<React.SetStateAction<boolean>>;
+      commenting: boolean;
+      setCommenting: React.Dispatch<React.SetStateAction<boolean>>;
       specific: boolean;
       currentTotal: number;
       darken: string;
@@ -59,6 +77,7 @@ const MoneyBarContext = createContext<
         isRootNegative: boolean;
       };
       listState: ListState;
+      transfer: () => void;
     }
   | undefined
 >(undefined);
@@ -101,9 +120,48 @@ export function Money({
   currentTotal,
 }: MoneyBarProps) {
   const [deleting, setDeleting] = useState(false);
+  const [commenting, setCommenting] = useState(false);
   const darken = useDarkenColor(money.color ?? "");
   const listState = useListState();
   const transferState = useMoneyTransferringDetails(listState, money);
+  function transfer() {
+    if (!listState.transferrings)
+      return listState.setState({
+        ...listState,
+        transferrings: {
+          root: { ...money, transferAmount: 0, reason: "", fee: 0 },
+          branches: [],
+        },
+      });
+
+    if (transferState.isRoot)
+      return listState.setState({ ...listState, transferrings: null });
+
+    if (transferState.isInBranch) {
+      const branches = listState.transferrings.branches.filter(
+        (b) => b.id !== money.id
+      );
+
+      return listState.setState({
+        ...listState,
+        transferrings: {
+          ...listState.transferrings,
+          branches,
+        },
+      });
+    }
+
+    listState.setState({
+      ...listState,
+      transferrings: {
+        ...listState.transferrings,
+        branches: [
+          ...listState.transferrings.branches,
+          { ...money, transferAmount: 0, reason: "", fee: 0 },
+        ],
+      },
+    });
+  }
 
   return (
     <MoneyBarContext.Provider
@@ -116,6 +174,9 @@ export function Money({
         darken,
         transferState,
         listState,
+        commenting,
+        setCommenting,
+        transfer,
       }}
     >
       {children}
@@ -136,7 +197,7 @@ export function MoneyBar({
       layout
       key={`${money.id}-${money.last_update}  `}
       className={cn(
-        `w-full py-4 flex flex-col gap-2 border-b last:border-b-0 first:mt-4 ${
+        `w-full pt-4 flex flex-col gap-2 border-b last:border-b-0 ${
           deleting && "animate-pulse scale-95"
         }`,
         className
@@ -198,18 +259,6 @@ export function MoneyAmount() {
     },
   } = useMoneyBarContext();
 
-  const variants = {
-    close: {
-      height: 0,
-      opacity: 0,
-      marginTop: 0,
-    },
-    open: {
-      height: "auto",
-      opacity: 1,
-      marginTop: 8,
-    },
-  };
   return (
     <m.div
       key={`amount-${money.id}`}
@@ -381,7 +430,8 @@ export function MoneyAmount() {
 }
 
 export function MoneyActions({ children }: { children: React.ReactNode }) {
-  const { money, listState, transferState } = useMoneyBarContext();
+  const { money, listState, transferState, commenting, transfer } =
+    useMoneyBarContext();
   return (
     <m.div
       key={`actions-${money.id}-${listState.transferrings?.branches === null}-${
@@ -390,10 +440,42 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
       animate={{ opacity: 1, translateX: -0 }}
       initial={{ opacity: 0, translateX: -10 }}
       exit={{ opacity: 0, translateX: -10 }}
-      layout
-      className={`flex flex-row gap-6 mt-4 px-4`}
+      className={`flex flex-col h-fit overflow-hidden mt-2 px-4 -mb-1 pb-4`}
     >
-      {children}
+      <m.div layout className={`flex flex-row gap-6 mb-1 items-center`}>
+        {(transferState.isRoot || transferState.isInBranch) && (
+          <Button
+            onClick={transfer}
+            variant={"destructive"}
+            className="size-6 p-0 rounded-full aspect-square -mr-5"
+          >
+            <X size={16} />
+          </Button>
+        )}
+        {children}
+
+        {(transferState.isRoot || transferState.isInBranch) && (
+          <span className="-ml-5 text-xs text-muted-foreground">
+            {transferState.isInBranch && "Receiver"}
+            {transferState.isRoot && "Sender"}
+          </span>
+        )}
+      </m.div>
+      <AnimatePresence>
+        {commenting && (
+          <m.div
+            layout
+            initial={"close"}
+            animate={"open"}
+            exit={"close"}
+            variants={variants}
+            key={"commenting"}
+            className="mb-1"
+          >
+            <Input placeholder="Notes, comments, hmm...? " />{" "}
+          </m.div>
+        )}
+      </AnimatePresence>
     </m.div>
   );
 }
@@ -532,6 +614,7 @@ export function MoneyExternalLinkBtn() {
       </Button>
     );
 }
+
 export function MoneyEditBtn() {
   const { money, currentTotal, darken, listState } = useMoneyBarContext();
   const queryClient = useQueryClient();
@@ -558,7 +641,7 @@ export function MoneyEditBtn() {
             className="size-6 aspect-square"
             variant={"ghost"}
           >
-            <Edit
+            <Pencil
               className={`${darken}`}
               style={{ color: money.color ?? "hsl(var(--foreground))" }}
               size={16}
@@ -684,54 +767,17 @@ export function MoneyTransferBtn() {
     listState,
     money,
     darken,
-    transferState: { isRoot, isInBranch },
+    transferState: { isRoot, isInBranch, root, branch },
+    transfer,
   } = useMoneyBarContext();
-
-  function transfer() {
-    if (!listState.transferrings)
-      return listState.setState({
-        ...listState,
-        transferrings: {
-          root: { ...money, transferAmount: 0, reason: "", fee: 0 },
-          branches: [],
-        },
-      });
-
-    if (isRoot)
-      return listState.setState({ ...listState, transferrings: null });
-
-    if (isInBranch) {
-      const branches = listState.transferrings.branches.filter(
-        (b) => b.id !== money.id
-      );
-
-      return listState.setState({
-        ...listState,
-        transferrings: {
-          ...listState.transferrings,
-          branches,
-        },
-      });
-    }
-
-    listState.setState({
-      ...listState,
-      transferrings: {
-        ...listState.transferrings,
-        branches: [
-          ...listState.transferrings.branches,
-          { ...money, transferAmount: 0, reason: "", fee: 0 },
-        ],
-      },
-    });
-  }
 
   return (
     <Button
       size={"icon"}
-      className="size-6 aspect-square"
+      className="size-6 aspect-square disabled:opacity-100"
       variant={"ghost"}
-      onClick={transfer}
+      onClick={!isRoot || !isInBranch ? transfer : () => {}}
+      disabled={isRoot || isInBranch}
     >
       {isRoot ? (
         <CornerRightDown className={`text-yellow-400`} size={16} />
@@ -746,4 +792,24 @@ export function MoneyTransferBtn() {
       )}
     </Button>
   );
+}
+
+export function MoneyCommentBtn() {
+  const { money, darken, setCommenting, commenting, listState } =
+    useMoneyBarContext();
+  if (listState.transferrings === null)
+    return (
+      <Button
+        onClick={() => setCommenting(!commenting)}
+        size={"icon"}
+        className="size-6 aspect-square"
+        variant={"ghost"}
+      >
+        <MessageCircleMore
+          className={`${darken}`}
+          style={{ color: money.color ?? "hsl(var(--foreground))" }}
+          size={16}
+        />
+      </Button>
+    );
 }

@@ -95,7 +95,7 @@ export const NavBar = forwardRef(function NavBar(
       </m.div>
 
       <Dialog open={showProfile} onOpenChange={setShowProfile}>
-        <DialogContent className="w-fit max-w-fit flex h-[75dvh]">
+        <DialogContent className="w-fit max-w-fit flex h-[75dvh] border-0">
           <UserProfile
             routing="virtual"
             appearance={{

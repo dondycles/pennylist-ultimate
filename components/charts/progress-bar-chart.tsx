@@ -65,7 +65,6 @@ export default function ProgressBarChart({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="mt-4"
     >
       <Card>
         <CardHeader className="flex flex-row justify-between gap-4 items-baseline">

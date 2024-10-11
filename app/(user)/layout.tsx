@@ -1,5 +1,3 @@
-import Scrollable from "@/components/scrollable";
-
 import AnimatedNav from "@/components/nav";
 
 export default function UserLayout({
@@ -9,7 +7,7 @@ export default function UserLayout({
 }) {
   return (
     <main className="w-full h-full flex-1 flex flex-col justify- overflow-hidden">
-      <Scrollable>{children}</Scrollable>
+      {children}
       <AnimatedNav />
     </main>
   );
