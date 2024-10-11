@@ -31,7 +31,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { useTheme } from "next-themes";
-import { createContext, forwardRef, useContext, useState } from "react";
+import React, { createContext, forwardRef, useContext, useState } from "react";
 import { Dialog, DialogContent } from "./ui/dialog";
 import Link from "next/link";
 import { AnimatePresence, motion as m } from "framer-motion";
@@ -79,7 +79,7 @@ export const NavBar = forwardRef(function NavBar(
 ) {
   const { showProfile, setShowProfile } = useNavContext();
   return (
-    <nav className="flex justify-evenly gap-2 w-full bg-background overflow-hidden">
+    <nav className="flex justify-evenly gap-2 w-full overflow-hidden">
       <m.div
         ref={ref}
         layout
@@ -364,10 +364,11 @@ export default function AnimatedNav() {
             variants={variants}
             className="w-full h-full flex flex-col justify-end gap-4 py-2 px-4"
           >
-            <div className="flex flex-col gap-2">
-              <div className="flex flex-row gap-2 items-end">
+            <div className="flex flex-col gap-2 bg-muted dark:bg-muted/50 rounded-3xl p-4">
+              <div className="flex flex-row gap-2 items-baseline">
+                <p className="text-xs text-muted-foreground">Sender: </p>
                 <Badge
-                  variant={"secondary"}
+                  variant={"outline"}
                   className="font-bold text-base gap-1"
                   style={{ color: root?.color ?? "hsl(var(--foreground))" }}
                 >
@@ -379,26 +380,35 @@ export default function AnimatedNav() {
                 <CornerRightDown className="text-muted-foreground" size={16} />
               </div>
               {listState.transferrings.branches.length !== 0 ? (
-                <div className="flex gap-2">
-                  {listState.transferrings.branches.map((b) => {
-                    return (
-                      <Badge
-                        variant={"outline"}
-                        key={b.id}
-                        style={{ color: b?.color ?? "hsl(var(--foreground))" }}
-                        className="gap-1"
-                      >
-                        <span>{b?.name}</span>
+                <div className="flex flex-row gap-2 items-baseline border-t pt-2">
+                  <p className="text-muted-foreground text-xs">Receiver(s): </p>
+                  <div className="flex gap-2">
+                    {listState.transferrings.branches.map((b) => {
+                      return (
+                        <React.Fragment key={b.id}>
+                          <Badge
+                            variant={"outline"}
+                            style={{
+                              color: b?.color ?? "hsl(var(--foreground))",
+                            }}
+                            className="gap-1"
+                          >
+                            <span>{b?.name}</span>
 
-                        <button onClick={() => removeBranch(b?.id)}>
-                          <X className="text-destructive" size={16} />
-                        </button>
-                      </Badge>
-                    );
-                  })}
+                            <button onClick={() => removeBranch(b?.id)}>
+                              <X className="text-destructive" size={16} />
+                            </button>
+                          </Badge>
+                          <span className="last:hidden">,</span>
+                        </React.Fragment>
+                      );
+                    })}
+                  </div>
                 </div>
               ) : (
-                "..."
+                <p className="text-muted-foreground text-xs">
+                  Receiver(s): Please select money(s)
+                </p>
               )}
             </div>
             <div className="flex flex-row gap-4 ">

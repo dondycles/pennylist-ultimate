@@ -11,7 +11,6 @@ import {
   Edit,
   ExternalLink,
   Palette,
-  Split,
   Trash,
 } from "lucide-react";
 import { Button } from "./ui/button";
@@ -149,11 +148,7 @@ export function MoneyBar({
 }
 
 export function MoneyHeader() {
-  const {
-    money,
-    darken,
-    transferState: { isRoot },
-  } = useMoneyBarContext();
+  const { money, darken } = useMoneyBarContext();
   const color = [
     money.color ? money.color + "88" : "hsl(var(--muted-foreground))",
     money.color ?? "hsl(var(--foreground))",
@@ -475,8 +470,14 @@ export function MoneyDeleteBtn() {
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4 p-4 pt-0 text-sm">
-          <div className="flex items-center justify-between border py-2 px-6">
-            <p>{money.name}</p>
+          <div
+            style={{
+              borderColor: money.color ?? "hsl(var(--border))",
+              color: money.color ?? "hsl(var(--foreground))",
+            }}
+            className={`border flex items-center justify-between py-2 px-6 rounded-full ${darken}`}
+          >
+            <p className="font-bold">{money.name}</p>
             <Amount
               amount={money.amount}
               settings={{ sign: true }}
