@@ -6,14 +6,19 @@ import Amount from "./amount";
 import {
   ArrowRightLeft,
   ArrowUpToLine,
+  Check,
+  ChevronUp,
   CornerRightDown,
   Dot,
   ExternalLink,
   MessageCircle,
   MessageCircleMore,
+  MessageCirclePlus,
   Palette,
   Pencil,
+  Send,
   Trash,
+  Trash2,
   X,
 } from "lucide-react";
 import { Button } from "./ui/button";
@@ -38,6 +43,9 @@ import { useDarkenColor } from "@/hooks/useDarkenColor";
 import { ListState, MoneyTransfer, useListState } from "@/store";
 import { Input } from "./ui/input";
 import _ from "lodash";
+import { Textarea } from "./ui/textarea";
+import { add_money_note, delete_money_note } from "@/app/actions/moneys-notes";
+import { ScrollArea } from "./ui/scroll-area";
 
 type MoneyBarProps = PropsWithChildren & {
   money: Omit<MoneyWithLogs, "money_log">;
@@ -430,8 +438,34 @@ export function MoneyAmount() {
 }
 
 export function MoneyActions({ children }: { children: React.ReactNode }) {
-  const { money, listState, transferState, commenting, transfer } =
-    useMoneyBarContext();
+  const {
+    money,
+    listState,
+    transferState,
+    commenting,
+    transfer,
+    setCommenting,
+  } = useMoneyBarContext();
+  const [note, setNote] = useState("");
+  const queryClient = useQueryClient();
+  async function add_note() {
+    await add_money_note(note, money.id);
+    queryClient.invalidateQueries({
+      queryKey: ["list"],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [String(money.id)],
+    });
+  }
+  async function delete_note(id: number) {
+    await delete_money_note(id);
+    queryClient.invalidateQueries({
+      queryKey: ["list"],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [String(money.id)],
+    });
+  }
   return (
     <m.div
       key={`actions-${money.id}-${listState.transferrings?.branches === null}-${
@@ -470,13 +504,66 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
             exit={"close"}
             variants={variants}
             key={"commenting"}
-            className="mb-1 flex flex-col gap-4"
+            className="mb-1 flex flex-col  bg-[#171717] rounded-3xl overflow-hidden"
           >
-            <Input placeholder="Notes, comments, hmm...? " />
-            <div className="p-4 bg-muted rounded-3xl prose max-w-none text-muted-foreground">
-              <p>Lorem ipsum dolor sit amet.</p>
-              <span className="text-xs">{new Date().toLocaleDateString()}</span>
-            </div>
+            {money.money_note.length > 0 ? (
+              <ScrollArea className="w-full h-[30dvh]">
+                {money.money_note.map((note, i) => {
+                  return (
+                    <m.div
+                      layout
+                      key={`${note.id}-${i}`}
+                      className="p-4 pb-0 last:mb-4"
+                    >
+                      <div className="rounded-3xl prose max-w-none text-muted-foreground p-4 bg-muted/50 border">
+                        <span className="text-xs opacity-25">
+                          {new Date(note.created_at).toLocaleDateString()}
+                        </span>
+                        <p className="whitespace-pre-wrap">{note.note}</p>
+                        <CommentDeleteBtn
+                          _delete={() => delete_note(note.id)}
+                        />
+                      </div>
+                    </m.div>
+                  );
+                })}
+              </ScrollArea>
+            ) : (
+              <p className="text-xs text-muted-foreground text-center p-4">
+                no notes yet
+              </p>
+            )}{" "}
+            <form
+              action={add_note}
+              className="flex gap-4 items-end border-t p-4 flex-1 "
+            >
+              <Textarea
+                value={note}
+                onChange={(v) => setNote(v.currentTarget.value)}
+                className="flex-1 "
+                placeholder="Notes, comments, hmm...? "
+                rows={3}
+              />
+              <div className="flex flex-col gap-4">
+                <Button
+                  variant={"ghost"}
+                  className="size-6 p-0"
+                  type="submit"
+                  size={"icon"}
+                >
+                  <MessageCirclePlus size={16} />
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setCommenting(false)}
+                  variant={"ghost"}
+                  size={"icon"}
+                  className="size-6 p-0"
+                >
+                  <ChevronUp size={16} />
+                </Button>
+              </div>
+            </form>
           </m.div>
         )}
       </AnimatePresence>
@@ -806,14 +893,59 @@ export function MoneyCommentBtn() {
       <Button
         onClick={() => setCommenting(!commenting)}
         size={"icon"}
-        className="size-6 aspect-square"
+        className="size-6 aspect-square relative"
         variant={"ghost"}
       >
+        <m.div
+          animate={{
+            height: 36,
+            opacity: commenting ? 1 : 0,
+          }}
+          transition={{
+            delay: commenting ? 0.1 : 0,
+            duration: commenting ? 0.25 : 0.1,
+          }}
+          className="absolute p-4 -bottom-3 w-6 bg-gradient-to-t from-[#141414] to-transparent z-0 rounded-t-full"
+        />
+
         <MessageCircleMore
-          className={`${darken}`}
+          className={`${darken} z-10`}
           style={{ color: money.color ?? "hsl(var(--foreground))" }}
           size={16}
         />
       </Button>
     );
+}
+
+function CommentDeleteBtn({ _delete }: { _delete: () => void }) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  return (
+    <div className="flex gap-4 justify-end mt-1">
+      {confirmDelete ? (
+        <>
+          <Button
+            onClick={() => _delete()}
+            className="size-6 p-0"
+            variant={"ghost"}
+          >
+            <Check className="text-destructive" size={16} />
+          </Button>
+          <Button
+            onClick={() => setConfirmDelete(false)}
+            className="size-6 p-0"
+          >
+            <X size={16} />
+          </Button>
+        </>
+      ) : (
+        <Button
+          onClick={() => setConfirmDelete(true)}
+          className="size-6 p-0"
+          variant={"ghost"}
+        >
+          <Trash className="text-destructive" size={16} />
+        </Button>
+      )}
+    </div>
+  );
 }

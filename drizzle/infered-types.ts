@@ -30,5 +30,6 @@ export type MoneyWithLogs = InferResultType<
   "moneysTable",
   {
     money_log: true;
+    money_note: true;
   }
 >;

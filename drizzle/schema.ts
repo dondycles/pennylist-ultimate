@@ -23,6 +23,18 @@ export const moneysTable = pgTable("moneys_table", {
     .notNull(),
 });
 
+export const moneysNotesTable = pgTable("moneys_notes_table", {
+  id: serial("id").primaryKey().notNull(),
+  money_id: serial("money_id")
+    .notNull()
+    .references(() => moneysTable.id, { onDelete: "cascade" }),
+  note: text("note").notNull(),
+  created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
+    .defaultNow()
+    .notNull(),
+  lister: text("lister").notNull(),
+});
+
 export const logsTable = pgTable("logs_table", {
   id: serial("id").primaryKey().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
@@ -58,9 +70,19 @@ export const logsTableRelations = relations(logsTable, ({ one }) => ({
 
 export const moneysTableRelations = relations(moneysTable, ({ many }) => ({
   money_log: many(logsTable, { relationName: "money_log" }),
+  money_note: many(moneysNotesTable, { relationName: "money_note" }),
 }));
 
-export const addMoneySchema = createInsertSchema(moneysTable);
+export const moneysNotesRelations = relations(moneysNotesTable, ({ one }) => ({
+  money_note: one(moneysTable, {
+    fields: [moneysNotesTable.money_id],
+    references: [moneysTable.id],
+    relationName: "money_note",
+  }),
+}));
 
 export type selectMoney = typeof moneysTable.$inferSelect;
+export type selectMoneyNote = typeof moneysNotesTable.$inferSelect;
 export type insertLog = typeof logsTable.$inferSelect;
+export type insertMoney = typeof moneysTable.$inferInsert;
+export type insetMoneyNote = typeof moneysNotesTable.$inferInsert;

@@ -1,14 +1,14 @@
 "use server";
 import { db } from "@/drizzle/db";
 import {
-  addMoneySchema,
   logsTable,
   moneysTable,
   selectMoney,
+  insertMoney,
+  moneysNotesTable,
 } from "@/drizzle/schema";
 
 import { and, asc, desc, eq, sql } from "drizzle-orm";
-import { z } from "zod";
 import auth_check from "./auth-check";
 
 export const get_moneys = async (orderBy: {
@@ -20,6 +20,11 @@ export const get_moneys = async (orderBy: {
   const moneys = await db.query.moneysTable.findMany({
     where: eq(moneysTable.lister, user.userId!),
     orderBy: [orderBy.asc ? asc(sortField) : desc(sortField)],
+    with: {
+      money_note: {
+        orderBy: [desc(moneysNotesTable.created_at)],
+      },
+    },
   });
   return moneys;
 };
@@ -29,16 +34,16 @@ export const get_money = async (id: number) => {
   const moneys = await db.query.moneysTable.findFirst({
     with: {
       money_log: true,
+      money_note: {
+        orderBy: [desc(moneysNotesTable.created_at)],
+      },
     },
     where: and(eq(moneysTable.lister, user.userId!), eq(moneysTable.id, id)),
   });
   return moneys;
 };
 
-export const add_money = async (
-  money: z.infer<typeof addMoneySchema>,
-  currentTotal: number
-) => {
+export const add_money = async (money: insertMoney, currentTotal: number) => {
   const user = await auth_check();
   const [m] = await db.insert(moneysTable).values(money).returning();
   await db.insert(logsTable).values({
@@ -63,8 +68,8 @@ export const add_money = async (
 
 export const edit_money = async (
   money: {
-    prev: z.infer<typeof addMoneySchema>;
-    latest: z.infer<typeof addMoneySchema>;
+    prev: insertMoney;
+    latest: insertMoney;
   },
   reason: string,
   currentTotal: number
@@ -100,8 +105,8 @@ export const edit_money = async (
 
 export const transfer_money = async (
   money: {
-    prev: z.infer<typeof addMoneySchema>;
-    latest: z.infer<typeof addMoneySchema>;
+    prev: insertMoney;
+    latest: insertMoney;
   },
   reason: string,
   currentTotal: number
