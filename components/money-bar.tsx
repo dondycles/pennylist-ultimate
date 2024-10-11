@@ -470,8 +470,25 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
             exit={"close"}
             variants={variants}
             key={"commenting"}
-            className="mb-1"
+            className="mb-1 flex flex-col gap-4"
           >
+            <p>
+              Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+              Accusamus optio molestias deserunt error alias inventore eveniet
+              cum, doloremque nulla laboriosam animi fugiat vitae aperiam quis!
+              Vitae odio assumenda modi labore. Magnam, totam fugit qui enim
+              adipisci consectetur deserunt animi facilis consequuntur
+              voluptatem a molestias, earum necessitatibus. Qui nemo ab
+              excepturi. Harum labore aliquam quia repellendus nisi sapiente at
+              praesentium quaerat optio quo maxime distinctio officiis provident
+              illum minima quasi laboriosam autem iure, quis quas enim id nobis.
+              Maxime dolorum in distinctio perferendis assumenda voluptate
+              impedit perspiciatis porro officiis sapiente sequi, nulla atque
+              quia mollitia quod eos rem fuga ipsum. Molestiae cum ipsam,
+              quaerat eligendi, officia tenetur commodi omnis temporibus
+              mollitia sequi quia facilis laborum nesciunt error eius sunt,
+              doloribus perspiciatis. Ipsam, laboriosam ducimus?
+            </p>
             <Input placeholder="Notes, comments, hmm...? " />{" "}
           </m.div>
         )}
