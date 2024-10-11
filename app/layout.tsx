@@ -27,7 +27,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider afterSignOutUrl={"/"}>
+    <ClerkProvider
+      afterSignInUrl={"/list"}
+      afterSignUpUrl={"/list"}
+      afterSignOutUrl={"/"}
+      appearance={{
+        elements: {
+          formFieldInput: "rounded-full py-2 bg-muted/50 text-foreground",
+          button: "rounded-full",
+          rootBox: "rounded-3xl overflow-hidden",
+          card: "bg-transparent",
+          footer: "hidden",
+          main: "h-fit max-h-fit",
+          headerTitle: "text-foreground",
+          headerSubtitle: "text-muted-foreground",
+          formFieldLabel: "text-muted-foreground",
+          formFieldInfoText: "text-muted-foreground",
+          formButtonPrimary:
+            "bg-foreground text-background hover:bg-foreground/50 py-2 font-normal text-sm",
+          buttonArrowIcon: "hidden",
+        },
+      }}
+    >
       <html lang="en">
         <body
           className={`${readex.variable} ${raleway.variable} font-raleway font-medium antialiased h-[100dvh]`}
