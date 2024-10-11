@@ -41,7 +41,7 @@ import { transfer_money } from "@/app/actions/moneys";
 import { usePathname } from "next/navigation";
 import { ListDataContext } from "./providers/list";
 import { useQueryClient } from "@tanstack/react-query";
-import { useMeasure } from "@uidotdev/usehooks";
+import { useList, useMeasure } from "@uidotdev/usehooks";
 import AddMoneyDrawer from "./add-money-drawer";
 import _ from "lodash";
 import { Badge } from "./ui/badge";
@@ -78,12 +78,18 @@ export const NavBar = forwardRef(function NavBar(
   ref: React.Ref<HTMLDivElement>
 ) {
   const { showProfile, setShowProfile } = useNavContext();
+  const listState = useListState();
   return (
-    <nav className="flex justify-evenly gap-2 w-full overflow-hidden">
+    <nav className="flex justify-evenly gap-2 w-full overflow-hidden fixed bottom-0">
       <m.div
         ref={ref}
         layout
-        className={cn("h-full max-w-[800px] w-screen duration-500", className)}
+        className={cn(
+          `h-full max-w-[800px] w-screen duration-500 bg-gradient-to-t from-background ${
+            listState.transferrings ? "from-80%" : "from-50%"
+          } via-background to-transparent`,
+          className
+        )}
       >
         <AnimatePresence mode="popLayout">{children}</AnimatePresence>
       </m.div>
@@ -352,7 +358,7 @@ export default function AnimatedNav() {
       <NavBar
         ref={navBar}
         className={`${!width ? "opacity-0" : "opacity-100"} ${
-          listState.transferrings ? "h-fit" : "h-[58px]"
+          listState.transferrings ? "h-fit" : "h-[66px]"
         }`}
       >
         {listState.transferrings ? (
@@ -362,9 +368,9 @@ export default function AnimatedNav() {
             animate={"open"}
             exit={"close"}
             variants={variants}
-            className="w-full h-full flex flex-col justify-end gap-4 py-2 px-4"
+            className="w-full h-full flex flex-col justify-end gap-2 py-2 pt-4"
           >
-            <div className="flex flex-col gap-2 bg-muted border border-input dark:bg-muted/50 rounded-3xl p-4">
+            <div className="flex flex-col gap-2 bg-muted border border-input dark:bg-[#1a1a1a] rounded-3xl p-4">
               <div className="flex flex-row gap-2 items-baseline">
                 <p className="text-xs text-muted-foreground">Sender: </p>
                 <Badge

@@ -381,10 +381,15 @@ export function MoneyAmount() {
 }
 
 export function MoneyActions({ children }: { children: React.ReactNode }) {
-  const { money } = useMoneyBarContext();
+  const { money, listState, transferState } = useMoneyBarContext();
   return (
     <m.div
-      key={`actions-${money.id}`}
+      key={`actions-${money.id}-${listState.transferrings?.branches === null}-${
+        transferState.isInBranch
+      }-${transferState.isRoot}`}
+      animate={{ opacity: 1, translateX: -0 }}
+      initial={{ opacity: 0, translateX: -10 }}
+      exit={{ opacity: 0, translateX: -10 }}
       layout
       className={`flex flex-row gap-6 mt-4 px-4`}
     >
@@ -445,88 +450,87 @@ export function MoneyDeleteBtn() {
 
     listState.setState({ ...listState, transferrings: null });
   }
-
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button
-          size={"icon"}
-          disabled={deleting || listState.transferrings !== null}
-          className="size-6 aspect-square"
-          variant={"ghost"}
-        >
-          <Trash
-            className={`${darken}`}
-            style={{ color: money.color ?? "" }}
-            size={16}
-          />
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Confirm Deletion</DialogTitle>
-          <DialogDescription>
-            <p>This action cannot be undone.</p>
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col gap-4 p-4 pt-0 text-sm">
-          <div
-            style={{
-              borderColor: money.color ?? "hsl(var(--border))",
-              color: money.color ?? "hsl(var(--foreground))",
-            }}
-            className={`border flex items-center justify-between py-2 px-6 rounded-full ${darken}`}
+  if (listState.transferrings === null)
+    return (
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button
+            size={"icon"}
+            disabled={deleting}
+            className="size-6 aspect-square"
+            variant={"ghost"}
           >
-            <p className="font-bold">{money.name}</p>
-            <Amount
-              amount={money.amount}
-              settings={{ sign: true }}
-              className="text-lg"
+            <Trash
+              className={`${darken}`}
+              style={{ color: money.color ?? "" }}
+              size={16}
             />
-          </div>
-          <DialogClose asChild disabled={deleting}>
-            <Button
-              className="w-full"
-              onClick={deleteMoney}
-              variant={"destructive"}
-              disabled={deleting}
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              <p>This action cannot be undone.</p>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 p-4 pt-0 text-sm">
+            <div
+              style={{
+                borderColor: money.color ?? "hsl(var(--border))",
+                color: money.color ?? "hsl(var(--foreground))",
+              }}
+              className={`border flex items-center justify-between py-2 px-6 rounded-full ${darken}`}
             >
-              Confirm Delete
-            </Button>
-          </DialogClose>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+              <p className="font-bold">{money.name}</p>
+              <Amount
+                amount={money.amount}
+                settings={{ sign: true }}
+                className="text-lg"
+              />
+            </div>
+            <DialogClose asChild disabled={deleting}>
+              <Button
+                className="w-full"
+                onClick={deleteMoney}
+                variant={"destructive"}
+                disabled={deleting}
+              >
+                Confirm Delete
+              </Button>
+            </DialogClose>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
 }
 
 export function MoneyExternalLinkBtn() {
   const { money, listState, darken } = useMoneyBarContext();
-
-  return (
-    <Button
-      size={"icon"}
-      className="size-6 aspect-square "
-      variant={"ghost"}
-      disabled={listState.transferrings !== null}
-      asChild
-    >
-      <Link
-        href={`/list/money/${money.id}`}
-        className={`rounded-full h-fit aspect-square 
+  if (listState.transferrings === null)
+    return (
+      <Button
+        size={"icon"}
+        className="size-6 aspect-square "
+        variant={"ghost"}
+        asChild
+      >
+        <Link
+          href={`/list/money/${money.id}`}
+          className={`rounded-full h-fit aspect-square 
           
           ${
             listState.transferrings !== null && "pointer-events-none opacity-50"
           }`}
-      >
-        <ExternalLink
-          className={`${darken}`}
-          style={{ color: money.color ?? "hsl(var(--foreground))" }}
-          size={16}
-        />
-      </Link>
-    </Button>
-  );
+        >
+          <ExternalLink
+            className={`${darken}`}
+            style={{ color: money.color ?? "hsl(var(--foreground))" }}
+            size={16}
+          />
+        </Link>
+      </Button>
+    );
 }
 export function MoneyEditBtn() {
   const { money, currentTotal, darken, listState } = useMoneyBarContext();
@@ -545,39 +549,39 @@ export function MoneyEditBtn() {
 
     listState.setState({ ...listState, transferrings: null });
   }
-  return (
-    <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
-      <DialogTrigger asChild>
-        <Button
-          size={"icon"}
-          className="size-6 aspect-square"
-          variant={"ghost"}
-          disabled={listState.transferrings !== null}
-        >
-          <Edit
-            className={`${darken}`}
-            style={{ color: money.color ?? "hsl(var(--foreground))" }}
-            size={16}
-          />
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit money</DialogTitle>
-          <DialogDescription>
-            <p>Edit the progress of this money.</p>
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col gap-4 p-4 pt-0 text-sm">
-          <EditMoneyForm
-            currentTotal={currentTotal}
-            money={money}
-            done={done}
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+  if (listState.transferrings === null)
+    return (
+      <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
+        <DialogTrigger asChild>
+          <Button
+            size={"icon"}
+            className="size-6 aspect-square"
+            variant={"ghost"}
+          >
+            <Edit
+              className={`${darken}`}
+              style={{ color: money.color ?? "hsl(var(--foreground))" }}
+              size={16}
+            />
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit money</DialogTitle>
+            <DialogDescription>
+              <p>Edit the progress of this money.</p>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 p-4 pt-0 text-sm">
+            <EditMoneyForm
+              currentTotal={currentTotal}
+              money={money}
+              done={done}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
 }
 
 export function MoneyPaletteBtn() {
@@ -600,79 +604,79 @@ export function MoneyPaletteBtn() {
 
     listState.setState({ ...listState, transferrings: null });
   }
-  return (
-    <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
-      <DialogTrigger asChild>
-        <Button
-          size={"icon"}
-          className="size-6 aspect-square"
-          variant={"ghost"}
-          disabled={listState.transferrings !== null}
-        >
-          <Palette
-            className={`${darken}`}
-            style={{ color: money.color ?? "hsl(var(--foreground))" }}
-            size={16}
-          />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-h-[75%] gap-0">
-        <DialogHeader>
-          <DialogTitle>Colorize money</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col gap-4 pt-0 text-sm">
-          <Money
-            currentTotal={currentTotal}
-            specific={specific}
-            money={{ ...money, color: colorPreview }}
+  if (listState.transferrings === null)
+    return (
+      <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
+        <DialogTrigger asChild>
+          <Button
+            size={"icon"}
+            className="size-6 aspect-square"
+            variant={"ghost"}
           >
-            <MoneyBar className="p-4">
-              <MoneyHeader />
-              <MoneyAmount />
-            </MoneyBar>
-          </Money>
-          <div className="grid grid-cols-18 gap-1 px-4 w-full">
-            {Object.values(colors).map((color, i) => {
-              return (
-                <div key={i}>
-                  {Object.values(color).map((c) => {
-                    return (
-                      <button
-                        onClick={() => setColorPreview(c)}
-                        className={`rounded-full w-full aspect-square ${
-                          c === money.color && "border-4 border-primary"
-                        } ${
-                          c === colorPreview && "border-4 border-primary/50"
-                        }`}
-                        style={{ backgroundColor: c }}
-                        key={c}
-                      />
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </div>
-          <div className="px-4 pb-4 w-full flex flex-col gap-4">
-            <Button
-              onClick={() => colorize("")}
-              className="w-full"
-              variant={"secondary"}
+            <Palette
+              className={`${darken}`}
+              style={{ color: money.color ?? "hsl(var(--foreground))" }}
+              size={16}
+            />
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-h-[75%] gap-0">
+          <DialogHeader>
+            <DialogTitle>Colorize money</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 pt-0 text-sm">
+            <Money
+              currentTotal={currentTotal}
+              specific={specific}
+              money={{ ...money, color: colorPreview }}
             >
-              Set Default
-            </Button>
-            <Button
-              onClick={() => colorize(colorPreview ?? "")}
-              className="w-full"
-              disabled={money.color === colorPreview}
-            >
-              Update Color
-            </Button>
+              <MoneyBar className="p-4">
+                <MoneyHeader />
+                <MoneyAmount />
+              </MoneyBar>
+            </Money>
+            <div className="grid grid-cols-18 gap-1 px-4 w-full">
+              {Object.values(colors).map((color, i) => {
+                return (
+                  <div key={i}>
+                    {Object.values(color).map((c) => {
+                      return (
+                        <button
+                          onClick={() => setColorPreview(c)}
+                          className={`rounded-full w-full aspect-square ${
+                            c === money.color && "border-4 border-primary"
+                          } ${
+                            c === colorPreview && "border-4 border-primary/50"
+                          }`}
+                          style={{ backgroundColor: c }}
+                          key={c}
+                        />
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="px-4 pb-4 w-full flex flex-col gap-4">
+              <Button
+                onClick={() => colorize("")}
+                className="w-full"
+                variant={"secondary"}
+              >
+                Set Default
+              </Button>
+              <Button
+                onClick={() => colorize(colorPreview ?? "")}
+                className="w-full"
+                disabled={money.color === colorPreview}
+              >
+                Update Color
+              </Button>
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+        </DialogContent>
+      </Dialog>
+    );
 }
 
 export function MoneyTransferBtn() {
