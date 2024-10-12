@@ -114,7 +114,9 @@ function useMoneyTransferringDetails(
   const branchesDemandedAmounts = _.sum(
     listState.transferrings?.branches.map((b) => b.transferAmount)
   );
-  const isRootNegative = (root?.amount ?? 0) - branchesDemandedAmounts < 0;
+
+  const isRootNegative =
+    (root?.amount ?? 0) - (root?.fee ?? 0) - branchesDemandedAmounts < 0;
   return {
     root,
     branch,
@@ -363,24 +365,25 @@ export function MoneyBar({
                     : branch?.transferAmount ?? 0
                 }
                 onChange={(v) => {
+                  if (!branch) return;
                   if (!Number(v.currentTarget.value))
                     return listState.setTransfereesState(
                       0,
-                      money.id,
+                      branch?.id,
                       branch?.reason ?? "",
-                      branch?.fee ?? 0
+                      branch?.fee
                     );
                   listState.setTransfereesState(
                     Number(v.target.value),
-                    money.id,
+                    branch?.id,
                     branch?.reason ?? "",
-                    branch?.fee ?? 0
+                    branch?.fee
                   );
                 }}
                 placeholder={`Amount to receive from ${root?.name}`}
               />
             </div>
-            <div className="flex flex-col xs:flex-row xs:items-end gap-4 px-4">
+            <div className="flex flex-col xs:flex-row xs:items-end gap-4">
               <div className="space-y-1.5 flex-1 xs:max-w-32">
                 <p className="text-muted-foreground text-xs truncate">
                   Receiving transfer fee (optional)
@@ -392,17 +395,18 @@ export function MoneyBar({
                     Number(branch?.fee) <= 0 ? undefined : branch?.fee ?? 0
                   }
                   onChange={(v) => {
+                    if (!branch) return;
                     if (!Number(v.currentTarget.value))
                       return listState.setTransfereesState(
-                        branch?.transferAmount ?? 0,
-                        money.id,
-                        branch?.reason ?? "",
+                        branch.transferAmount ?? 0,
+                        branch.id,
+                        branch.reason ?? "",
                         0
                       );
                     listState.setTransfereesState(
-                      branch?.transferAmount ?? 0,
-                      money.id,
-                      branch?.reason ?? "",
+                      branch.transferAmount ?? 0,
+                      branch.id,
+                      branch.reason ?? "",
                       Number(v.target.value)
                     );
                   }}
@@ -551,11 +555,14 @@ export function MoneyAmount() {
       isInBranch,
       isRoot,
       isRootNegative,
-
+      root,
       branch,
       branchesDemandedAmounts,
     },
   } = useMoneyBarContext();
+
+  const isBranchNegative =
+    Number(branch?.transferAmount ?? 0) - Number(branch?.fee ?? 0) < 0;
 
   return (
     <m.div
@@ -565,13 +572,19 @@ export function MoneyAmount() {
     >
       <Amount
         className={`${darken}`}
-        color={isRootNegative ? "hsl(var(--destructive))" : money.color ?? ""}
+        color={
+          isRootNegative
+            ? "hsl(var(--destructive))"
+            : isBranchNegative
+            ? "hsl(var(--destructive))"
+            : money.color ?? ""
+        }
         amount={Number(
           money.amount +
             (isInBranch
-              ? branch?.transferAmount ?? 0
+              ? Number(branch?.transferAmount ?? 0) - Number(branch?.fee ?? 0)
               : isRoot
-              ? -branchesDemandedAmounts
+              ? Number(-branchesDemandedAmounts) - Number(root?.fee ?? 0)
               : 0)
         )}
         settings={{ sign: true }}

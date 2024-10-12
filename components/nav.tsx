@@ -38,7 +38,7 @@ import Link from "next/link";
 import { AnimatePresence, motion as m } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { ClassNameValue } from "tailwind-merge";
-import { transfer_money } from "@/app/actions/moneys";
+import { edit_money, transfer_money } from "@/app/actions/moneys";
 import { usePathname } from "next/navigation";
 import { ListDataContext } from "./providers/list";
 import { useQueryClient } from "@tanstack/react-query";
@@ -354,30 +354,45 @@ export default function AnimatedNav() {
     if (!branches) return alert("!branches");
     if (!root) return alert("!root");
     if (root.amount - branchesDemandSum < 0) return alert("root is negative");
+    if (
+      branches.some(
+        (b) => Number(b.transferAmount ?? 0) - Number(b.fee ?? 0) < 0
+      )
+    )
+      return alert("Some branch is negative");
 
     await transfer_money(
       {
         prev: root,
         latest: {
           ...root,
-          amount: root.amount - branchesDemandSum,
+          amount: root.amount - branchesDemandSum - root.fee,
         },
       },
       root.reason,
       currentTotal - root.fee
     );
 
-    for (const branch of branches) {
+    for (let index = 0; index < branches.length; index++) {
+      const branch = branches[index];
+      const previousBranches = branches.slice(0, index);
+      const sumOfPreviousBranchesFees = _.sum(
+        previousBranches.map((b) => b.fee)
+      );
+
       await transfer_money(
         {
           prev: branch,
           latest: {
             ...branch,
-            amount: branch.amount + (branch.transferAmount ?? 0),
+            amount: branch.amount + (branch.transferAmount ?? 0) - branch.fee,
           },
         },
         branch.reason,
-        currentTotal - branch.fee
+        currentTotal -
+          branches[index].fee -
+          root.fee -
+          (index > 0 ? sumOfPreviousBranchesFees : 0)
       );
     }
     queryClient.refetchQueries();
