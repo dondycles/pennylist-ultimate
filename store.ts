@@ -145,3 +145,75 @@ export const useChartsState = create<ChartsState>()(
     }
   )
 );
+
+// export type Money = {
+//   id: string;
+//   lister: string;
+//   name: string;
+//   amount: number;
+//   color: string;
+//   created_at: string;
+//   last_updated_at: string;
+// };
+
+// type MoneysStore = {
+//   moneys: Money[];
+//   addMoney: (money: Money) => void;
+//   delMoney: (id: string) => void;
+//   editMoney: (money: Money, reason: string, currentTotal: number) => void;
+//   transfer: (
+//     money: {
+//       prev: Money;
+//       latest: Money;
+//     },
+//     reason: string,
+//     currentTotal: number
+//   ) => void;
+// };
+
+// export type MoneysNotes = {
+//   id: string;
+//   money_id: string;
+//   note: string;
+//   lister: string;
+//   created_at: string;
+// };
+
+// export type Logs = {
+//   id: string;
+//   money_id: string;
+//   note: string;
+//   created_at: string;
+//   lister: string;
+// };
+
+// export const useMoneysStore = create<MoneysStore>()(
+//   persist(
+//     (set) => ({
+//       moneys: [],
+//       addMoney: (money) =>
+//         set(({ moneys }) => {
+//           const newMoneys = [...moneys, money];
+//           return { moneys: newMoneys };
+//         }),
+//       delMoney: (id) =>
+//         set(({ moneys }) => {
+//           const newMoneys = moneys.filter((m) => m.id !== id);
+//           return { moneys: newMoneys };
+//         }),
+//       editMoney: (money, reason, currentTotal) =>
+//         set(({ moneys }) => {
+//           const newMoneys = moneys.filter((m) => m.id !== money.id);
+//           return { moneys: [...newMoneys, money] };
+//         }),
+//       transfer: (money, reason, currentTotal) =>
+//         set(({ moneys }) => {
+//           return {};
+//         }),
+//     }),
+//     {
+//       name: "moneys",
+//       storage: createJSONStorage(() => storage),
+//     }
+//   )
+// );

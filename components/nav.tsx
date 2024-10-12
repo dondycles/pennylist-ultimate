@@ -417,7 +417,7 @@ export default function AnimatedNav() {
               className="absolute h-full bottom-0 left-0 right-0 p-0 mx-auto w-screen max-w-[800px]"
             >
               <div className="w-full h-full flex flex-col justify-end gap-4 p-4">
-                <div className="flex flex-col gap-2 bg-muted border border-input dark:bg-[#171717] rounded-3xl p-4">
+                <div className="flex flex-col gap-2 border border-input bg-muted  dark:bg-[#171717] rounded-3xl p-4">
                   <div className="flex flex-row gap-2 items-baseline">
                     <p className="text-xs text-muted-foreground">Sender: </p>
                     <Badge

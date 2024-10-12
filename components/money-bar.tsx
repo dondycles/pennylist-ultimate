@@ -268,7 +268,7 @@ export function MoneyBar({
             variants={variants}
             key={"commenting"}
           >
-            <div className="flex flex-col bg-[#171717] rounded-3xl overflow-hidden">
+            <div className="flex flex-col border rounded-3xl overflow-hidden">
               {money.money_note.length > 0 ? (
                 <ScrollArea className="w-full h-[30dvh]">
                   {money.money_note.map((note, i) => {
@@ -281,7 +281,7 @@ export function MoneyBar({
                         key={`${note.id}-${i}`}
                         className="p-4 pb-0 last:mb-4"
                       >
-                        <div className="rounded-3xl prose max-w-none text-muted-foreground p-4 bg-muted/50 border">
+                        <div className="rounded-3xl prose max-w-none text-muted-foreground p-4 bg-muted">
                           <span className="text-xs opacity-25">
                             {new Date(note.created_at).toLocaleDateString()}
                           </span>
@@ -604,9 +604,9 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
       }-${String(transferState.isInBranch)}-${String(
         transferState.isRoot
       )}-${commenting}`}
-      animate={{ opacity: 1, translateX: -0 }}
-      initial={{ opacity: 0, translateX: -10 }}
-      exit={{ opacity: 0, translateX: -10 }}
+      animate={{ opacity: 1, translateY: -0 }}
+      initial={{ opacity: 0, translateY: -4 }}
+      exit={{ opacity: 0, translateY: -4 }}
       className={`shrink-0 flex flex-coloverflow-hidden ${
         listState.compactMoney ? "aspect-square size-6" : "mt-4 h-fit"
       }`}

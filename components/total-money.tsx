@@ -37,7 +37,7 @@ export default function TotalMoney() {
         {user?.username}&apos;s total money
       </motion.p>
       <motion.div
-        initial={{ opacity: 0 }}
+        initial={false}
         animate={{
           scale: listState.minimizeTotalMoney ? 0.5 : 1,
           translateY: listState.minimizeTotalMoney ? -52 : 0,

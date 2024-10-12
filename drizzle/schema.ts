@@ -1,4 +1,4 @@
-import { relations, sql, SQL } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
   pgTable,
   serial,
@@ -7,7 +7,6 @@ import {
   real,
   jsonb,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 
 export const moneysTable = pgTable("moneys_table", {
   id: serial("id").primaryKey().notNull(),
