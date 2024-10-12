@@ -237,7 +237,7 @@ export function MoneyBar({
   return (
     <m.div
       layout
-      key={`${money.id}-${money.last_update}-${listState.compactMoney}`}
+      key={`${money.id}-${money.last_update}-${listState.compactMoney}-${listState.hidden}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
