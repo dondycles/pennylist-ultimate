@@ -242,14 +242,14 @@ export function MoneyBar({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className={cn(
-        `w-full overflow-hidden py-4 flex flex-col border-b last:border-b-0 ${
+        `w-full overflow-hidden p-4 flex flex-col border-b last:border-b-0 ${
           deleting && "animate-pulse scale-95"
         }`,
         className
       )}
     >
       {listState.compactMoney ? (
-        <div className="flex flex-row items-center justify-between">
+        <div className="flex flex-row items-center justify-between gap-4 flex-1">
           {children}
         </div>
       ) : (
@@ -266,77 +266,75 @@ export function MoneyBar({
             variants={variants}
             key={"commenting"}
           >
-            <div className="px-4">
-              <div className="flex flex-col bg-[#171717] rounded-3xl overflow-hidden">
-                {money.money_note.length > 0 ? (
-                  <ScrollArea className="w-full h-[30dvh]">
-                    {money.money_note.map((note, i) => {
-                      return (
-                        <m.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          layout
-                          key={`${note.id}-${i}`}
-                          className="p-4 pb-0 last:mb-4"
-                        >
-                          <div className="rounded-3xl prose max-w-none text-muted-foreground p-4 bg-muted/50 border">
-                            <span className="text-xs opacity-25">
-                              {new Date(note.created_at).toLocaleDateString()}
-                            </span>
-                            <p className="whitespace-pre-wrap">{note.note}</p>
-                            <CommentDeleteBtn
-                              _delete={() => delete_note(note.id)}
-                            />
-                          </div>
-                        </m.div>
-                      );
-                    })}
-                  </ScrollArea>
-                ) : (
-                  <m.p
-                    key={"no-notes"}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    layout
-                    className="text-xs text-muted-foreground text-center p-4"
-                  >
-                    no notes yet
-                  </m.p>
-                )}{" "}
-                <form
-                  action={add_note}
-                  className="flex gap-4 items-end border-t p-4 flex-1 "
+            <div className="flex flex-col bg-[#171717] rounded-3xl overflow-hidden">
+              {money.money_note.length > 0 ? (
+                <ScrollArea className="w-full h-[30dvh]">
+                  {money.money_note.map((note, i) => {
+                    return (
+                      <m.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        layout
+                        key={`${note.id}-${i}`}
+                        className="p-4 pb-0 last:mb-4"
+                      >
+                        <div className="rounded-3xl prose max-w-none text-muted-foreground p-4 bg-muted/50 border">
+                          <span className="text-xs opacity-25">
+                            {new Date(note.created_at).toLocaleDateString()}
+                          </span>
+                          <p className="whitespace-pre-wrap">{note.note}</p>
+                          <CommentDeleteBtn
+                            _delete={() => delete_note(note.id)}
+                          />
+                        </div>
+                      </m.div>
+                    );
+                  })}
+                </ScrollArea>
+              ) : (
+                <m.p
+                  key={"no-notes"}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  layout
+                  className="text-xs text-muted-foreground text-center p-4"
                 >
-                  <Textarea
-                    value={note}
-                    onChange={(v) => setNote(v.currentTarget.value)}
-                    className="flex-1 "
-                    placeholder="Notes, comments, hmm...? "
-                    rows={3}
-                  />
-                  <div className="flex flex-col gap-4">
-                    <Button
-                      variant={"ghost"}
-                      className="size-6 p-0"
-                      type="submit"
-                      size={"icon"}
-                    >
-                      <MessageCirclePlus size={16} />
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={() => setCommenting(false)}
-                      variant={"ghost"}
-                      size={"icon"}
-                      className="size-6 p-0"
-                    >
-                      <ChevronUp size={16} />
-                    </Button>
-                  </div>
-                </form>
-              </div>
+                  no notes yet
+                </m.p>
+              )}{" "}
+              <form
+                action={add_note}
+                className="flex gap-4 items-end border-t p-4 flex-1 "
+              >
+                <Textarea
+                  value={note}
+                  onChange={(v) => setNote(v.currentTarget.value)}
+                  className="flex-1 "
+                  placeholder="Notes, comments, hmm...? "
+                  rows={3}
+                />
+                <div className="flex flex-col gap-4">
+                  <Button
+                    variant={"ghost"}
+                    className="size-6 p-0"
+                    type="submit"
+                    size={"icon"}
+                  >
+                    <MessageCirclePlus size={16} />
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => setCommenting(false)}
+                    variant={"ghost"}
+                    size={"icon"}
+                    className="size-6 p-0"
+                  >
+                    <ChevronUp size={16} />
+                  </Button>
+                </div>
+              </form>
             </div>
           </m.div>
         )}
@@ -352,7 +350,7 @@ export function MoneyBar({
             key={"branch"}
             className="flex flex-col gap-4"
           >
-            <div className="space-y-1.5 px-4">
+            <div className="space-y-1.5">
               <p className="text-muted-foreground text-xs">
                 Receiving from {root?.name}
               </p>
@@ -440,7 +438,7 @@ export function MoneyBar({
             transition={{ duration: 0.8, ease: [0.04, 0.62, 0.23, 0.98] }}
             key={"root"}
           >
-            <div className="flex flex-col xs:flex-row xs:items-end gap-4 px-4">
+            <div className="flex flex-col xs:flex-row xs:items-end gap-4">
               <div className="space-y-1.5 flex-1 xs:max-w-32">
                 <p className="text-muted-foreground text-xs truncate">
                   Receiving transfer fee (optional)
@@ -503,26 +501,34 @@ export function MoneyHeader() {
     <m.div
       layout
       key={`${money.id}-${money.color}`}
-      className={`flex items-baseline gap-2 h-fit px-4 ${
-        compactMoney && "flex-1"
+      className={`flex items-baseline gap-2 h-fit  ${
+        compactMoney && "flex-1 truncate"
       }`}
     >
-      <m.span
-        layout
-        className={`font-bold ${darken}`}
-        style={{ color: color[1] }}
-      >
-        {money.name}
-      </m.span>
-      {compactMoney ? null : (
+      {compactMoney ? (
+        <m.p
+          layout
+          className={`font-bold ${darken} `}
+          style={{ color: color[1] }}
+        >
+          {money.name}
+        </m.p>
+      ) : (
         <>
+          <m.p
+            layout
+            className={`font-bold ${darken} `}
+            style={{ color: color[1] }}
+          >
+            {money.name}
+          </m.p>
           <Dot
             style={{
               color: color[0],
             }}
             size={12}
           />
-          <m.span
+          <m.p
             layout
             style={{
               color: color[0],
@@ -530,7 +536,7 @@ export function MoneyHeader() {
             className=" text-xs"
           >
             {new Date(money.created_at).toLocaleDateString()}
-          </m.span>
+          </m.p>
         </>
       )}
     </m.div>
@@ -555,23 +561,21 @@ export function MoneyAmount() {
     <m.div
       key={`amount-${money.id}`}
       layout
-      className="flex flex-col overflow-hidden px-4 pb-1 -mb-1"
+      className="flex flex-col overflow-hidden "
     >
-      <m.div layout>
-        <Amount
-          className={`${darken}`}
-          color={isRootNegative ? "hsl(var(--destructive))" : money.color ?? ""}
-          amount={Number(
-            money.amount +
-              (isInBranch
-                ? branch?.transferAmount ?? 0
-                : isRoot
-                ? -branchesDemandedAmounts
-                : 0)
-          )}
-          settings={{ sign: true }}
-        />
-      </m.div>
+      <Amount
+        className={`${darken}`}
+        color={isRootNegative ? "hsl(var(--destructive))" : money.color ?? ""}
+        amount={Number(
+          money.amount +
+            (isInBranch
+              ? branch?.transferAmount ?? 0
+              : isRoot
+              ? -branchesDemandedAmounts
+              : 0)
+        )}
+        settings={{ sign: true }}
+      />
     </m.div>
   );
 }
@@ -590,13 +594,13 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
       animate={{ opacity: 1, translateX: -0 }}
       initial={{ opacity: 0, translateX: -10 }}
       exit={{ opacity: 0, translateX: -10 }}
-      className={`flex flex-coloverflow-hidden ${
-        listState.compactMoney ? "aspect-square size-6 mr-4" : "mt-4 px-4 h-fit"
+      className={`shrink-0 flex flex-coloverflow-hidden ${
+        listState.compactMoney ? "aspect-square size-6" : "mt-4 h-fit"
       }`}
       layout
     >
       {!listState.compactMoney ? (
-        <m.div layout className={`flex flex-row gap-6 mb-1 items-center`}>
+        <m.div layout className={`flex flex-row gap-6 items-center`}>
           {children}
         </m.div>
       ) : (
