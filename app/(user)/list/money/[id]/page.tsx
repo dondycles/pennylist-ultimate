@@ -9,6 +9,7 @@ import {
   MoneyActions,
   MoneyAmount,
   MoneyBar,
+  MoneyCommentBtn,
   MoneyDeleteBtn,
   MoneyEditBtn,
   MoneyHeader,
@@ -79,6 +80,7 @@ export default function MoneyPage({ params }: { params: { id: number } }) {
               <MoneyActions>
                 <MoneyPaletteBtn />
                 <MoneyEditBtn />
+                <MoneyCommentBtn />
                 <MoneyDeleteBtn />
               </MoneyActions>
             </MoneyBar>

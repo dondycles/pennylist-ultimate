@@ -11,14 +11,11 @@ import {
   CornerRightDown,
   Dot,
   ExternalLink,
-  MessageCircle,
   MessageCircleMore,
   MessageCirclePlus,
   Palette,
   Pencil,
-  Send,
   Trash,
-  Trash2,
   X,
 } from "lucide-react";
 import { Button } from "./ui/button";
@@ -449,6 +446,7 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
   const [note, setNote] = useState("");
   const queryClient = useQueryClient();
   async function add_note() {
+    if (note.trim() === "") return;
     await add_money_note(note, money.id);
     queryClient.invalidateQueries({
       queryKey: ["list"],
@@ -456,6 +454,7 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
     queryClient.invalidateQueries({
       queryKey: [String(money.id)],
     });
+    setNote("");
   }
   async function delete_note(id: number) {
     await delete_money_note(id);
@@ -468,13 +467,14 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
   }
   return (
     <m.div
-      key={`actions-${money.id}-${listState.transferrings?.branches === null}-${
-        transferState.isInBranch
-      }-${transferState.isRoot}`}
+      key={`actions-${money.id}-${
+        listState.transferrings?.branches.length
+      }-${String(transferState.isInBranch)}-${String(transferState.isRoot)}`}
       animate={{ opacity: 1, translateX: -0 }}
       initial={{ opacity: 0, translateX: -10 }}
       exit={{ opacity: 0, translateX: -10 }}
       className={`flex flex-col h-fit overflow-hidden mt-2 px-4 -mb-1 pb-4`}
+      layout
     >
       <m.div layout className={`flex flex-row gap-6 mb-1 items-center`}>
         {(transferState.isRoot || transferState.isInBranch) && (
@@ -511,6 +511,9 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
                 {money.money_note.map((note, i) => {
                   return (
                     <m.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
                       layout
                       key={`${note.id}-${i}`}
                       className="p-4 pb-0 last:mb-4"
@@ -529,9 +532,16 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
                 })}
               </ScrollArea>
             ) : (
-              <p className="text-xs text-muted-foreground text-center p-4">
+              <m.p
+                key={"no-notes"}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                layout
+                className="text-xs text-muted-foreground text-center p-4"
+              >
                 no notes yet
-              </p>
+              </m.p>
             )}{" "}
             <form
               action={add_note}
@@ -855,10 +865,9 @@ export function MoneyPaletteBtn() {
 
 export function MoneyTransferBtn() {
   const {
-    listState,
     money,
     darken,
-    transferState: { isRoot, isInBranch, root, branch },
+    transferState: { isRoot, isInBranch },
     transfer,
   } = useMoneyBarContext();
 
@@ -907,7 +916,6 @@ export function MoneyCommentBtn() {
           }}
           className="absolute p-4 -bottom-3 w-6 bg-gradient-to-t from-[#141414] to-transparent z-0 rounded-t-full"
         />
-
         <MessageCircleMore
           className={`${darken} z-10`}
           style={{ color: money.color ?? "hsl(var(--foreground))" }}
