@@ -52,7 +52,7 @@ export default function AddMoneyForm({ done }: { done: () => void }) {
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input autoFocus placeholder="GCash" {...field} />
+                <Input placeholder="GCash" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

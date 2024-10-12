@@ -18,15 +18,11 @@ const readex = localFont({
 
 const APP_NAME = "pennylist.";
 const APP_DEFAULT_TITLE = "pennylist.";
-const APP_TITLE_TEMPLATE = "%s - pennylist";
 const APP_DESCRIPTION = "Avoid becoming penniless, start using pennylist.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ultimate.pennylist.app"),
-  title: {
-    default: APP_DEFAULT_TITLE,
-    template: APP_TITLE_TEMPLATE,
-  },
+  title: APP_DEFAULT_TITLE,
   description: APP_DESCRIPTION,
   applicationName: APP_NAME,
   appleWebApp: {
@@ -40,10 +36,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: APP_NAME,
-    title: {
-      default: APP_DEFAULT_TITLE,
-      template: APP_TITLE_TEMPLATE,
-    },
+    title: APP_DEFAULT_TITLE,
     description: APP_DESCRIPTION,
     images: [
       {
@@ -57,10 +50,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: {
-      default: APP_DEFAULT_TITLE,
-      template: APP_TITLE_TEMPLATE,
-    },
+    title: APP_DEFAULT_TITLE,
     description: APP_DESCRIPTION,
     images: [
       {
