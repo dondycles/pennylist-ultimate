@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { SignOutButton, UserProfile } from "@clerk/nextjs";
-import { useListState } from "@/store";
+import { ListState, useListState } from "@/store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,6 +50,7 @@ const NavContext = createContext<
   | {
       showProfile: boolean;
       setShowProfile: React.Dispatch<React.SetStateAction<boolean>>;
+      listState: ListState;
     }
   | undefined
 >(undefined);
@@ -62,8 +63,9 @@ function useNavContext() {
 
 export function Nav({ children }: { children: React.ReactNode }) {
   const [showProfile, setShowProfile] = useState(false);
+  const listState = useListState();
   return (
-    <NavContext.Provider value={{ setShowProfile, showProfile }}>
+    <NavContext.Provider value={{ setShowProfile, showProfile, listState }}>
       {children}
     </NavContext.Provider>
   );
@@ -79,16 +81,13 @@ export const NavBar = forwardRef(function NavBar(
   ref: React.Ref<HTMLDivElement>
 ) {
   const { showProfile, setShowProfile } = useNavContext();
-  const listState = useListState();
   return (
     <nav className="flex justify-evenly gap-2 w-full overflow-hidden fixed bottom-0">
       <m.div
         ref={ref}
         layout
         className={cn(
-          `h-full max-w-[800px] w-screen duration-500 bg-gradient-to-t from-background ${
-            listState.transferrings ? "from-80%" : "from-50%"
-          } via-background to-transparent`,
+          `h-full max-w-[800px] w-screen duration-500 bg-background`,
           className
         )}
       >
@@ -128,7 +127,7 @@ export function NavOptions({ children }: { children: React.ReactNode }) {
 }
 
 export function NavFilterOptions() {
-  const listState = useListState();
+  const { listState } = useNavContext();
   return (
     <>
       <DropdownMenuLabel className="text-muted-foreground text-xs">
@@ -191,9 +190,11 @@ export function NavFilterOptions() {
 }
 
 export function NavHideOption() {
-  const listState = useListState();
+  const { listState } = useNavContext();
   return (
     <>
+      <DropdownMenuSeparator />
+
       <DropdownMenuLabel className="text-muted-foreground text-xs">
         Privacy
       </DropdownMenuLabel>
@@ -255,10 +256,12 @@ export function NavUserOption() {
 }
 
 export function NavCompactMoneyOption() {
-  const listState = useListState();
+  const { listState } = useNavContext();
+  const pathname = usePathname();
   return (
     <>
-      <DropdownMenuSeparator />
+      {pathname === "/list" && <DropdownMenuSeparator />}
+
       <DropdownMenuLabel className="text-muted-foreground text-xs">
         Moneys
       </DropdownMenuLabel>

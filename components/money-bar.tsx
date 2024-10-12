@@ -724,9 +724,9 @@ export function MoneyDeleteBtn() {
                 borderColor: money.color ?? "hsl(var(--border))",
                 color: money.color ?? "hsl(var(--foreground))",
               }}
-              className={`border flex items-center justify-between py-2 px-6 rounded-full ${darken}`}
+              className={`border flex-1 flex gap-4 items-center justify-between py-2 px-6 rounded-full ${darken}`}
             >
-              <p className="font-bold">{money.name}</p>
+              <p className="font-bold ">{money.name}</p>
               <Amount
                 amount={money.amount}
                 settings={{ sign: true }}
