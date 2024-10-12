@@ -11,6 +11,7 @@ import {
   LetterText,
   LogOut,
   MoonIcon,
+  RectangleHorizontal,
   SortAsc,
   SortDesc,
   SunIcon,
@@ -253,6 +254,32 @@ export function NavUserOption() {
   );
 }
 
+export function NavCompactMoneyOption() {
+  const listState = useListState();
+  return (
+    <>
+      <DropdownMenuSeparator />
+      <DropdownMenuLabel className="text-muted-foreground text-xs">
+        Moneys
+      </DropdownMenuLabel>
+      <DropdownMenuRadioGroup
+        value={String(listState.compactMoney)}
+        onValueChange={() =>
+          listState.setState({
+            ...listState,
+            compactMoney: !listState.compactMoney,
+          })
+        }
+      >
+        <DropdownMenuRadioItem value="true">
+          <RectangleHorizontal size={16} className="mr-2" />
+          Compact
+        </DropdownMenuRadioItem>
+      </DropdownMenuRadioGroup>
+    </>
+  );
+}
+
 export function NavListBtn() {
   return (
     <Button asChild size={"icon"} variant={"ghost"}>
@@ -358,163 +385,175 @@ export default function AnimatedNav() {
       <NavBar
         ref={navBar}
         className={`${!width ? "opacity-0" : "opacity-100"} ${
-          listState.transferrings ? "h-fit" : "h-[66px]"
+          listState.transferrings ? "h-[178px] " : "h-[74px]"
         }`}
       >
-        {listState.transferrings ? (
-          <m.div
-            key={"transferring"}
-            initial={"close"}
-            animate={"open"}
-            exit={"close"}
-            variants={variants}
-            className="w-full h-full flex flex-col justify-end gap-2 p-2 pt-4"
-          >
-            <div className="flex flex-col gap-2 bg-muted border border-input dark:bg-[#171717] rounded-3xl p-4">
-              <div className="flex flex-row gap-2 items-baseline">
-                <p className="text-xs text-muted-foreground">Sender: </p>
-                <Badge
-                  variant={"outline"}
-                  className="font-bold text-base gap-1"
-                  style={{ color: root?.color ?? "hsl(var(--foreground))" }}
-                >
-                  <span>{root?.name}</span>
-                  <button onClick={removeRoot}>
-                    <X className="text-destructive" size={16} />
-                  </button>
-                </Badge>
-                <CornerRightDown className="text-muted-foreground" size={16} />
-              </div>
-              {listState.transferrings.branches.length !== 0 ? (
-                <div className="flex flex-row gap-2 items-baseline border-t pt-2">
-                  <p className="text-muted-foreground text-xs">Receiver(s): </p>
-                  <div className="flex gap-2">
-                    {listState.transferrings.branches.map((b) => {
-                      return (
-                        <React.Fragment key={b.id}>
-                          <Badge
-                            variant={"outline"}
-                            style={{
-                              color: b?.color ?? "hsl(var(--foreground))",
-                            }}
-                            className="gap-1"
-                          >
-                            <span>{b?.name}</span>
-
-                            <button onClick={() => removeBranch(b?.id)}>
-                              <X className="text-destructive" size={16} />
-                            </button>
-                          </Badge>
-                          <span className="last:hidden">,</span>
-                        </React.Fragment>
-                      );
-                    })}
+        <AnimatePresence initial={false}>
+          {listState.transferrings ? (
+            <m.div
+              key={"transferring"}
+              initial={"close"}
+              animate={"open"}
+              exit={"close"}
+              variants={variants}
+              className="absolute h-full bottom-0 left-0 right-0 p-0 mx-auto w-screen max-w-[800px]"
+            >
+              <div className="w-full h-full flex flex-col justify-end gap-4 p-4">
+                <div className="flex flex-col gap-2 bg-muted border border-input dark:bg-[#171717] rounded-3xl p-4">
+                  <div className="flex flex-row gap-2 items-baseline">
+                    <p className="text-xs text-muted-foreground">Sender: </p>
+                    <Badge
+                      variant={"outline"}
+                      className="font-bold text-base gap-1"
+                      style={{ color: root?.color ?? "hsl(var(--foreground))" }}
+                    >
+                      <span>{root?.name}</span>
+                      <button onClick={removeRoot}>
+                        <X className="text-destructive" size={16} />
+                      </button>
+                    </Badge>
+                    <CornerRightDown
+                      className="text-muted-foreground"
+                      size={16}
+                    />
                   </div>
+                  {listState.transferrings.branches.length !== 0 ? (
+                    <div className="flex flex-row gap-2 items-baseline border-t pt-2">
+                      <p className="text-muted-foreground text-xs">
+                        Receiver(s):{" "}
+                      </p>
+                      <div className="flex gap-2">
+                        {listState.transferrings.branches.map((b) => {
+                          return (
+                            <React.Fragment key={b.id}>
+                              <Badge
+                                variant={"outline"}
+                                style={{
+                                  color: b?.color ?? "hsl(var(--foreground))",
+                                }}
+                                className="gap-1"
+                              >
+                                <span>{b?.name}</span>
+
+                                <button onClick={() => removeBranch(b?.id)}>
+                                  <X className="text-destructive" size={16} />
+                                </button>
+                              </Badge>
+                              <span className="last:hidden">,</span>
+                            </React.Fragment>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-xs">
+                      Receiver(s): Please select money(s)
+                    </p>
+                  )}
                 </div>
-              ) : (
-                <p className="text-muted-foreground text-xs">
-                  Receiver(s): Please select money(s)
-                </p>
-              )}
-            </div>
-            <div className="flex flex-row gap-4 ">
-              <Button
-                disabled={listState.transferrings.branches.length === 0}
-                onClick={transfer}
-                className="flex gap-2 flex-1"
-              >
-                Proceed Transfer
-                <ArrowRightLeft size={16} />{" "}
-              </Button>
-              <Button
-                onClick={() =>
-                  listState.setState({ ...listState, transferrings: null })
-                }
-                variant={"destructive"}
-                size="icon"
-              >
-                <X size={16} />
-              </Button>
-            </div>
-          </m.div>
-        ) : (
-          <m.div
-            key={"!transferring"}
-            initial={"close"}
-            animate={"open"}
-            exit={"close"}
-            variants={variants}
-            className="h-full w-full relative "
-          >
+                <div className="flex flex-row gap-4 ">
+                  <Button
+                    disabled={listState.transferrings.branches.length === 0}
+                    onClick={transfer}
+                    className="flex gap-2 flex-1"
+                  >
+                    Proceed Transfer
+                    <ArrowRightLeft size={16} />{" "}
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      listState.setState({ ...listState, transferrings: null })
+                    }
+                    variant={"destructive"}
+                    size="icon"
+                  >
+                    <X size={16} />
+                  </Button>
+                </div>
+              </div>
+            </m.div>
+          ) : (
             <m.div
-              key={"pages-btn"}
-              initial={false}
-              className={`flex justify-center absolute left-0 bottom-2 h-10 `}
-              animate={{
-                width:
-                  showListBtn && showChartBtn
-                    ? calculatedWidth * 2
-                    : calculatedWidth,
-              }}
+              key={"!transferring"}
+              initial={"close"}
+              animate={"open"}
+              exit={"close"}
+              variants={variants}
+              className="absolute h-full w-screen max-w-[800px] mx-auto bottom-0 left-0 right-0"
             >
-              <div className="flex-1 relative">
+              <div className="h-full w-full relative">
                 <m.div
-                  className="absolute bottom-[50%] translate-x-[-50%] translate-y-[50%]"
+                  key={"pages-btn"}
                   initial={false}
+                  className={`flex justify-center absolute left-0 bottom-4 h-10 `}
                   animate={{
-                    opacity: showListBtn ? 1 : 0,
-                    pointerEvents: showListBtn ? "all" : "none",
-                    left: showListBtn && showChartBtn ? "25%" : "50%",
+                    width:
+                      showListBtn && showChartBtn
+                        ? calculatedWidth * 2
+                        : calculatedWidth,
                   }}
-                  key={"list-btn"}
                 >
-                  <NavListBtn />
+                  <div className="flex-1 relative">
+                    <m.div
+                      className="absolute bottom-[50%] translate-x-[-50%] translate-y-[50%]"
+                      initial={false}
+                      animate={{
+                        opacity: showListBtn ? 1 : 0,
+                        pointerEvents: showListBtn ? "all" : "none",
+                        left: showListBtn && showChartBtn ? "25%" : "50%",
+                      }}
+                      key={"list-btn"}
+                    >
+                      <NavListBtn />
+                    </m.div>
+                    <m.div
+                      className="absolute bottom-[50%] translate-x-[-50%]  translate-y-[50%]"
+                      initial={false}
+                      animate={{
+                        opacity: showChartBtn ? 1 : 0,
+                        pointerEvents: showChartBtn ? "all" : "none",
+                        left: showListBtn && showChartBtn ? "75%" : "50%",
+                      }}
+                      key={"charts-btn"}
+                    >
+                      <NavChartBtn />
+                    </m.div>
+                  </div>
                 </m.div>
                 <m.div
-                  className="absolute bottom-[50%] translate-x-[-50%]  translate-y-[50%]"
+                  className={`flex justify-center absolute right-[50%] bottom-4 z-50`}
+                  key={"add-btn"}
                   initial={false}
                   animate={{
-                    opacity: showChartBtn ? 1 : 0,
-                    pointerEvents: showChartBtn ? "all" : "none",
-                    left: showListBtn && showChartBtn ? "75%" : "50%",
+                    translateY: showAddBtn ? 0 : 72,
+                    translateX: "50%",
+                    width: calculatedWidth,
+                    opacity: showAddBtn ? 1 : 0,
+                    pointerEvents: showAddBtn ? "all" : "none",
                   }}
-                  key={"charts-btn"}
                 >
-                  <NavChartBtn />
+                  <AddMoneyDrawer />
+                </m.div>
+                <m.div
+                  className={`flex justify-center absolute right-0 bottom-4`}
+                  key={"options"}
+                  initial={false}
+                  animate={{
+                    width: calculatedWidth,
+                  }}
+                >
+                  <NavOptions>
+                    {pathname === "/list" ? <NavFilterOptions /> : null}
+                    <NavCompactMoneyOption />
+                    <NavHideOption />
+                    <NavThemeOptions />
+                    <NavUserOption />
+                  </NavOptions>
                 </m.div>
               </div>
             </m.div>
-            <m.div
-              className={`flex justify-center absolute right-[50%] bottom-2 z-50`}
-              key={"add-btn"}
-              initial={false}
-              animate={{
-                translateY: showAddBtn ? 0 : 72,
-                translateX: "50%",
-                width: calculatedWidth,
-                opacity: showAddBtn ? 1 : 0,
-                pointerEvents: showAddBtn ? "all" : "none",
-              }}
-            >
-              <AddMoneyDrawer />
-            </m.div>
-            <m.div
-              className={`flex justify-center absolute right-0 bottom-2`}
-              key={"options"}
-              initial={false}
-              animate={{
-                width: calculatedWidth,
-              }}
-            >
-              <NavOptions>
-                {pathname === "/list" ? <NavFilterOptions /> : null}
-                <NavHideOption />
-                <NavThemeOptions />
-                <NavUserOption />
-              </NavOptions>
-            </m.div>
-          </m.div>
-        )}
+          )}
+        </AnimatePresence>
       </NavBar>
     </Nav>
   );

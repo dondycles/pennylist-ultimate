@@ -30,6 +30,7 @@ export type ListState = {
   hidden: boolean;
   sortBy: "created_at" | "amount" | "name";
   asc: boolean;
+  compactMoney: boolean;
   transferrings: {
     root: MoneyTransfer;
     branches: MoneyTransfer[];
@@ -49,6 +50,7 @@ export type ListState = {
     minimizeTotalMoney,
     isTransferring,
     transferrings,
+    compactMoney,
   }: {
     view: "list" | "grid";
     hidden: boolean;
@@ -56,6 +58,7 @@ export type ListState = {
     asc: boolean;
     minimizeTotalMoney: boolean;
     isTransferring: boolean;
+    compactMoney: boolean;
     transferrings: {
       root: MoneyTransfer;
       branches: MoneyTransfer[];
@@ -73,6 +76,7 @@ export const useListState = create<ListState>()(
       minimizeTotalMoney: false,
       isTransferring: false,
       transferrings: null,
+      compactMoney: false,
       setState: (state) => set(() => ({ ...state })),
       setTransfereesState: (value, id, reason, fee) =>
         set(({ transferrings }) => {

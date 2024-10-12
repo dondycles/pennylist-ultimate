@@ -10,7 +10,9 @@ import {
   ChevronUp,
   CornerRightDown,
   Dot,
+  Ellipsis,
   ExternalLink,
+  MessageCircle,
   MessageCircleMore,
   MessageCirclePlus,
   Palette,
@@ -43,6 +45,11 @@ import _ from "lodash";
 import { Textarea } from "./ui/textarea";
 import { add_money_note, delete_money_note } from "@/app/actions/moneys-notes";
 import { ScrollArea } from "./ui/scroll-area";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 type MoneyBarProps = PropsWithChildren & {
   money: Omit<MoneyWithLogs, "money_log">;
@@ -196,96 +203,144 @@ export function MoneyBar({
   children: React.ReactNode;
   className?: ClassNameValue;
 }) {
-  const { money, deleting } = useMoneyBarContext();
+  const {
+    money,
+    deleting,
+    listState,
+    commenting,
+    setCommenting,
+    transferState: { isInBranch, isRoot, root, branch },
+  } = useMoneyBarContext();
+
+  const [note, setNote] = useState("");
+  const queryClient = useQueryClient();
+  async function add_note() {
+    if (note.trim() === "") return;
+    await add_money_note(note, money.id);
+    queryClient.invalidateQueries({
+      queryKey: ["list"],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [String(money.id)],
+    });
+    setNote("");
+  }
+  async function delete_note(id: number) {
+    await delete_money_note(id);
+    queryClient.invalidateQueries({
+      queryKey: ["list"],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [String(money.id)],
+    });
+  }
   return (
     <m.div
       layout
-      key={`${money.id}-${money.last_update}  `}
+      key={`${money.id}-${money.last_update}-${listState.compactMoney}`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       className={cn(
-        `w-full pt-4 flex flex-col gap-2 border-b last:border-b-0 ${
+        `w-full overflow-hidden py-4 flex flex-col border-b last:border-b-0 ${
           deleting && "animate-pulse scale-95"
         }`,
         className
       )}
     >
-      {children}
-    </m.div>
-  );
-}
+      {listState.compactMoney ? (
+        <div className="flex flex-row items-center justify-between">
+          {children}
+        </div>
+      ) : (
+        children
+      )}
 
-export function MoneyHeader() {
-  const { money, darken } = useMoneyBarContext();
-  const color = [
-    money.color ? money.color + "88" : "hsl(var(--muted-foreground))",
-    money.color ?? "hsl(var(--foreground))",
-  ];
-  return (
-    <m.div
-      layout
-      key={`${money.id}-${money.color}`}
-      className={`flex items-baseline gap-2 h-fit px-4`}
-    >
-      <span className={`font-bold ${darken}`} style={{ color: color[1] }}>
-        {money.name}
-      </span>
-      <Dot
-        style={{
-          color: color[0],
-        }}
-        size={12}
-      />
-      <span
-        style={{
-          color: color[0],
-        }}
-        className=" text-xs"
-      >
-        {new Date(money.created_at).toLocaleDateString()}
-      </span>
-      {/* {isRoot && (
-        <CornerRightDown size={16} className="text-muted-foreground" />
-      )} */}
-    </m.div>
-  );
-}
-
-export function MoneyAmount() {
-  const {
-    listState,
-    money,
-    darken,
-    transferState: {
-      isInBranch,
-      isRoot,
-      isRootNegative,
-      root,
-      branch,
-      branchesDemandedAmounts,
-    },
-  } = useMoneyBarContext();
-
-  return (
-    <m.div
-      key={`amount-${money.id}`}
-      layout
-      className="flex flex-col w-full overflow-hidden px-4 pb-1 -mb-1"
-    >
-      <m.div layout>
-        <Amount
-          className={`${darken}`}
-          color={isRootNegative ? "hsl(var(--destructive))" : money.color ?? ""}
-          amount={Number(
-            money.amount +
-              (isInBranch
-                ? branch?.transferAmount ?? 0
-                : isRoot
-                ? -branchesDemandedAmounts
-                : 0)
-          )}
-          settings={{ sign: true }}
-        />
-      </m.div>
       <AnimatePresence initial={false}>
+        {commenting && (
+          <m.div
+            layout
+            initial={"close"}
+            animate={"open"}
+            exit={"close"}
+            variants={variants}
+            key={"commenting"}
+          >
+            <div className="px-4">
+              <div className="flex flex-col bg-[#171717] rounded-3xl overflow-hidden">
+                {money.money_note.length > 0 ? (
+                  <ScrollArea className="w-full h-[30dvh]">
+                    {money.money_note.map((note, i) => {
+                      return (
+                        <m.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          layout
+                          key={`${note.id}-${i}`}
+                          className="p-4 pb-0 last:mb-4"
+                        >
+                          <div className="rounded-3xl prose max-w-none text-muted-foreground p-4 bg-muted/50 border">
+                            <span className="text-xs opacity-25">
+                              {new Date(note.created_at).toLocaleDateString()}
+                            </span>
+                            <p className="whitespace-pre-wrap">{note.note}</p>
+                            <CommentDeleteBtn
+                              _delete={() => delete_note(note.id)}
+                            />
+                          </div>
+                        </m.div>
+                      );
+                    })}
+                  </ScrollArea>
+                ) : (
+                  <m.p
+                    key={"no-notes"}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    layout
+                    className="text-xs text-muted-foreground text-center p-4"
+                  >
+                    no notes yet
+                  </m.p>
+                )}{" "}
+                <form
+                  action={add_note}
+                  className="flex gap-4 items-end border-t p-4 flex-1 "
+                >
+                  <Textarea
+                    value={note}
+                    onChange={(v) => setNote(v.currentTarget.value)}
+                    className="flex-1 "
+                    placeholder="Notes, comments, hmm...? "
+                    rows={3}
+                  />
+                  <div className="flex flex-col gap-4">
+                    <Button
+                      variant={"ghost"}
+                      className="size-6 p-0"
+                      type="submit"
+                      size={"icon"}
+                    >
+                      <MessageCirclePlus size={16} />
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => setCommenting(false)}
+                      variant={"ghost"}
+                      size={"icon"}
+                      className="size-6 p-0"
+                    >
+                      <ChevronUp size={16} />
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </m.div>
+        )}
+
         {isInBranch ? (
           <m.div
             layout
@@ -297,7 +352,7 @@ export function MoneyAmount() {
             key={"branch"}
             className="flex flex-col gap-4"
           >
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 px-4">
               <p className="text-muted-foreground text-xs">
                 Receiving from {root?.name}
               </p>
@@ -327,7 +382,7 @@ export function MoneyAmount() {
                 placeholder={`Amount to receive from ${root?.name}`}
               />
             </div>
-            <div className="flex flex-col xs:flex-row xs:items-end gap-4">
+            <div className="flex flex-col xs:flex-row xs:items-end gap-4 px-4">
               <div className="space-y-1.5 flex-1 xs:max-w-32">
                 <p className="text-muted-foreground text-xs truncate">
                   Receiving transfer fee (optional)
@@ -385,7 +440,7 @@ export function MoneyAmount() {
             transition={{ duration: 0.8, ease: [0.04, 0.62, 0.23, 0.98] }}
             key={"root"}
           >
-            <div className="flex flex-col xs:flex-row xs:items-end gap-4">
+            <div className="flex flex-col xs:flex-row xs:items-end gap-4 px-4">
               <div className="space-y-1.5 flex-1 xs:max-w-32">
                 <p className="text-muted-foreground text-xs truncate">
                   Receiving transfer fee (optional)
@@ -434,149 +489,151 @@ export function MoneyAmount() {
   );
 }
 
-export function MoneyActions({ children }: { children: React.ReactNode }) {
+export function MoneyHeader() {
   const {
     money,
-    listState,
-    transferState,
-    commenting,
-    transfer,
-    setCommenting,
+    darken,
+    listState: { compactMoney },
   } = useMoneyBarContext();
-  const [note, setNote] = useState("");
-  const queryClient = useQueryClient();
-  async function add_note() {
-    if (note.trim() === "") return;
-    await add_money_note(note, money.id);
-    queryClient.invalidateQueries({
-      queryKey: ["list"],
-    });
-    queryClient.invalidateQueries({
-      queryKey: [String(money.id)],
-    });
-    setNote("");
-  }
-  async function delete_note(id: number) {
-    await delete_money_note(id);
-    queryClient.invalidateQueries({
-      queryKey: ["list"],
-    });
-    queryClient.invalidateQueries({
-      queryKey: [String(money.id)],
-    });
-  }
+  const color = [
+    money.color ? money.color + "88" : "hsl(var(--muted-foreground))",
+    money.color ?? "hsl(var(--foreground))",
+  ];
+  return (
+    <m.div
+      layout
+      key={`${money.id}-${money.color}`}
+      className={`flex items-baseline gap-2 h-fit px-4 ${
+        compactMoney && "flex-1"
+      }`}
+    >
+      <m.span
+        layout
+        className={`font-bold ${darken}`}
+        style={{ color: color[1] }}
+      >
+        {money.name}
+      </m.span>
+      {compactMoney ? null : (
+        <>
+          <Dot
+            style={{
+              color: color[0],
+            }}
+            size={12}
+          />
+          <m.span
+            layout
+            style={{
+              color: color[0],
+            }}
+            className=" text-xs"
+          >
+            {new Date(money.created_at).toLocaleDateString()}
+          </m.span>
+        </>
+      )}
+    </m.div>
+  );
+}
+
+export function MoneyAmount() {
+  const {
+    money,
+    darken,
+    transferState: {
+      isInBranch,
+      isRoot,
+      isRootNegative,
+
+      branch,
+      branchesDemandedAmounts,
+    },
+  } = useMoneyBarContext();
+
+  return (
+    <m.div
+      key={`amount-${money.id}`}
+      layout
+      className="flex flex-col overflow-hidden px-4 pb-1 -mb-1"
+    >
+      <m.div layout>
+        <Amount
+          className={`${darken}`}
+          color={isRootNegative ? "hsl(var(--destructive))" : money.color ?? ""}
+          amount={Number(
+            money.amount +
+              (isInBranch
+                ? branch?.transferAmount ?? 0
+                : isRoot
+                ? -branchesDemandedAmounts
+                : 0)
+          )}
+          settings={{ sign: true }}
+        />
+      </m.div>
+    </m.div>
+  );
+}
+
+export function MoneyActions({ children }: { children: React.ReactNode }) {
+  const { money, listState, transferState, transfer, commenting } =
+    useMoneyBarContext();
+
   return (
     <m.div
       key={`actions-${money.id}-${
         listState.transferrings?.branches.length
-      }-${String(transferState.isInBranch)}-${String(transferState.isRoot)}`}
+      }-${String(transferState.isInBranch)}-${String(
+        transferState.isRoot
+      )}-${commenting}`}
       animate={{ opacity: 1, translateX: -0 }}
       initial={{ opacity: 0, translateX: -10 }}
       exit={{ opacity: 0, translateX: -10 }}
-      className={`flex flex-col h-fit overflow-hidden mt-2 px-4 -mb-1 pb-4`}
+      className={`flex flex-coloverflow-hidden ${
+        listState.compactMoney ? "aspect-square size-6 mr-4" : "mt-4 px-4 h-fit"
+      }`}
       layout
     >
-      <m.div layout className={`flex flex-row gap-6 mb-1 items-center`}>
-        {(transferState.isRoot || transferState.isInBranch) && (
-          <Button
-            onClick={transfer}
-            variant={"destructive"}
-            className="size-6 p-0 rounded-full aspect-square -mr-5"
-          >
-            <X size={16} />
-          </Button>
-        )}
-        {children}
-
-        {(transferState.isRoot || transferState.isInBranch) && (
-          <span className="-ml-5 text-xs text-muted-foreground">
-            {transferState.isInBranch && "Receiver"}
-            {transferState.isRoot && "Sender"}
-          </span>
-        )}
-      </m.div>
-      <AnimatePresence>
-        {commenting && (
-          <m.div
-            layout
-            initial={"close"}
-            animate={"open"}
-            exit={"close"}
-            variants={variants}
-            key={"commenting"}
-            className="mb-1 flex flex-col  bg-[#171717] rounded-3xl overflow-hidden"
-          >
-            {money.money_note.length > 0 ? (
-              <ScrollArea className="w-full h-[30dvh]">
-                {money.money_note.map((note, i) => {
-                  return (
-                    <m.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      layout
-                      key={`${note.id}-${i}`}
-                      className="p-4 pb-0 last:mb-4"
-                    >
-                      <div className="rounded-3xl prose max-w-none text-muted-foreground p-4 bg-muted/50 border">
-                        <span className="text-xs opacity-25">
-                          {new Date(note.created_at).toLocaleDateString()}
-                        </span>
-                        <p className="whitespace-pre-wrap">{note.note}</p>
-                        <CommentDeleteBtn
-                          _delete={() => delete_note(note.id)}
-                        />
-                      </div>
-                    </m.div>
-                  );
-                })}
-              </ScrollArea>
+      {!listState.compactMoney ? (
+        <m.div layout className={`flex flex-row gap-6 mb-1 items-center`}>
+          {children}
+        </m.div>
+      ) : (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            {commenting ? (
+              <MoneyCommentBtn />
+            ) : transferState.root ? (
+              <MoneyTransferBtn />
             ) : (
-              <m.p
-                key={"no-notes"}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                layout
-                className="text-xs text-muted-foreground text-center p-4"
-              >
-                no notes yet
-              </m.p>
-            )}{" "}
-            <form
-              action={add_note}
-              className="flex gap-4 items-end border-t p-4 flex-1 "
-            >
-              <Textarea
-                value={note}
-                onChange={(v) => setNote(v.currentTarget.value)}
-                className="flex-1 "
-                placeholder="Notes, comments, hmm...? "
-                rows={3}
-              />
-              <div className="flex flex-col gap-4">
+              <Button variant={"ghost"} className="size-6 p-0 ">
+                <Ellipsis size={16} />
+              </Button>
+            )}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="rounded-3xl" align="end">
+            <m.div layout className={`flex flex-row gap-6 items-center`}>
+              {(transferState.isRoot || transferState.isInBranch) && (
                 <Button
-                  variant={"ghost"}
-                  className="size-6 p-0"
-                  type="submit"
-                  size={"icon"}
+                  onClick={transfer}
+                  variant={"destructive"}
+                  className="size-6 p-0 rounded-full aspect-square -mr-5"
                 >
-                  <MessageCirclePlus size={16} />
+                  <X size={16} />
                 </Button>
-                <Button
-                  type="button"
-                  onClick={() => setCommenting(false)}
-                  variant={"ghost"}
-                  size={"icon"}
-                  className="size-6 p-0"
-                >
-                  <ChevronUp size={16} />
-                </Button>
-              </div>
-            </form>
-          </m.div>
-        )}
-      </AnimatePresence>
+              )}
+              {children}
+              {(transferState.isRoot || transferState.isInBranch) && (
+                <span className="-ml-5 text-xs text-muted-foreground">
+                  {transferState.isInBranch && "Receiver"}
+                  {transferState.isRoot && "Sender"}
+                </span>
+              )}
+            </m.div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </m.div>
   );
 }
@@ -869,20 +926,36 @@ export function MoneyTransferBtn() {
     darken,
     transferState: { isRoot, isInBranch },
     transfer,
+    listState: { compactMoney },
   } = useMoneyBarContext();
 
   return (
     <Button
       size={"icon"}
-      className="size-6 aspect-square disabled:opacity-100"
-      variant={"ghost"}
-      onClick={!isRoot || !isInBranch ? transfer : () => {}}
-      disabled={isRoot || isInBranch}
+      className={`rounded-full ${
+        isRoot || isInBranch
+          ? compactMoney
+            ? "size-6 aspect-square"
+            : "h-6 px-2 w-fit"
+          : "size-6 aspect-square"
+      } w-fit gap-1 disabled:opacity-100`}
+      variant={isRoot || isInBranch ? "secondary" : "ghost"}
+      onClick={transfer}
     >
       {isRoot ? (
-        <CornerRightDown className={`text-yellow-400`} size={16} />
+        <>
+          {!compactMoney && (
+            <span className="text-muted-foreground text-xs">Sender</span>
+          )}
+          <X className={`text-destructive`} size={16} />
+        </>
       ) : isInBranch ? (
-        <ArrowUpToLine className={`text-blue-400 rotate-180`} size={16} />
+        <>
+          {!compactMoney && (
+            <span className="text-muted-foreground text-xs">Receiver</span>
+          )}
+          <X className={`text-destructive`} size={16} />
+        </>
       ) : (
         <ArrowRightLeft
           className={`${darken}`}
@@ -905,17 +978,6 @@ export function MoneyCommentBtn() {
         className="size-6 aspect-square relative"
         variant={"ghost"}
       >
-        <m.div
-          animate={{
-            height: 36,
-            opacity: commenting ? 1 : 0,
-          }}
-          transition={{
-            delay: commenting ? 0.1 : 0,
-            duration: commenting ? 0.25 : 0.1,
-          }}
-          className="absolute p-4 -bottom-3 w-6 bg-gradient-to-t from-[#141414] to-transparent z-0 rounded-t-full"
-        />
         <MessageCircleMore
           className={`${darken} z-10`}
           style={{ color: money.color ?? "hsl(var(--foreground))" }}
