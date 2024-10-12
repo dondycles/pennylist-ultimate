@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -16,9 +16,78 @@ const readex = localFont({
   variable: "--font-readex",
 });
 
+const APP_NAME = "pennylist.";
+const APP_DEFAULT_TITLE = "pennylist.";
+const APP_TITLE_TEMPLATE = "%s - pennylist";
+const APP_DESCRIPTION = "Avoid becoming penniless, start using pennylist.";
+
 export const metadata: Metadata = {
-  title: "pennylist.",
-  description: "Avoid becoming penniless, start using pennylist.",
+  metadataBase: new URL("https://ultimate.pennylist.app"),
+  title: {
+    default: APP_DEFAULT_TITLE,
+    template: APP_TITLE_TEMPLATE,
+  },
+  description: APP_DESCRIPTION,
+  applicationName: APP_NAME,
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: APP_DEFAULT_TITLE,
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  openGraph: {
+    type: "website",
+    siteName: APP_NAME,
+    title: {
+      default: APP_DEFAULT_TITLE,
+      template: APP_TITLE_TEMPLATE,
+    },
+    description: APP_DESCRIPTION,
+    images: [
+      {
+        url: new URL("https://ultimate.pennylist.app" + "/summary.png"),
+        width: 1594,
+        height: 922,
+        alt: "Pennylist",
+      },
+    ],
+    url: new URL("https://ultimate.pennylist.app"),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: {
+      default: APP_DEFAULT_TITLE,
+      template: APP_TITLE_TEMPLATE,
+    },
+    description: APP_DESCRIPTION,
+    images: [
+      {
+        url: new URL("https://ultimate.pennylist.app" + "/summary.png"),
+        width: 1594,
+        height: 922,
+        alt: "Pennylist",
+      },
+    ],
+    creator: "@dondycles",
+  },
+  creator: "John Rod Dondoyano",
+  authors: {
+    name: "John Rod Dondoyano",
+    url: "https://johnroddondoyano.com",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
