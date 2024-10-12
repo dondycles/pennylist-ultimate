@@ -6,10 +6,14 @@ import { motion } from "framer-motion";
 import { useListState } from "@/store";
 import { Button } from "./ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import _ from "lodash";
 export default function TotalMoney() {
   const { currentTotal, yesterdayDiff, user, isLoading } =
     useContext(ListDataContext);
   const listState = useListState();
+  const transfersFees =
+    Number(listState.transferrings?.root.fee ?? 0) +
+    _.sum(listState.transferrings?.branches.map((b) => b.fee));
   if (isLoading) return;
   return (
     <motion.div
@@ -33,10 +37,11 @@ export default function TotalMoney() {
         {user?.username}&apos;s total money
       </motion.p>
       <motion.div
-        initial={false}
+        initial={{ opacity: 0 }}
         animate={{
           scale: listState.minimizeTotalMoney ? 0.5 : 1,
           translateY: listState.minimizeTotalMoney ? -52 : 0,
+          opacity: 1,
         }}
         transition={{
           ease: "backInOut",
@@ -44,7 +49,7 @@ export default function TotalMoney() {
       >
         <Amount
           className="text-4xl"
-          amount={currentTotal}
+          amount={currentTotal - transfersFees}
           settings={{ sign: true }}
         />
       </motion.div>
