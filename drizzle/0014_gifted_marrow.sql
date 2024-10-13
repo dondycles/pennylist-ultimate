@@ -1,1 +1,0 @@
-ALTER TABLE "moneys_table" ADD COLUMN "comments" jsonb;

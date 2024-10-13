@@ -1,2 +1,0 @@
-ALTER TABLE "moneys_table" drop column "created_at";--> statement-breakpoint
-ALTER TABLE "moneys_table" ADD COLUMN "created_at" timestamp with time zone DEFAULT now() GENERATED ALWAYS AS (NOW()) STORED NOT NULL;

@@ -1,8 +1,7 @@
-import { MoneyWithLogs } from "@/drizzle/infered-types";
 import { useGetDailyProgress } from "./useGetDailyProgress";
 import _ from "lodash";
 import { Progress } from "@/lib/types";
-import { Log, Money } from "@/store";
+import { Log } from "@/store";
 
 export const useGetMonthlyProgress = (logs: Log[] | null) => {
   const dailyProgress = useGetDailyProgress(logs);

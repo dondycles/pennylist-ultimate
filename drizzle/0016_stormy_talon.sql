@@ -1,1 +1,0 @@
-ALTER TABLE "moneys_notes_table" ADD COLUMN "lister" text NOT NULL;

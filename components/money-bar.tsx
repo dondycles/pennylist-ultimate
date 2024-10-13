@@ -1,18 +1,14 @@
 "use client";
 
-import { MoneyWithLogs } from "@/drizzle/infered-types";
 import { createContext, PropsWithChildren, useContext, useState } from "react";
 import Amount from "./amount";
 import {
   ArrowRightLeft,
-  ArrowUpToLine,
   Check,
   ChevronUp,
-  CornerRightDown,
   Dot,
   Ellipsis,
   ExternalLink,
-  MessageCircle,
   MessageCircleMore,
   MessageCirclePlus,
   Palette,
