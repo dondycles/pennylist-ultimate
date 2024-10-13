@@ -31,19 +31,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { colorize_money, delete_money } from "@/app/actions/moneys";
 import { AnimatePresence, motion as m } from "framer-motion";
 import EditMoneyForm from "./forms/edit-money";
-import { useQueryClient } from "@tanstack/react-query";
 import { ClassNameValue } from "tailwind-merge";
 import { cn } from "@/lib/utils";
 import { colors } from "@/lib/colors";
 import { useDarkenColor } from "@/hooks/useDarkenColor";
-import { ListState, MoneyTransfer, useListState } from "@/store";
+import {
+  ListState,
+  type Money,
+  MoneyTransfer,
+  useListState,
+  useLogsStore,
+  useMoneysStore,
+} from "@/store";
 import { Input } from "./ui/input";
 import _ from "lodash";
 import { Textarea } from "./ui/textarea";
-import { add_money_note, delete_money_note } from "@/app/actions/moneys-notes";
 import { ScrollArea } from "./ui/scroll-area";
 import {
   DropdownMenu,
@@ -52,7 +56,7 @@ import {
 } from "./ui/dropdown-menu";
 
 type MoneyBarProps = PropsWithChildren & {
-  money: Omit<MoneyWithLogs, "money_log">;
+  money: Money;
   specific: boolean;
   currentTotal: number;
 };
@@ -100,10 +104,7 @@ function useMoneyBarContext() {
   return context;
 }
 
-function useMoneyTransferringDetails(
-  listState: ListState,
-  money: Omit<MoneyWithLogs, "money_log">
-) {
+function useMoneyTransferringDetails(listState: ListState, money: Money) {
   const root = listState.transferrings?.root ?? null;
   const branch =
     listState.transferrings?.branches.find((b) => b.id === money.id) ?? null;
@@ -214,32 +215,26 @@ export function MoneyBar({
     transferState: { isInBranch, isRoot, root, branch },
   } = useMoneyBarContext();
 
+  const { addNote, delNote } = useMoneysStore();
+
   const [note, setNote] = useState("");
-  const queryClient = useQueryClient();
   async function add_note() {
     if (note.trim() === "") return;
-    await add_money_note(note, money.id);
-    queryClient.invalidateQueries({
-      queryKey: ["list"],
+    addNote(money.id, {
+      created_at: new Date().toISOString(),
+      id: crypto.randomUUID(),
+      note,
     });
-    queryClient.invalidateQueries({
-      queryKey: [String(money.id)],
-    });
+
     setNote("");
   }
-  async function delete_note(id: number) {
-    await delete_money_note(id);
-    queryClient.invalidateQueries({
-      queryKey: ["list"],
-    });
-    queryClient.invalidateQueries({
-      queryKey: [String(money.id)],
-    });
+  async function delete_note(id: string) {
+    delNote(money.id, id);
   }
   return (
     <m.div
       layout
-      key={`${money.id}-${money.last_update}-${listState.compactMoney}-${listState.hidden}`}
+      key={`${money.id}-${money.last_updated_at}-${listState.compactMoney}-${listState.hidden}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -269,9 +264,9 @@ export function MoneyBar({
             key={"commenting"}
           >
             <div className="flex flex-col border rounded-3xl overflow-hidden">
-              {money.money_note.length > 0 ? (
+              {money.notes.length > 0 ? (
                 <ScrollArea className="w-full h-[30dvh]">
-                  {money.money_note.map((note, i) => {
+                  {money.notes.map((note, i) => {
                     return (
                       <m.div
                         initial={{ opacity: 0 }}
@@ -445,7 +440,7 @@ export function MoneyBar({
             <div className="flex flex-col xs:flex-row xs:items-end gap-4">
               <div className="space-y-1.5 flex-1 xs:max-w-32">
                 <p className="text-muted-foreground text-xs truncate">
-                  Receiving transfer fee (optional)
+                  Sender transfer fee (optional)
                 </p>
                 <Input
                   type="number"
@@ -656,22 +651,27 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
 }
 
 export function MoneyDeleteBtn() {
-  const {
-    money,
-    deleting,
-    setDeleting,
-    currentTotal,
-    specific,
-    listState,
-    darken,
-  } = useMoneyBarContext();
-  const queryClient = useQueryClient();
+  const { money, deleting, setDeleting, listState, darken } =
+    useMoneyBarContext();
+  const { delMoney, moneys } = useMoneysStore();
+  const { addLog } = useLogsStore();
+  const currentTotal = _.sum(moneys.map((m) => m.amount));
   async function deleteMoney() {
     setDeleting(true);
-    await delete_money(money, currentTotal);
-    if (specific) {
-      queryClient.resetQueries({ queryKey: [String(money.id)] });
-    }
+    delMoney(money.id);
+
+    addLog({
+      changes: {
+        prev: { ...money, total: currentTotal },
+        latest: { ...money, amount: 0, total: currentTotal - money.amount },
+      },
+      action: "delete",
+      created_at: new Date().toISOString(),
+      current_total: currentTotal - money.amount,
+      id: crypto.randomUUID(),
+      money_id: money.id,
+      reason: "delete",
+    });
 
     if (listState.transferrings) {
       const root = listState.transferrings?.root;
@@ -696,14 +696,6 @@ export function MoneyDeleteBtn() {
           transferrings: null,
         });
     }
-
-    queryClient.invalidateQueries({
-      queryKey: ["list"],
-    });
-    queryClient.invalidateQueries({
-      queryKey: [String(money.id)],
-    });
-    queryClient.invalidateQueries({ queryKey: ["logs"] });
 
     listState.setState({ ...listState, transferrings: null });
   }
@@ -791,19 +783,11 @@ export function MoneyExternalLinkBtn() {
 }
 
 export function MoneyEditBtn() {
-  const { money, currentTotal, darken, listState } = useMoneyBarContext();
-  const queryClient = useQueryClient();
+  const { money, darken, listState } = useMoneyBarContext();
   const [openEditDialog, setOpenEditDialog] = useState(false);
 
   function done() {
     setOpenEditDialog(false);
-    queryClient.invalidateQueries({
-      queryKey: ["list"],
-    });
-    queryClient.invalidateQueries({
-      queryKey: [String(money.id)],
-    });
-    queryClient.invalidateQueries({ queryKey: ["logs"] });
 
     listState.setState({ ...listState, transferrings: null });
   }
@@ -831,11 +815,7 @@ export function MoneyEditBtn() {
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-4 p-4 pt-0 text-sm">
-            <EditMoneyForm
-              currentTotal={currentTotal}
-              money={money}
-              done={done}
-            />
+            <EditMoneyForm money={money} done={done} />
           </div>
         </DialogContent>
       </Dialog>
@@ -847,18 +827,11 @@ export function MoneyPaletteBtn() {
   const { money, specific, currentTotal, listState, darken } =
     useMoneyBarContext();
   const [colorPreview, setColorPreview] = useState(money.color);
-  const queryClient = useQueryClient();
+  const { setMoneyColor } = useMoneysStore();
 
   async function colorize(c: string) {
-    await colorize_money(money, c);
+    setMoneyColor(money.id, c);
     setOpenEditDialog(false);
-    queryClient.invalidateQueries({
-      queryKey: ["list"],
-    });
-    queryClient.invalidateQueries({
-      queryKey: [String(money.id)],
-    });
-    queryClient.invalidateQueries({ queryKey: ["logs"] });
 
     listState.setState({ ...listState, transferrings: null });
   }

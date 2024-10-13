@@ -1,11 +1,11 @@
 import { Badge } from "@/components/ui/badge";
-import { MoneyWithLogs } from "@/drizzle/infered-types";
 import { ColumnDef } from "@tanstack/react-table";
 import Amount from "../amount";
 import { ChevronsDown, ChevronsUp, ChevronsUpDown } from "lucide-react";
+import { Log } from "@/store";
 
 export const historyColumns: ColumnDef<
-  (MoneyWithLogs["money_log"][0] & { money: string }) | undefined
+  (Log & { money: string }) | undefined
 >[] = [
   {
     accessorKey: "action",
@@ -82,14 +82,13 @@ export const historyColumns: ColumnDef<
     accessorKey: "currentTotal",
     header: "Current Total",
     cell: ({ row }) => {
-      if (row.original?.changes?.latest.total)
-        return (
-          <Amount
-            amount={row.original?.changes?.latest.total}
-            className="text-xs"
-            settings={{ sign: true }}
-          />
-        );
+      return (
+        <Amount
+          amount={row.original?.current_total ?? 0}
+          className="text-xs"
+          settings={{ sign: true }}
+        />
+      );
     },
   },
   {
@@ -119,7 +118,7 @@ export const historyColumns: ColumnDef<
             new Date()
           )}{" "}
           hr(s) ago */}
-          {new Date(row.original?.createdAt ?? "").toLocaleString()}
+          {new Date(row.original?.created_at ?? "").toLocaleString()}
         </p>
       );
     },

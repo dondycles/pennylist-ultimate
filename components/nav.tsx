@@ -9,22 +9,18 @@ import {
   DollarSign,
   EyeOff,
   LetterText,
-  LogOut,
   MoonIcon,
   RectangleHorizontal,
   SortAsc,
   SortDesc,
   SunIcon,
-  User,
   X,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { SignOutButton, UserProfile } from "@clerk/nextjs";
-import { ListState, useListState } from "@/store";
+import { ListState, useListState, useLogsStore, useMoneysStore } from "@/store";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -33,15 +29,11 @@ import {
 } from "./ui/dropdown-menu";
 import { useTheme } from "next-themes";
 import React, { createContext, forwardRef, useContext, useState } from "react";
-import { Dialog, DialogContent } from "./ui/dialog";
 import Link from "next/link";
 import { AnimatePresence, motion as m } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { ClassNameValue } from "tailwind-merge";
-import { edit_money, transfer_money } from "@/app/actions/moneys";
 import { usePathname } from "next/navigation";
-import { ListDataContext } from "./providers/list";
-import { useQueryClient } from "@tanstack/react-query";
 import { useMeasure } from "@uidotdev/usehooks";
 import AddMoneyDrawer from "./add-money-drawer";
 import _ from "lodash";
@@ -80,7 +72,6 @@ export const NavBar = forwardRef(function NavBar(
   },
   ref: React.Ref<HTMLDivElement>
 ) {
-  const { showProfile, setShowProfile } = useNavContext();
   return (
     <nav className="flex justify-evenly gap-2 w-full overflow-hidden fixed bottom-0">
       <m.div
@@ -93,20 +84,6 @@ export const NavBar = forwardRef(function NavBar(
       >
         <AnimatePresence mode="popLayout">{children}</AnimatePresence>
       </m.div>
-
-      <Dialog open={showProfile} onOpenChange={setShowProfile}>
-        <DialogContent className="w-fit max-w-fit flex h-[75dvh] border-0">
-          <UserProfile
-            routing="virtual"
-            appearance={{
-              elements: {
-                rootBox: "h-full",
-                cardBox: "h-full",
-              },
-            }}
-          />
-        </DialogContent>
-      </Dialog>
     </nav>
   );
 });
@@ -236,25 +213,6 @@ export function NavThemeOptions() {
   );
 }
 
-export function NavUserOption() {
-  const { setShowProfile } = useNavContext();
-  return (
-    <>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={() => setShowProfile(true)}>
-        <User size={16} className="mr-2" />
-        Account Settings
-      </DropdownMenuItem>
-      <SignOutButton>
-        <DropdownMenuItem>
-          <LogOut size={16} className="mr-2" />
-          Sign Out
-        </DropdownMenuItem>
-      </SignOutButton>
-    </>
-  );
-}
-
 export function NavCompactMoneyOption() {
   const { listState } = useNavContext();
   const pathname = usePathname();
@@ -305,8 +263,9 @@ export function NavChartBtn() {
 
 export default function AnimatedNav() {
   const pathname = usePathname();
-  const { currentTotal } = useContext(ListDataContext);
-  const queryClient = useQueryClient();
+  const { moneys, editMoney } = useMoneysStore();
+  const { addLog } = useLogsStore();
+  const currentTotal = _.sum(moneys.map((m) => m.amount));
   const [navBar, { width }] = useMeasure();
   const listState = useListState();
   const calculateWidth = () => {
@@ -335,7 +294,7 @@ export default function AnimatedNav() {
     listState.setState({ ...listState, transferrings: null });
   }
 
-  function removeBranch(id: number) {
+  function removeBranch(id: string) {
     if (!listState.transferrings) return;
     const branches = listState.transferrings.branches.filter(
       (b) => b.id !== id
@@ -361,17 +320,27 @@ export default function AnimatedNav() {
     )
       return alert("Some branch is negative");
 
-    await transfer_money(
-      {
-        prev: root,
+    editMoney({
+      ...root,
+      amount: root.amount - branchesDemandSum - root.fee,
+    });
+
+    addLog({
+      changes: {
+        prev: { ...root, total: currentTotal },
         latest: {
           ...root,
           amount: root.amount - branchesDemandSum - root.fee,
+          total: currentTotal - branchesDemandSum - root.fee,
         },
       },
-      root.reason,
-      currentTotal - root.fee
-    );
+      action: "transfer",
+      created_at: new Date().toISOString(),
+      current_total: currentTotal - branchesDemandSum - root.fee,
+      id: crypto.randomUUID(),
+      money_id: root.id,
+      reason: root.reason,
+    });
 
     for (let index = 0; index < branches.length; index++) {
       const branch = branches[index];
@@ -379,23 +348,31 @@ export default function AnimatedNav() {
       const sumOfPreviousBranchesFees = _.sum(
         previousBranches.map((b) => b.fee)
       );
-
-      await transfer_money(
-        {
-          prev: branch,
+      addLog({
+        changes: {
+          prev: { ...branch, total: currentTotal },
           latest: {
             ...branch,
             amount: branch.amount + (branch.transferAmount ?? 0) - branch.fee,
+            total: currentTotal + (branch.transferAmount ?? 0) - branch.fee,
           },
         },
-        branch.reason,
-        currentTotal -
+        action: "transfer",
+        created_at: new Date().toISOString(),
+        current_total:
+          currentTotal -
           branches[index].fee -
           root.fee -
-          (index > 0 ? sumOfPreviousBranchesFees : 0)
-      );
+          (index > 0 ? sumOfPreviousBranchesFees : 0),
+        id: crypto.randomUUID(),
+        money_id: branch.id,
+        reason: branch.reason,
+      });
+      editMoney({
+        ...branch,
+        amount: branch.amount + (branch.transferAmount ?? 0) - branch.fee,
+      });
     }
-    queryClient.refetchQueries();
     listState.setState({ ...listState, transferrings: null });
   }
   return (
@@ -565,7 +542,6 @@ export default function AnimatedNav() {
                     <NavCompactMoneyOption />
                     <NavHideOption />
                     <NavThemeOptions />
-                    <NavUserOption />
                   </NavOptions>
                 </m.div>
               </div>

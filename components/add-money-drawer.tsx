@@ -11,15 +11,11 @@ import { Button } from "./ui/button";
 import AddMoneyForm from "./forms/add-money";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 
 export default function AddMoneyDrawer() {
   const [open, setOpen] = useState(false);
-  const queryClient = useQueryClient();
   function done() {
     setOpen(false);
-    queryClient.invalidateQueries({ queryKey: ["list"] });
-    queryClient.invalidateQueries({ queryKey: ["logs"] });
   }
   return (
     <Drawer onOpenChange={setOpen} open={open}>

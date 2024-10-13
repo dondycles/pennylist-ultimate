@@ -13,29 +13,61 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { add_money } from "@/app/actions/moneys";
-import { useContext } from "react";
-import { ListDataContext } from "../providers/list";
+import { useLogsStore, useMoneysStore } from "@/store";
+import _ from "lodash";
 const formSchema = z.object({
+  id: z.string(),
   name: z.string().min(1).max(24),
   amount: z.coerce.number(),
-  lister: z.string().min(1),
+  created_at: z.string(),
+  last_updated_at: z.string(),
+  color: z.string(),
+  notes: z.array(
+    z.object({
+      id: z.string(),
+      note: z.string(),
+      created_at: z.string(),
+    })
+  ),
 });
 
 export default function AddMoneyForm({ done }: { done: () => void }) {
-  const { currentTotal, user } = useContext(ListDataContext);
+  const { addMoney, moneys } = useMoneysStore();
+  const { addLog } = useLogsStore();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      id: "",
       name: "",
       amount: undefined,
-      lister: user?.id,
+      color: "",
+      created_at: "",
+      last_updated_at: "",
+      notes: [],
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!user) return;
-    await add_money(values, currentTotal);
+    const currentTotal = _.sum(moneys.map((m) => m.amount));
+    const id = crypto.randomUUID();
+    addMoney({
+      ...values,
+      id,
+      created_at: new Date().toISOString(),
+      last_updated_at: new Date().toISOString(),
+    });
+    addLog({
+      action: "add",
+      changes: {
+        latest: { ...values, total: currentTotal + values.amount },
+        prev: { ...values, total: currentTotal, name: "", amount: 0 },
+      },
+      created_at: new Date().toISOString(),
+      current_total: currentTotal + values.amount,
+      id: crypto.randomUUID(),
+      money_id: id,
+      reason: "add",
+    });
     done();
   }
 

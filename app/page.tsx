@@ -2,12 +2,7 @@ import Logo from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Footer from "@/components/footer";
-import { currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 export default async function Page() {
-  const user = await currentUser();
-  if (user) redirect("/list");
-
   return (
     <div className="w-full pt-8 sm:pt-16 md:pt-32  h-full flex flex-col screen-x-padding gap-6">
       <div className="flex flex-col items-center justify-center w-full gap-4 text-center max-w-[800px] mx-auto">
@@ -19,7 +14,7 @@ export default async function Page() {
           Designed to be your financial manager.
         </p>
         <Button asChild>
-          <Link href="/sign-in">Get started</Link>
+          <Link href="/list">Get started</Link>
         </Button>
       </div>
       <div className="space-y-4 max-w-[512px] w-full mx-auto h-fit">

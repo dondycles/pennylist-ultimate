@@ -13,28 +13,25 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { edit_money } from "@/app/actions/moneys";
-import { selectMoney } from "@/drizzle/schema";
-import { useContext } from "react";
-import { ListDataContext } from "../providers/list";
+import { Money, useLogsStore, useMoneysStore } from "@/store";
+import _ from "lodash";
 
 const formSchema = z.object({
-  id: z.number().min(1),
-  name: z.string().min(1).max(24),
+  id: z.string(),
+  name: z.string(),
   amount: z.coerce.number(),
-  lister: z.string().min(1),
   reason: z.string().max(24).optional(),
 });
 export default function EditMoneyForm({
   done,
   money,
-  currentTotal,
 }: {
   done: () => void;
-  money: selectMoney;
-  currentTotal: number;
+  money: Money;
 }) {
-  const { user } = useContext(ListDataContext);
+  const { editMoney, moneys } = useMoneysStore();
+  const { addLog } = useLogsStore();
+  const currentTotal = _.sum(moneys.map((m) => m.amount));
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { ...money, reason: undefined },
@@ -43,12 +40,33 @@ export default function EditMoneyForm({
   async function onSubmit(latest: z.infer<typeof formSchema>) {
     if (money.amount === latest.amount && money.name === latest.name)
       return done();
-    if (!user) return;
-    await edit_money(
-      { latest: latest, prev: money },
-      latest.reason ?? "N/A",
-      currentTotal
-    );
+
+    const amountDiff = latest.amount - money.amount;
+
+    editMoney({
+      ...money,
+      amount: latest.amount,
+      name: latest.name,
+      last_updated_at: new Date().toISOString(),
+    });
+    addLog({
+      changes: {
+        prev: { ...money, total: currentTotal },
+        latest: {
+          ...money,
+          amount: latest.amount,
+          name: latest.name,
+          last_updated_at: new Date().toISOString(),
+          total: currentTotal + amountDiff,
+        },
+      },
+      action: "edit",
+      reason: latest.reason ?? "",
+      created_at: new Date().toISOString(),
+      current_total: currentTotal + amountDiff,
+      id: crypto.randomUUID(),
+      money_id: latest.id,
+    });
     done();
   }
 

@@ -1,9 +1,7 @@
 "use client";
-import { get_money } from "@/app/actions/moneys";
 import { historyColumns } from "@/components/charts/history-columns";
 import { HistoryTable } from "@/components/charts/history-table";
 import ProgressBarChart from "@/components/charts/progress-bar-chart";
-import Loader from "@/components/loader";
 import {
   Money,
   MoneyActions,
@@ -16,50 +14,37 @@ import {
   MoneyPaletteBtn,
 } from "@/components/money-bar";
 
-import { ListDataContext } from "@/components/providers/list";
 import { useGetDailyProgress } from "@/hooks/useGetDailyProgress";
 import { useGetDifferences } from "@/hooks/useGetDifferences";
 import { useGetMonthlyProgress } from "@/hooks/useGetMonthlyProgress";
-import { useChartsState } from "@/store";
+import { Log, useChartsState, useLogsStore, useMoneysStore } from "@/store";
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
-import { useContext } from "react";
 import Scrollable from "@/components/scrollable";
+import _ from "lodash";
 
-export default function MoneyPage({ params }: { params: { id: number } }) {
-  const { currentTotal, user } = useContext(ListDataContext);
+export default function MoneyPage({ params }: { params: { id: string } }) {
   const chartsState = useChartsState();
-  const {
-    data: money,
-    isFetched,
-    isLoading: moneyLoading,
-  } = useQuery({
-    queryKey: [params.id],
-    enabled: !!user,
-    queryFn: async () => await get_money(params.id),
-  });
-
-  const logs = money?.money_log.map((log) => ({
-    ...log,
-    money: log.changes.latest.name,
-  }));
+  const { moneys } = useMoneysStore();
+  const { logs } = useLogsStore();
+  const currentTotal = _.sum(moneys.map((m) => m.amount));
+  const money = moneys.find((m) => m.id === params.id);
+  const moneyLogs: Array<Log & { money: string }> = logs
+    .filter((l) => l.money_id === money?.id)
+    .map((l) => ({ ...l, money: l.changes.latest.name }))
+    .sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
 
   const dailyData = useGetDailyProgress(logs ?? []);
   const monthlyData = useGetMonthlyProgress(logs ?? []);
   const differences = useGetDifferences(
-    logs ?? [],
+    moneyLogs ?? [],
     currentTotal,
     chartsState.progressDays
   );
   const chartData = chartsState.type === "daily" ? dailyData : monthlyData;
 
-  if (moneyLoading) return <Loader />;
-  if (isFetched && !money)
-    return (
-      <p className="text-muted-foreground text-xs mt-4 text-center">
-        This money does not exist.
-      </p>
-    );
   return (
     <Scrollable>
       <motion.div
@@ -90,7 +75,7 @@ export default function MoneyPage({ params }: { params: { id: number } }) {
         <HistoryTable
           defaultSearchBy="reason"
           columns={historyColumns}
-          data={logs ?? []}
+          data={moneyLogs ?? []}
         />
       </motion.div>
     </Scrollable>

@@ -1,10 +1,8 @@
-import { MoneyWithLogs } from "@/drizzle/infered-types";
 import { Progress } from "@/lib/types";
+import { Log } from "@/store";
 import _ from "lodash";
 
-export const useGetDailyProgress = (
-  logs: MoneyWithLogs["money_log"] | null
-) => {
+export const useGetDailyProgress = (logs: Log[] | null) => {
   if (!logs) return [];
 
   // all data will be coming from logs, since logs has all the movements in money
@@ -29,7 +27,7 @@ export const useGetDailyProgress = (
       const changesInAmount =
         Number(log.changes?.latest.amount) - Number(log.changes?.prev.amount);
 
-      const date = new Date(log.createdAt).toDateString();
+      const date = new Date(log.created_at).toDateString();
 
       // checks if this date has no data
       // if false, this means that this date is different from the previous iteration
@@ -42,7 +40,7 @@ export const useGetDailyProgress = (
       arrayOfLogsInASingleDate.push({
         amount: changesInAmount ?? 0,
         reason: log.reason!,
-        date: new Date(log.createdAt).toDateString(),
+        date: new Date(log.created_at).toDateString(),
       });
 
       // gets all the expenses by filtering only the negative values

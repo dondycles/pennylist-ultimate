@@ -1,9 +1,9 @@
-import { MoneyWithLogs } from "@/drizzle/infered-types";
 import { useGetDailyProgress } from "./useGetDailyProgress";
 import _ from "lodash";
+import { Log } from "@/store";
 
 export const useGetDifferences = (
-  logs: MoneyWithLogs["money_log"] | null,
+  logs: Log[] | null,
   currentTotal: number,
   days: "1" | "7" | "14" | "28" | "365"
 ) => {

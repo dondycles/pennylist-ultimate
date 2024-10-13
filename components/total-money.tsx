@@ -1,20 +1,22 @@
 "use client";
-import { useContext } from "react";
 import Amount from "./amount";
-import { ListDataContext } from "./providers/list";
 import { motion } from "framer-motion";
-import { useListState } from "@/store";
+import { useListState, useLogsStore, useMoneysStore } from "@/store";
 import { Button } from "./ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import _ from "lodash";
+import { useGetDifferences } from "@/hooks/useGetDifferences";
 export default function TotalMoney() {
-  const { currentTotal, yesterdayDiff, user, isLoading } =
-    useContext(ListDataContext);
+  const { moneys } = useMoneysStore();
+  const { logs } = useLogsStore();
+  const currentTotal = _.sum(moneys.map((m) => m.amount));
   const listState = useListState();
   const transfersFees =
     Number(listState.transferrings?.root.fee ?? 0) +
     _.sum(listState.transferrings?.branches.map((b) => b.fee));
-  if (isLoading) return;
+
+  const yesterdayDiff = useGetDifferences(logs ?? [], currentTotal, "1");
+
   return (
     <motion.div
       initial={false}
@@ -34,7 +36,7 @@ export default function TotalMoney() {
         }}
         className="text-xs text-muted-foreground"
       >
-        {user?.username}&apos;s total money
+        total money
       </motion.p>
       <motion.div
         initial={false}

@@ -12,15 +12,46 @@ import {
   MoneyTransferBtn,
   MoneyCommentBtn,
 } from "@/components/money-bar";
-import { useContext } from "react";
-import { ListDataContext } from "@/components/providers/list";
-import Loader from "@/components/loader";
 import { motion } from "framer-motion";
 import Scrollable from "@/components/scrollable";
+import { useListState, useMoneysStore } from "@/store";
+import _ from "lodash";
 export default function List() {
-  const { isLoading, moneys, currentTotal } = useContext(ListDataContext);
+  const { moneys } = useMoneysStore();
+  const { sortBy, asc } = useListState();
+  function sortMoneys() {
+    if (asc) {
+      if (sortBy === "amount") {
+        return moneys.toSorted((a, b) => a.amount - b.amount);
+      }
+      if (sortBy === "created_at") {
+        return moneys.toSorted(
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+      }
+      if (sortBy === "name") {
+        return moneys.toSorted((a, b) => b.name.localeCompare(a.name));
+      }
+      return moneys;
+    }
+    if (sortBy === "amount") {
+      return moneys.toSorted((a, b) => b.amount - a.amount);
+    }
+    if (sortBy === "created_at") {
+      return moneys.toSorted(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    }
+    if (sortBy === "name") {
+      return moneys.toSorted((a, b) => a.name.localeCompare(b.name));
+    }
+    return moneys;
+  }
+  const currentTotal = _.sum(moneys.map((m) => m.amount));
+  const sortedMoneys = sortMoneys();
 
-  if (isLoading) return <Loader />;
   return (
     <Scrollable>
       <motion.div
@@ -28,13 +59,13 @@ export default function List() {
         animate={{ opacity: 1, translateY: 0 }}
         exit={{ opacity: 0, translateY: 20 }}
       >
-        {moneys?.map((m) => {
+        {sortedMoneys.map((m) => {
           return (
             <Money
               currentTotal={currentTotal}
               specific={false}
               money={m}
-              key={`${m.id}-${m.last_update}`}
+              key={`${m.id}-${m.last_updated_at}`}
             >
               <MoneyBar>
                 <MoneyHeader />

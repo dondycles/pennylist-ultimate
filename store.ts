@@ -1,13 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage, StateStorage } from "zustand/middleware";
 import { get, set, del } from "idb-keyval";
-import { MoneyWithLogs } from "./drizzle/infered-types";
 
-export interface MoneyTransfer extends Omit<MoneyWithLogs, "money_log"> {
-  transferAmount: number | undefined | null;
-  reason: string;
-  fee: number;
-}
 const storage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
     console.log(name, "has been retrieved");
@@ -21,6 +15,35 @@ const storage: StateStorage = {
     console.log(name, "has been deleted");
     await del(name);
   },
+};
+
+export type Money = {
+  id: string;
+  name: string;
+  amount: number;
+  color: string;
+  created_at: string;
+  last_updated_at: string;
+  notes: MoneyNote[];
+};
+
+export type MoneyNote = {
+  id: string;
+  note: string;
+  created_at: string;
+};
+
+export type Log = {
+  id: string;
+  money_id: string;
+  action: string;
+  reason: string;
+  created_at: string;
+  changes: {
+    prev: Money & { total: number };
+    latest: Money & { total: number };
+  };
+  current_total: number;
 };
 
 export type ListState = {
@@ -37,11 +60,11 @@ export type ListState = {
   } | null;
   setTransfereesState: (
     value: number,
-    id: number,
+    id: string,
     reason: string,
     fee: number
   ) => void;
-  setRootState: (id: number, reason: string, fee: number) => void;
+  setRootState: (id: string, reason: string, fee: number) => void;
   setState: ({
     view,
     hidden,
@@ -65,6 +88,12 @@ export type ListState = {
     } | null;
   }) => void;
 };
+
+export interface MoneyTransfer extends Money {
+  transferAmount: number | undefined | null;
+  reason: string;
+  fee: number;
+}
 
 export const useListState = create<ListState>()(
   persist(
@@ -118,8 +147,6 @@ export const useListState = create<ListState>()(
   )
 );
 
-export type UseListState = typeof useListState;
-
 type ChartsState = {
   progressDays: "7" | "14" | "28" | "365";
   type: "monthly" | "daily";
@@ -146,74 +173,94 @@ export const useChartsState = create<ChartsState>()(
   )
 );
 
-// export type Money = {
-//   id: string;
-//   lister: string;
-//   name: string;
-//   amount: number;
-//   color: string;
-//   created_at: string;
-//   last_updated_at: string;
-// };
+type MoneysStore = {
+  moneys: Money[];
+  addMoney: (money: Money) => void;
+  delMoney: (id: string) => void;
+  editMoney: (money: Money) => void;
+  addNote: (id: string, note: MoneyNote) => void;
+  delNote: (id: string, noteId: string) => void;
+  setMoneyColor: (id: string, color: string) => void;
+};
+export const useMoneysStore = create<MoneysStore>()(
+  persist(
+    (set) => ({
+      moneys: [],
+      addMoney: (money) =>
+        set(({ moneys }) => {
+          const newMoneys: Money[] = [...moneys, money];
 
-// type MoneysStore = {
-//   moneys: Money[];
-//   addMoney: (money: Money) => void;
-//   delMoney: (id: string) => void;
-//   editMoney: (money: Money, reason: string, currentTotal: number) => void;
-//   transfer: (
-//     money: {
-//       prev: Money;
-//       latest: Money;
-//     },
-//     reason: string,
-//     currentTotal: number
-//   ) => void;
-// };
+          return { moneys: newMoneys };
+        }),
+      delMoney: (id) =>
+        set(({ moneys }) => {
+          const newMoneys: Money[] = moneys.filter((m) => m.id !== id);
+          return { moneys: newMoneys };
+        }),
+      editMoney: (money) =>
+        set(({ moneys }) => {
+          const newMoneys: Money[] = moneys.filter((m) => m.id !== money.id);
+          return { moneys: [...newMoneys, money] };
+        }),
+      addNote: (id, note) =>
+        set(({ moneys }) => {
+          const targetedMoney = moneys.find((m) => m.id === id);
+          if (!targetedMoney) return { moneys };
+          const newNotes: MoneyNote[] = [...targetedMoney.notes, note];
+          const newMoney: Money = { ...targetedMoney, notes: newNotes };
+          const moneysWOTargetMoney: Money[] = moneys.filter(
+            (m) => m.id !== id
+          );
+          const newMoneys: Money[] = [...moneysWOTargetMoney, newMoney];
+          return { moneys: newMoneys };
+        }),
+      delNote: (id, noteId) =>
+        set(({ moneys }) => {
+          const targetedMoney = moneys.find((m) => m.id === id);
+          if (!targetedMoney) return { moneys };
+          const newNotes: MoneyNote[] = targetedMoney.notes.filter(
+            (n) => n.id !== noteId
+          );
+          const newMoney: Money = { ...targetedMoney, notes: newNotes };
+          const moneysWOTargetMoney: Money[] = moneys.filter(
+            (m) => m.id !== id
+          );
+          const newMoneys: Money[] = [...moneysWOTargetMoney, newMoney];
+          return { moneys: newMoneys };
+        }),
+      setMoneyColor: (id, color) =>
+        set(({ moneys }) => {
+          const targetedMoney = moneys.find((m) => m.id === id);
+          if (!targetedMoney) return { moneys };
+          const newMoney: Money = { ...targetedMoney, color };
+          const moneysWOTargetMoney: Money[] = moneys.filter(
+            (m) => m.id !== id
+          );
+          const newMoneys: Money[] = [...moneysWOTargetMoney, newMoney];
+          return { moneys: newMoneys };
+        }),
+    }),
+    {
+      name: "moneys",
+      storage: createJSONStorage(() => storage),
+    }
+  )
+);
 
-// export type MoneysNotes = {
-//   id: string;
-//   money_id: string;
-//   note: string;
-//   lister: string;
-//   created_at: string;
-// };
-
-// export type Logs = {
-//   id: string;
-//   money_id: string;
-//   note: string;
-//   created_at: string;
-//   lister: string;
-// };
-
-// export const useMoneysStore = create<MoneysStore>()(
-//   persist(
-//     (set) => ({
-//       moneys: [],
-//       addMoney: (money) =>
-//         set(({ moneys }) => {
-//           const newMoneys = [...moneys, money];
-//           return { moneys: newMoneys };
-//         }),
-//       delMoney: (id) =>
-//         set(({ moneys }) => {
-//           const newMoneys = moneys.filter((m) => m.id !== id);
-//           return { moneys: newMoneys };
-//         }),
-//       editMoney: (money, reason, currentTotal) =>
-//         set(({ moneys }) => {
-//           const newMoneys = moneys.filter((m) => m.id !== money.id);
-//           return { moneys: [...newMoneys, money] };
-//         }),
-//       transfer: (money, reason, currentTotal) =>
-//         set(({ moneys }) => {
-//           return {};
-//         }),
-//     }),
-//     {
-//       name: "moneys",
-//       storage: createJSONStorage(() => storage),
-//     }
-//   )
-// );
+type LogsStore = {
+  logs: Log[];
+  addLog: (log: Log) => void;
+};
+export const useLogsStore = create<LogsStore>()(
+  persist(
+    (set) => ({
+      logs: [],
+      addLog: (log) =>
+        set(({ logs }) => {
+          const newLogs = [...logs, log];
+          return { logs: newLogs };
+        }),
+    }),
+    { name: "logs" }
+  )
+);

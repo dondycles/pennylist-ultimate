@@ -1,19 +1,34 @@
 "use client";
-import { useContext } from "react";
-import { ListDataContext } from "@/components/providers/list";
+
 import { HistoryTable } from "@/components/charts/history-table";
 import { historyColumns } from "@/components/charts/history-columns";
 import ProgressBarChart from "@/components/charts/progress-bar-chart";
-import Loader from "@/components//loader";
 import { Separator } from "@/components/ui/separator";
-import { useChartsState } from "@/store";
+import { useChartsState, useLogsStore, useMoneysStore } from "@/store";
 import { motion } from "framer-motion";
 import Scrollable from "@/components/scrollable";
+import { useGetDifferences } from "@/hooks/useGetDifferences";
+import _ from "lodash";
+import { useGetMonthlyProgress } from "@/hooks/useGetMonthlyProgress";
+import { useGetDailyProgress } from "@/hooks/useGetDailyProgress";
 export default function Charts() {
-  const { isLoading, logs, differences, dailyData, monthlyData } =
-    useContext(ListDataContext);
+  const { logs } = useLogsStore();
+  const { moneys } = useMoneysStore();
   const chartState = useChartsState();
-  if (isLoading) return <Loader />;
+  const currentTotal = _.sum(moneys.map((m) => m.amount));
+  const moneyLogs = logs
+    .map((l) => ({ ...l, money: l.changes.latest.name }))
+    .sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  const differences = useGetDifferences(
+    moneyLogs,
+    currentTotal,
+    chartState.progressDays
+  );
+  const monthlyData = useGetMonthlyProgress(moneyLogs ?? []);
+  const dailyData = useGetDailyProgress(moneyLogs ?? []);
   return (
     <Scrollable>
       <motion.div
@@ -29,7 +44,7 @@ export default function Charts() {
         <HistoryTable
           defaultSearchBy="money"
           columns={historyColumns}
-          data={logs ?? []}
+          data={moneyLogs ?? []}
         />
       </motion.div>
     </Scrollable>
