@@ -13,6 +13,7 @@ import {
   LetterText,
   MoonIcon,
   RectangleHorizontal,
+  ShieldAlert,
   SortAsc,
   SortDesc,
   SunIcon,
@@ -56,8 +57,15 @@ import { useMeasure } from "@uidotdev/usehooks";
 import AddMoneyDrawer from "./add-money-drawer";
 import _ from "lodash";
 import { Badge } from "./ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
 import { Input } from "./ui/input";
+import Amount from "./amount";
 const NavContext = createContext<
   | {
       showProfile: boolean;
@@ -284,9 +292,11 @@ export function NavChartBtn() {
 export function NavDataOptions({
   exportData,
   importData,
+  deleteData,
 }: {
   exportData: () => void;
   importData: () => void;
+  deleteData: () => void;
 }) {
   return (
     <>
@@ -297,11 +307,15 @@ export function NavDataOptions({
       <DropdownMenuGroup>
         <DropdownMenuItem onClick={exportData}>
           <HardDriveDownload size={16} className="mr-2" />
-          Export Data
+          Export
         </DropdownMenuItem>
         <DropdownMenuItem onClick={importData}>
           <HardDriveUpload size={16} className="mr-2" />
-          Import Data
+          Import
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={deleteData}>
+          <ShieldAlert size={16} className="mr-2 text-destructive" />
+          Delete
         </DropdownMenuItem>
       </DropdownMenuGroup>
     </>
@@ -315,11 +329,22 @@ export default function AnimatedNav() {
     editMoney,
     totalMoneys,
     import: importMoneys,
+    delete: deleteMoneys,
   } = useMoneysStore();
   const { transferrings, setTransferrings } = useTransferState();
-  const { addLog, logs, import: importLogs } = useLogsStore();
+  const {
+    addLog,
+    logs,
+    import: importLogs,
+    delete: deleteLogs,
+  } = useLogsStore();
   const [navBar, { width }] = useMeasure();
   const [showImport, setShowImport] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+  const [importedData, setImportedData] = useState<{
+    logs: LogsStore["logs"];
+    moneys: MoneysStore["moneys"];
+  } | null>(null);
   const jsonInput = useRef<HTMLInputElement>(null);
   const calculateWidth = () => {
     if (pathname === "/list") return width! / 3 - 1;
@@ -387,9 +412,7 @@ export default function AnimatedNav() {
             moneys: MoneysStore["moneys"];
             logs: LogsStore["logs"];
           } = JSON.parse(String(e.target?.result));
-          importLogs(jsonData.logs);
-          importMoneys(jsonData.moneys);
-          setShowImport(false);
+          setImportedData(jsonData);
         } catch (error) {
           console.log(error);
         }
@@ -397,6 +420,12 @@ export default function AnimatedNav() {
 
       reader.readAsText(data[0]);
     }
+  }
+
+  function deleteData() {
+    deleteLogs();
+    deleteMoneys();
+    setShowDelete(false);
   }
 
   async function transfer() {
@@ -636,6 +665,7 @@ export default function AnimatedNav() {
                     <NavDataOptions
                       importData={() => setShowImport(true)}
                       exportData={exportData}
+                      deleteData={() => setShowDelete(true)}
                     />
                   </NavOptions>
                 </m.div>
@@ -643,13 +673,111 @@ export default function AnimatedNav() {
             </m.div>
           )}
         </AnimatePresence>
-        <Dialog open={showImport} onOpenChange={setShowImport}>
+        <Dialog
+          key={"import-data"}
+          open={showImport}
+          onOpenChange={setShowImport}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Import Your Data</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col gap-4 p-4 pt-0 text-sm">
-              <Input ref={jsonInput} type="file" onChange={importData} />
+              <Input
+                className="sr-only"
+                ref={jsonInput}
+                type="file"
+                onChange={importData}
+              />
+              {importedData ? (
+                <div className="space-y-4">
+                  <p className="text-muted-foreground">
+                    You are about to import...
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Moneys: </span>
+                    {importedData.moneys.map((m) => m.name).join(", ")}
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Log records: </span>{" "}
+                    {importedData.logs.length}
+                  </p>
+                  <div>
+                    <span className="text-muted-foreground">Total Money: </span>
+                    <Amount
+                      settings={{
+                        sign: true,
+                        hide: false,
+                      }}
+                      amount={_.sum(importedData.moneys.map((m) => m.amount))}
+                    />
+                  </div>
+                  <div className="flex gap-4">
+                    <Button
+                      onClick={() => {
+                        importLogs(importedData.logs);
+                        importMoneys(importedData.moneys);
+                        setShowImport(false);
+                        setImportedData(null);
+                      }}
+                      className="flex-1"
+                      variant={"secondary"}
+                    >
+                      Import
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setImportedData(null);
+                        setShowImport(false);
+                      }}
+                      className="flex-1"
+                      variant={"destructive"}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => {
+                    if (!jsonInput.current) return;
+                    jsonInput.current.click();
+                  }}
+                >
+                  Upload Data
+                </Button>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+        <Dialog
+          key={"delete-data"}
+          open={showDelete}
+          onOpenChange={setShowDelete}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Your Data</DialogTitle>
+              <DialogDescription>
+                Please export your data first before wiping out your data. This
+                action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-row gap-4 p-4 pt-0 text-sm flex-1">
+              <Button
+                onClick={deleteData}
+                variant={"secondary"}
+                className="flex-1"
+              >
+                Delete
+              </Button>
+              <Button
+                onClick={() => setShowDelete(false)}
+                variant={"destructive"}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

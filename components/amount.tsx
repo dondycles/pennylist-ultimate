@@ -12,7 +12,7 @@ export default function Amount({
 }: {
   className?: ClassNameValue;
   amount: number;
-  settings: { decimals?: number; sign: boolean };
+  settings: { decimals?: number; sign: boolean; hide?: boolean };
   color?: string;
 }) {
   const listState = useListState();
@@ -32,7 +32,11 @@ export default function Amount({
       style={{ color: color ?? "" }}
       className={cn("text-2xl font-readex font-black", className)}
     >
-      {listState?.hidden
+      {settings.hide === false
+        ? settings?.sign
+          ? withSign.format(amount)
+          : withoutSign.format(amount)
+        : listState?.hidden
         ? asteriskedAmount
         : settings?.sign
         ? withSign.format(amount)
