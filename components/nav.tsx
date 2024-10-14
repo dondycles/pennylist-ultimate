@@ -381,7 +381,6 @@ export default function AnimatedNav() {
     const data = jsonInput.current.files;
     if (data) {
       const reader = new FileReader();
-
       reader.onload = function (e) {
         try {
           const jsonData: {
