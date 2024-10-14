@@ -230,11 +230,11 @@ export function NavThemeOptions() {
       <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
         <DropdownMenuRadioItem value="dark">
           <MoonIcon size={16} className="mr-2" />
-          Dark Mode
+          Dark
         </DropdownMenuRadioItem>
         <DropdownMenuRadioItem value="light">
           <SunIcon size={16} className="mr-2" />
-          Light Mode
+          Light
         </DropdownMenuRadioItem>
       </DropdownMenuRadioGroup>
     </>
@@ -387,7 +387,7 @@ export default function AnimatedNav() {
     const link = document.createElement("a");
 
     // Set the download attribute with the filename
-    link.download = "data";
+    link.download = new Date().toISOString();
 
     // Create a URL for the blob
     link.href = URL.createObjectURL(jsonBlob);

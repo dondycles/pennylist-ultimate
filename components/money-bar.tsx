@@ -593,22 +593,16 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
     transferState: { transferrings },
   } = useMoneyBarContext();
   return (
-    <m.div
+    <div
       key={`actions-${money.id}-${transferrings?.branches.length}-${String(
         transferDetails.isInBranch
       )}-${String(transferDetails.isRoot)}-${commenting}`}
-      animate={{ opacity: 1, translateY: -0 }}
-      initial={{ opacity: 0, translateY: -4 }}
-      exit={{ opacity: 0, translateY: -4 }}
       className={`shrink-0 flex flex-coloverflow-hidden ${
         listState.compactMoney ? "aspect-square size-6" : "mt-4 h-fit"
       }`}
-      layout
     >
       {!listState.compactMoney ? (
-        <m.div layout className={`flex flex-row gap-6 items-center`}>
-          {children}
-        </m.div>
+        <div className={`flex flex-row gap-6 items-center`}>{children}</div>
       ) : (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -623,7 +617,7 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
             )}
           </DropdownMenuTrigger>
           <DropdownMenuContent className="rounded-3xl" align="end">
-            <m.div layout className={`flex flex-row gap-6 items-center`}>
+            <div className={`flex flex-row gap-6 items-center`}>
               {(transferDetails.isRoot || transferDetails.isInBranch) && (
                 <Button
                   onClick={transfer}
@@ -640,11 +634,11 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
                   {transferDetails.isRoot && "Sender"}
                 </span>
               )}
-            </m.div>
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
       )}
-    </m.div>
+    </div>
   );
 }
 
