@@ -561,7 +561,7 @@ export function MoneyAmount() {
       className="flex flex-col overflow-hidden "
     >
       <Amount
-        className={`${darken}`}
+        className={`${darken} text-base`}
         color={
           isRootNegative
             ? "hsl(var(--destructive))"
