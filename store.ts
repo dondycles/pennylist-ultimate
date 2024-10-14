@@ -197,6 +197,7 @@ export type MoneysStore = {
   asc: boolean;
   sortMoneys: (sortBy: "created_at" | "amount" | "name", asc: boolean) => void;
   totalMoneys: (moneys: Money[]) => number;
+  import: (moneys: Money[]) => void;
 };
 export const useMoneysStore = create<MoneysStore>()(
   persist(
@@ -297,6 +298,10 @@ export const useMoneysStore = create<MoneysStore>()(
           const sortedMoneys = sortMoneys();
           return { moneys: sortedMoneys, sortBy, asc };
         }),
+      import: (moneys) =>
+        set(() => {
+          return { moneys };
+        }),
     }),
     {
       name: "moneys",
@@ -308,6 +313,7 @@ export const useMoneysStore = create<MoneysStore>()(
 export type LogsStore = {
   logs: Log[];
   addLog: (log: Log) => void;
+  import: (log: Log[]) => void;
 };
 export const useLogsStore = create<LogsStore>()(
   persist(
@@ -317,6 +323,10 @@ export const useLogsStore = create<LogsStore>()(
         set(({ logs }) => {
           const newLogs = [...logs, log];
           return { logs: newLogs };
+        }),
+      import: (logs) =>
+        set(() => {
+          return { logs };
         }),
     }),
     { name: "logs" }

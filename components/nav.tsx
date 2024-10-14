@@ -21,6 +21,8 @@ import {
 import { Button } from "./ui/button";
 import {
   ListState,
+  LogsStore,
+  MoneysStore,
   useListState,
   useLogsStore,
   useMoneysStore,
@@ -38,7 +40,13 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { useTheme } from "next-themes";
-import React, { createContext, forwardRef, useContext, useState } from "react";
+import React, {
+  createContext,
+  forwardRef,
+  useContext,
+  useRef,
+  useState,
+} from "react";
 import Link from "next/link";
 import { AnimatePresence, motion as m } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -48,6 +56,8 @@ import { useMeasure } from "@uidotdev/usehooks";
 import AddMoneyDrawer from "./add-money-drawer";
 import _ from "lodash";
 import { Badge } from "./ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Input } from "./ui/input";
 const NavContext = createContext<
   | {
       showProfile: boolean;
@@ -300,10 +310,17 @@ export function NavDataOptions({
 
 export default function AnimatedNav() {
   const pathname = usePathname();
-  const { moneys, editMoney, totalMoneys } = useMoneysStore();
+  const {
+    moneys,
+    editMoney,
+    totalMoneys,
+    import: importMoneys,
+  } = useMoneysStore();
   const { transferrings, setTransferrings } = useTransferState();
-  const { addLog, logs } = useLogsStore();
+  const { addLog, logs, import: importLogs } = useLogsStore();
   const [navBar, { width }] = useMeasure();
+  const [showImport, setShowImport] = useState(false);
+  const jsonInput = useRef<HTMLInputElement>(null);
   const calculateWidth = () => {
     if (pathname === "/list") return width! / 3 - 1;
     if (pathname.startsWith("/list/money/")) return width! / 3 - 1;
@@ -355,14 +372,32 @@ export default function AnimatedNav() {
 
     // Programmatically click the link to trigger the download
     link.click();
-
     // Clean up and remove the link
     document.body.removeChild(link);
   }
 
   function importData() {
-    console.log("moneys: ", moneys);
-    console.log("logs:", logs);
+    if (!jsonInput.current) return;
+    const data = jsonInput.current.files;
+    if (data) {
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        try {
+          const jsonData: {
+            moneys: MoneysStore["moneys"];
+            logs: LogsStore["logs"];
+          } = JSON.parse(String(e.target?.result));
+          importLogs(jsonData.logs);
+          importMoneys(jsonData.moneys);
+          setShowImport(false);
+        } catch (error) {
+          console.log(error);
+        }
+      };
+
+      reader.readAsText(data[0]);
+    }
   }
 
   async function transfer() {
@@ -600,7 +635,7 @@ export default function AnimatedNav() {
                     <NavHideOption />
                     <NavThemeOptions />
                     <NavDataOptions
-                      importData={importData}
+                      importData={() => setShowImport(true)}
                       exportData={exportData}
                     />
                   </NavOptions>
@@ -609,6 +644,16 @@ export default function AnimatedNav() {
             </m.div>
           )}
         </AnimatePresence>
+        <Dialog open={showImport} onOpenChange={setShowImport}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Import Your Data</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 p-4 pt-0 text-sm">
+              <Input ref={jsonInput} type="file" onChange={importData} />
+            </div>
+          </DialogContent>
+        </Dialog>
       </NavBar>
     </Nav>
   );
