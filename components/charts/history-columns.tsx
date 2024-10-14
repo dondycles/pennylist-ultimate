@@ -114,11 +114,6 @@ export const historyColumns: ColumnDef<Log | undefined>[] = [
     cell: ({ row }) => {
       return (
         <p className="text-xs text-muted-foreground truncate">
-          {/* {differenceInHours(
-            new Date(row.original?.createdAt ?? ""),
-            new Date()
-          )}{" "}
-          hr(s) ago */}
           {new Date(row.original?.created_at ?? "").toLocaleString()}
         </p>
       );
