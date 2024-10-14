@@ -93,7 +93,7 @@ export const historyColumns: ColumnDef<Log | undefined>[] = [
     },
   },
   {
-    accessorKey: "createdAt",
+    accessorKey: "created_at",
     header: ({ column }) => {
       return (
         <button
