@@ -1,21 +1,26 @@
 "use client";
 import Amount from "./amount";
 import { motion } from "framer-motion";
-import { useListState, useLogsStore, useMoneysStore } from "@/store";
+import {
+  useListState,
+  useLogsStore,
+  useMoneysStore,
+  useTransferState,
+} from "@/store";
 import { Button } from "./ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import _ from "lodash";
 import { useGetDifferences } from "@/hooks/useGetDifferences";
 export default function TotalMoney() {
-  const { moneys } = useMoneysStore();
+  const { moneys, totalMoneys } = useMoneysStore();
   const { logs } = useLogsStore();
-  const currentTotal = _.sum(moneys.map((m) => m.amount));
+  const { transferrings } = useTransferState();
   const listState = useListState();
   const transfersFees =
-    Number(listState.transferrings?.root.fee ?? 0) +
-    _.sum(listState.transferrings?.branches.map((b) => b.fee));
+    Number(transferrings?.root.fee ?? 0) +
+    _.sum(transferrings?.branches.map((b) => b.fee));
 
-  const yesterdayDiff = useGetDifferences(logs ?? [], currentTotal, "1");
+  const yesterdayDiff = useGetDifferences(logs ?? [], totalMoneys(moneys), "1");
 
   return (
     <motion.div
@@ -51,7 +56,7 @@ export default function TotalMoney() {
       >
         <Amount
           className="text-4xl"
-          amount={currentTotal - transfersFees}
+          amount={totalMoneys(moneys) - transfersFees}
           settings={{ sign: true }}
         />
       </motion.div>

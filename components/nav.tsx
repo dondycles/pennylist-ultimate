@@ -8,6 +8,8 @@ import {
   CornerRightDown,
   DollarSign,
   EyeOff,
+  HardDriveDownload,
+  HardDriveUpload,
   LetterText,
   MoonIcon,
   RectangleHorizontal,
@@ -17,10 +19,18 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { ListState, useListState, useLogsStore, useMoneysStore } from "@/store";
+import {
+  ListState,
+  useListState,
+  useLogsStore,
+  useMoneysStore,
+  useTransferState,
+} from "@/store";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -104,16 +114,16 @@ export function NavOptions({ children }: { children: React.ReactNode }) {
 }
 
 export function NavFilterOptions() {
-  const { listState } = useNavContext();
+  const { sortBy, asc, sortMoneys } = useMoneysStore();
   return (
     <>
       <DropdownMenuLabel className="text-muted-foreground text-xs">
         Ordering
       </DropdownMenuLabel>
-      <DropdownMenuRadioGroup value={String(listState.asc)}>
+      <DropdownMenuRadioGroup value={String(asc)}>
         <DropdownMenuRadioItem
           onClick={() => {
-            listState.setState({ ...listState, asc: true });
+            sortMoneys(sortBy, true);
           }}
           value="true"
         >
@@ -122,7 +132,7 @@ export function NavFilterOptions() {
         </DropdownMenuRadioItem>
         <DropdownMenuRadioItem
           onClick={() => {
-            listState.setState({ ...listState, asc: false });
+            sortMoneys(sortBy, false);
           }}
           value="false"
         >
@@ -134,10 +144,10 @@ export function NavFilterOptions() {
       <DropdownMenuLabel className="text-muted-foreground text-xs">
         Sorting
       </DropdownMenuLabel>
-      <DropdownMenuRadioGroup value={listState.sortBy}>
+      <DropdownMenuRadioGroup value={sortBy}>
         <DropdownMenuRadioItem
           onClick={() => {
-            listState.setState({ ...listState, sortBy: "created_at" });
+            sortMoneys("created_at", asc);
           }}
           value="created_at"
         >
@@ -146,7 +156,7 @@ export function NavFilterOptions() {
         </DropdownMenuRadioItem>
         <DropdownMenuRadioItem
           onClick={() => {
-            listState.setState({ ...listState, sortBy: "amount" });
+            sortMoneys("amount", asc);
           }}
           value="amount"
         >
@@ -155,7 +165,7 @@ export function NavFilterOptions() {
         </DropdownMenuRadioItem>
         <DropdownMenuRadioItem
           onClick={() => {
-            listState.setState({ ...listState, sortBy: "name" });
+            sortMoneys("name", asc);
           }}
           value="name"
         >
@@ -261,13 +271,39 @@ export function NavChartBtn() {
   );
 }
 
+export function NavDataOptions({
+  exportData,
+  importData,
+}: {
+  exportData: () => void;
+  importData: () => void;
+}) {
+  return (
+    <>
+      <DropdownMenuSeparator />
+      <DropdownMenuLabel className="text-muted-foreground text-xs">
+        Data
+      </DropdownMenuLabel>
+      <DropdownMenuGroup>
+        <DropdownMenuItem onClick={exportData}>
+          <HardDriveDownload size={16} className="mr-2" />
+          Export Data
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={importData}>
+          <HardDriveUpload size={16} className="mr-2" />
+          Import Data
+        </DropdownMenuItem>
+      </DropdownMenuGroup>
+    </>
+  );
+}
+
 export default function AnimatedNav() {
   const pathname = usePathname();
-  const { moneys, editMoney } = useMoneysStore();
-  const { addLog } = useLogsStore();
-  const currentTotal = _.sum(moneys.map((m) => m.amount));
+  const { moneys, editMoney, totalMoneys } = useMoneysStore();
+  const { transferrings, setTransferrings } = useTransferState();
+  const { addLog, logs } = useLogsStore();
   const [navBar, { width }] = useMeasure();
-  const listState = useListState();
   const calculateWidth = () => {
     if (pathname === "/list") return width! / 3 - 1;
     if (pathname.startsWith("/list/money/")) return width! / 3 - 1;
@@ -282,8 +318,8 @@ export default function AnimatedNav() {
   const showAddBtn =
     Boolean(pathname.match("/list")) &&
     !Boolean(pathname.startsWith("/list/money/"));
-  const root = listState.transferrings?.root;
-  const branches = listState.transferrings?.branches;
+  const root = transferrings?.root;
+  const branches = transferrings?.branches;
   const branchesDemandSum = _.sum(branches?.map((b) => b.transferAmount));
   const variants = {
     close: { opacity: 0, translateY: 72 },
@@ -291,22 +327,42 @@ export default function AnimatedNav() {
   };
 
   function removeRoot() {
-    listState.setState({ ...listState, transferrings: null });
+    setTransferrings(null);
   }
 
   function removeBranch(id: string) {
-    if (!listState.transferrings) return;
-    const branches = listState.transferrings.branches.filter(
-      (b) => b.id !== id
-    );
+    if (!transferrings) return;
+    const branches = transferrings.branches.filter((b) => b.id !== id);
+    setTransferrings({ ...transferrings, branches });
+  }
 
-    listState.setState({
-      ...listState,
-      transferrings: {
-        ...listState.transferrings,
-        branches,
-      },
+  function exportData() {
+    const jsonBlob = new Blob([JSON.stringify({ logs, moneys }, null, 2)], {
+      type: "application/json",
     });
+
+    // Create a temporary <a> element
+    const link = document.createElement("a");
+
+    // Set the download attribute with the filename
+    link.download = "data";
+
+    // Create a URL for the blob
+    link.href = URL.createObjectURL(jsonBlob);
+
+    // Append the link to the body (necessary for some browsers)
+    document.body.appendChild(link);
+
+    // Programmatically click the link to trigger the download
+    link.click();
+
+    // Clean up and remove the link
+    document.body.removeChild(link);
+  }
+
+  function importData() {
+    console.log("moneys: ", moneys);
+    console.log("logs:", logs);
   }
 
   async function transfer() {
@@ -327,19 +383,20 @@ export default function AnimatedNav() {
 
     addLog({
       changes: {
-        prev: { ...root, total: currentTotal },
+        prev: { ...root, total: totalMoneys(moneys) },
         latest: {
           ...root,
           amount: root.amount - branchesDemandSum - root.fee,
-          total: currentTotal - branchesDemandSum - root.fee,
+          total: totalMoneys(moneys) - branchesDemandSum - root.fee,
         },
       },
       action: "transfer",
       created_at: new Date().toISOString(),
-      current_total: currentTotal - branchesDemandSum - root.fee,
+      current_total: totalMoneys(moneys) - branchesDemandSum - root.fee,
       id: crypto.randomUUID(),
       money_id: root.id,
       reason: root.reason,
+      money_name: root.name,
     });
 
     for (let index = 0; index < branches.length; index++) {
@@ -350,41 +407,43 @@ export default function AnimatedNav() {
       );
       addLog({
         changes: {
-          prev: { ...branch, total: currentTotal },
+          prev: { ...branch, total: totalMoneys(moneys) },
           latest: {
             ...branch,
             amount: branch.amount + (branch.transferAmount ?? 0) - branch.fee,
-            total: currentTotal + (branch.transferAmount ?? 0) - branch.fee,
+            total:
+              totalMoneys(moneys) + (branch.transferAmount ?? 0) - branch.fee,
           },
         },
         action: "transfer",
         created_at: new Date().toISOString(),
         current_total:
-          currentTotal -
+          totalMoneys(moneys) -
           branches[index].fee -
           root.fee -
           (index > 0 ? sumOfPreviousBranchesFees : 0),
         id: crypto.randomUUID(),
         money_id: branch.id,
         reason: branch.reason,
+        money_name: branch.name,
       });
       editMoney({
         ...branch,
         amount: branch.amount + (branch.transferAmount ?? 0) - branch.fee,
       });
     }
-    listState.setState({ ...listState, transferrings: null });
+    setTransferrings(null);
   }
   return (
     <Nav>
       <NavBar
         ref={navBar}
         className={`${!width ? "opacity-0" : "opacity-100"} ${
-          listState.transferrings ? "h-[178px] " : "h-[74px]"
+          transferrings ? "h-[178px] " : "h-[74px]"
         }`}
       >
         <AnimatePresence initial={false}>
-          {listState.transferrings ? (
+          {transferrings ? (
             <m.div
               key={"transferring"}
               initial={"close"}
@@ -412,13 +471,13 @@ export default function AnimatedNav() {
                       size={16}
                     />
                   </div>
-                  {listState.transferrings.branches.length !== 0 ? (
+                  {transferrings.branches.length !== 0 ? (
                     <div className="flex flex-row gap-2 items-baseline border-t pt-2">
                       <p className="text-muted-foreground text-xs">
                         Receiver(s):{" "}
                       </p>
                       <div className="flex gap-2">
-                        {listState.transferrings.branches.map((b) => {
+                        {transferrings.branches.map((b) => {
                           return (
                             <React.Fragment key={b.id}>
                               <Badge
@@ -448,7 +507,7 @@ export default function AnimatedNav() {
                 </div>
                 <div className="flex flex-row gap-4 ">
                   <Button
-                    disabled={listState.transferrings.branches.length === 0}
+                    disabled={transferrings.branches.length === 0}
                     onClick={transfer}
                     className="flex gap-2 flex-1"
                   >
@@ -456,9 +515,7 @@ export default function AnimatedNav() {
                     <ArrowRightLeft size={16} />{" "}
                   </Button>
                   <Button
-                    onClick={() =>
-                      listState.setState({ ...listState, transferrings: null })
-                    }
+                    onClick={() => setTransferrings(null)}
                     variant={"destructive"}
                     size="icon"
                   >
@@ -542,6 +599,10 @@ export default function AnimatedNav() {
                     <NavCompactMoneyOption />
                     <NavHideOption />
                     <NavThemeOptions />
+                    <NavDataOptions
+                      importData={importData}
+                      exportData={exportData}
+                    />
                   </NavOptions>
                 </m.div>
               </div>

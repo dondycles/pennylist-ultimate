@@ -36,10 +36,13 @@ import { useDarkenColor } from "@/hooks/useDarkenColor";
 import {
   ListState,
   type Money,
+  MoneysStore,
   MoneyTransfer,
+  TransferState,
   useListState,
   useLogsStore,
   useMoneysStore,
+  useTransferState,
 } from "@/store";
 import { Input } from "./ui/input";
 import _ from "lodash";
@@ -80,7 +83,7 @@ const MoneyBarContext = createContext<
       specific: boolean;
       currentTotal: number;
       darken: string;
-      transferState: {
+      transferDetails: {
         root: MoneyTransfer | null;
         branch: MoneyTransfer | null;
         isRoot: boolean;
@@ -88,8 +91,10 @@ const MoneyBarContext = createContext<
         branchesDemandedAmounts: number;
         isRootNegative: boolean;
       };
+      transferState: TransferState;
       listState: ListState;
       transfer: () => void;
+      moneysStore: MoneysStore;
     }
   | undefined
 >(undefined);
@@ -100,16 +105,18 @@ function useMoneyBarContext() {
   return context;
 }
 
-function useMoneyTransferringDetails(listState: ListState, money: Money) {
-  const root = listState.transferrings?.root ?? null;
-  const branch =
-    listState.transferrings?.branches.find((b) => b.id === money.id) ?? null;
+function useMoneyTransferringDetails(
+  transferrings: TransferState["transferrings"],
+  money: Money
+) {
+  const root = transferrings?.root ?? null;
+  const branch = transferrings?.branches.find((b) => b.id === money.id) ?? null;
   const isRoot = root?.id === money.id;
   const isInBranch = Boolean(
-    listState.transferrings?.branches.find((b) => b.id === money.id)
+    transferrings?.branches.find((b) => b.id === money.id)
   );
   const branchesDemandedAmounts = _.sum(
-    listState.transferrings?.branches.map((b) => b.transferAmount)
+    transferrings?.branches.map((b) => b.transferAmount)
   );
 
   const isRootNegative =
@@ -133,44 +140,39 @@ export function Money({
   const [deleting, setDeleting] = useState(false);
   const [commenting, setCommenting] = useState(false);
   const darken = useDarkenColor(money.color ?? "");
+  const transferState = useTransferState();
   const listState = useListState();
-  const transferState = useMoneyTransferringDetails(listState, money);
+  const moneysStore = useMoneysStore();
+  const transferDetails = useMoneyTransferringDetails(
+    transferState.transferrings,
+    money
+  );
   function transfer() {
-    if (!listState.transferrings)
-      return listState.setState({
-        ...listState,
-        transferrings: {
-          root: { ...money, transferAmount: 0, reason: "", fee: 0 },
-          branches: [],
-        },
+    if (!transferState.transferrings)
+      return transferState.setTransferrings({
+        root: { ...money, transferAmount: 0, reason: "", fee: 0 },
+        branches: [],
       });
 
-    if (transferState.isRoot)
-      return listState.setState({ ...listState, transferrings: null });
+    if (transferDetails.isRoot) return transferState.setTransferrings(null);
 
-    if (transferState.isInBranch) {
-      const branches = listState.transferrings.branches.filter(
+    if (transferDetails.isInBranch) {
+      const branches = transferState.transferrings.branches.filter(
         (b) => b.id !== money.id
       );
 
-      return listState.setState({
-        ...listState,
-        transferrings: {
-          ...listState.transferrings,
-          branches,
-        },
+      return transferState.setTransferrings({
+        ...transferState.transferrings,
+        branches,
       });
     }
 
-    listState.setState({
-      ...listState,
-      transferrings: {
-        ...listState.transferrings,
-        branches: [
-          ...listState.transferrings.branches,
-          { ...money, transferAmount: 0, reason: "", fee: 0 },
-        ],
-      },
+    transferState.setTransferrings({
+      ...transferState.transferrings,
+      branches: [
+        ...transferState.transferrings.branches,
+        { ...money, transferAmount: 0, reason: "", fee: 0 },
+      ],
     });
   }
 
@@ -183,11 +185,13 @@ export function Money({
         specific,
         currentTotal,
         darken,
-        transferState,
-        listState,
+        transferDetails,
         commenting,
         setCommenting,
         transfer,
+        transferState,
+        listState,
+        moneysStore,
       }}
     >
       {children}
@@ -205,14 +209,13 @@ export function MoneyBar({
   const {
     money,
     deleting,
-    listState,
     commenting,
     setCommenting,
-    transferState: { isInBranch, isRoot, root, branch },
+    transferDetails: { isInBranch, isRoot, root, branch },
+    listState,
+    transferState: { setBranchState, setRootState },
   } = useMoneyBarContext();
-
   const { addNote, delNote } = useMoneysStore();
-
   const [note, setNote] = useState("");
   async function add_note() {
     if (note.trim() === "") return;
@@ -358,13 +361,13 @@ export function MoneyBar({
                 onChange={(v) => {
                   if (!branch) return;
                   if (!Number(v.currentTarget.value))
-                    return listState.setTransfereesState(
+                    return setBranchState(
                       0,
                       branch?.id,
                       branch?.reason ?? "",
                       branch?.fee
                     );
-                  listState.setTransfereesState(
+                  setBranchState(
                     Number(v.target.value),
                     branch?.id,
                     branch?.reason ?? "",
@@ -388,13 +391,13 @@ export function MoneyBar({
                   onChange={(v) => {
                     if (!branch) return;
                     if (!Number(v.currentTarget.value))
-                      return listState.setTransfereesState(
+                      return setBranchState(
                         branch.transferAmount ?? 0,
                         branch.id,
                         branch.reason ?? "",
                         0
                       );
-                    listState.setTransfereesState(
+                    setBranchState(
                       branch.transferAmount ?? 0,
                       branch.id,
                       branch.reason ?? "",
@@ -411,7 +414,7 @@ export function MoneyBar({
                 <Input
                   value={branch?.reason ?? ""}
                   onChange={(v) =>
-                    listState.setTransfereesState(
+                    setBranchState(
                       branch?.transferAmount ?? 0,
                       money.id,
                       v.currentTarget.value,
@@ -444,12 +447,8 @@ export function MoneyBar({
                   value={Number(root?.fee) <= 0 ? undefined : root?.fee ?? 0}
                   onChange={(v) => {
                     if (!Number(v.currentTarget.value))
-                      return listState.setRootState(
-                        root!.id,
-                        root?.reason ?? "",
-                        0
-                      );
-                    listState.setRootState(
+                      return setRootState(root!.id, root?.reason ?? "", 0);
+                    setRootState(
                       root!.id,
                       root?.reason ?? "",
                       Number(v.target.value)
@@ -465,7 +464,7 @@ export function MoneyBar({
                 <Input
                   value={root?.reason ?? ""}
                   onChange={(v) =>
-                    listState.setRootState(
+                    setRootState(
                       root!.id,
                       v.currentTarget.value,
                       root?.fee ?? 0
@@ -542,7 +541,7 @@ export function MoneyAmount() {
   const {
     money,
     darken,
-    transferState: {
+    transferDetails: {
       isInBranch,
       isRoot,
       isRootNegative,
@@ -585,16 +584,19 @@ export function MoneyAmount() {
 }
 
 export function MoneyActions({ children }: { children: React.ReactNode }) {
-  const { money, listState, transferState, transfer, commenting } =
-    useMoneyBarContext();
-
+  const {
+    money,
+    transferDetails,
+    transfer,
+    commenting,
+    listState,
+    transferState: { transferrings },
+  } = useMoneyBarContext();
   return (
     <m.div
-      key={`actions-${money.id}-${
-        listState.transferrings?.branches.length
-      }-${String(transferState.isInBranch)}-${String(
-        transferState.isRoot
-      )}-${commenting}`}
+      key={`actions-${money.id}-${transferrings?.branches.length}-${String(
+        transferDetails.isInBranch
+      )}-${String(transferDetails.isRoot)}-${commenting}`}
       animate={{ opacity: 1, translateY: -0 }}
       initial={{ opacity: 0, translateY: -4 }}
       exit={{ opacity: 0, translateY: -4 }}
@@ -612,7 +614,7 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
           <DropdownMenuTrigger asChild>
             {commenting ? (
               <MoneyCommentBtn />
-            ) : transferState.root ? (
+            ) : transferDetails.root ? (
               <MoneyTransferBtn />
             ) : (
               <Button variant={"ghost"} className="size-6 p-0 ">
@@ -622,7 +624,7 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent className="rounded-3xl" align="end">
             <m.div layout className={`flex flex-row gap-6 items-center`}>
-              {(transferState.isRoot || transferState.isInBranch) && (
+              {(transferDetails.isRoot || transferDetails.isInBranch) && (
                 <Button
                   onClick={transfer}
                   variant={"destructive"}
@@ -632,10 +634,10 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
                 </Button>
               )}
               {children}
-              {(transferState.isRoot || transferState.isInBranch) && (
+              {(transferDetails.isRoot || transferDetails.isInBranch) && (
                 <span className="-ml-5 text-xs text-muted-foreground">
-                  {transferState.isInBranch && "Receiver"}
-                  {transferState.isRoot && "Sender"}
+                  {transferDetails.isInBranch && "Receiver"}
+                  {transferDetails.isRoot && "Sender"}
                 </span>
               )}
             </m.div>
@@ -647,55 +649,53 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
 }
 
 export function MoneyDeleteBtn() {
-  const { money, deleting, setDeleting, listState, darken } =
-    useMoneyBarContext();
-  const { delMoney, moneys } = useMoneysStore();
+  const {
+    money,
+    deleting,
+    setDeleting,
+    darken,
+    transferState: { transferrings, setTransferrings },
+    moneysStore: { delMoney, moneys, totalMoneys },
+  } = useMoneyBarContext();
   const { addLog } = useLogsStore();
-  const currentTotal = _.sum(moneys.map((m) => m.amount));
   async function deleteMoney() {
     setDeleting(true);
     delMoney(money.id);
 
     addLog({
       changes: {
-        prev: { ...money, total: currentTotal },
-        latest: { ...money, amount: 0, total: currentTotal - money.amount },
+        prev: { ...money, total: totalMoneys(moneys) },
+        latest: {
+          ...money,
+          amount: 0,
+          total: totalMoneys(moneys) - money.amount,
+        },
       },
       action: "delete",
       created_at: new Date().toISOString(),
-      current_total: currentTotal - money.amount,
+      current_total: totalMoneys(moneys) - money.amount,
       id: crypto.randomUUID(),
       money_id: money.id,
       reason: "delete",
+      money_name: money.name,
     });
 
-    if (listState.transferrings) {
-      const root = listState.transferrings?.root;
+    if (transferrings) {
+      const root = transferrings?.root;
       const isRoot = root?.id === money.id;
-      const isInBranch = listState.transferrings?.branches.find(
-        (b) => b.id === money.id
-      );
-      const branches = listState.transferrings.branches.filter(
-        (b) => b.id !== money.id
-      );
+      const isInBranch = transferrings?.branches.find((b) => b.id === money.id);
+      const branches = transferrings.branches.filter((b) => b.id !== money.id);
       if (isInBranch)
-        listState.setState({
-          ...listState,
-          transferrings: {
-            ...listState.transferrings,
-            branches,
-          },
+        setTransferrings({
+          ...transferrings,
+          branches,
         });
-      if (isRoot)
-        listState.setState({
-          ...listState,
-          transferrings: null,
-        });
+      if (isRoot) setTransferrings(null);
     }
 
-    listState.setState({ ...listState, transferrings: null });
+    setTransferrings(null);
   }
-  if (listState.transferrings === null)
+  if (transferrings === null)
     return (
       <Dialog>
         <DialogTrigger asChild>
@@ -751,8 +751,12 @@ export function MoneyDeleteBtn() {
 }
 
 export function MoneyExternalLinkBtn() {
-  const { money, listState, darken } = useMoneyBarContext();
-  if (listState.transferrings === null)
+  const {
+    money,
+    darken,
+    transferState: { transferrings },
+  } = useMoneyBarContext();
+  if (transferrings === null)
     return (
       <Button
         size={"icon"}
@@ -764,9 +768,7 @@ export function MoneyExternalLinkBtn() {
           href={`/list/money/${money.id}`}
           className={`rounded-full h-fit aspect-square 
           
-          ${
-            listState.transferrings !== null && "pointer-events-none opacity-50"
-          }`}
+          ${transferrings !== null && "pointer-events-none opacity-50"}`}
         >
           <ExternalLink
             className={`${darken}`}
@@ -779,15 +781,18 @@ export function MoneyExternalLinkBtn() {
 }
 
 export function MoneyEditBtn() {
-  const { money, darken, listState } = useMoneyBarContext();
+  const {
+    money,
+    darken,
+    transferState: { transferrings, setTransferrings },
+  } = useMoneyBarContext();
   const [openEditDialog, setOpenEditDialog] = useState(false);
-
   function done() {
     setOpenEditDialog(false);
 
-    listState.setState({ ...listState, transferrings: null });
+    setTransferrings(null);
   }
-  if (listState.transferrings === null)
+  if (transferrings === null)
     return (
       <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
         <DialogTrigger asChild>
@@ -820,18 +825,21 @@ export function MoneyEditBtn() {
 
 export function MoneyPaletteBtn() {
   const [openEditDialog, setOpenEditDialog] = useState(false);
-  const { money, specific, currentTotal, listState, darken } =
-    useMoneyBarContext();
+  const {
+    money,
+    specific,
+    currentTotal,
+    darken,
+    transferState: { setTransferrings, transferrings },
+    moneysStore: { setMoneyColor },
+  } = useMoneyBarContext();
   const [colorPreview, setColorPreview] = useState(money.color);
-  const { setMoneyColor } = useMoneysStore();
-
   async function colorize(c: string) {
     setMoneyColor(money.id, c);
     setOpenEditDialog(false);
-
-    listState.setState({ ...listState, transferrings: null });
+    setTransferrings(null);
   }
-  if (listState.transferrings === null)
+  if (transferrings === null)
     return (
       <Dialog onOpenChange={setOpenEditDialog} open={openEditDialog}>
         <DialogTrigger asChild>
@@ -910,11 +918,10 @@ export function MoneyTransferBtn() {
   const {
     money,
     darken,
-    transferState: { isRoot, isInBranch },
+    transferDetails: { isRoot, isInBranch },
     transfer,
     listState: { compactMoney },
   } = useMoneyBarContext();
-
   return (
     <Button
       size={"icon"}
@@ -954,9 +961,14 @@ export function MoneyTransferBtn() {
 }
 
 export function MoneyCommentBtn() {
-  const { money, darken, setCommenting, commenting, listState } =
-    useMoneyBarContext();
-  if (listState.transferrings === null)
+  const {
+    money,
+    darken,
+    setCommenting,
+    commenting,
+    transferState: { transferrings },
+  } = useMoneyBarContext();
+  if (transferrings === null)
     return (
       <Button
         onClick={() => setCommenting(!commenting)}

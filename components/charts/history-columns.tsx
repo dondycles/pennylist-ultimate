@@ -4,9 +4,7 @@ import Amount from "../amount";
 import { ChevronsDown, ChevronsUp, ChevronsUpDown } from "lucide-react";
 import { Log } from "@/store";
 
-export const historyColumns: ColumnDef<
-  (Log & { money: string }) | undefined
->[] = [
+export const historyColumns: ColumnDef<Log | undefined>[] = [
   {
     accessorKey: "action",
     header: "Action",
@@ -21,7 +19,10 @@ export const historyColumns: ColumnDef<
     header: "Money",
     cell: ({ row }) => {
       return (
-        <p className="capitalize text-xs truncate">{row.original?.money}</p>
+        <p className="capitalize text-xs truncate">
+          {row.original?.money_name ??
+            (row.original as unknown as { money: string }).money}
+        </p>
       );
     },
   },

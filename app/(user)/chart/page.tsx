@@ -8,14 +8,12 @@ import { useChartsState, useLogsStore, useMoneysStore } from "@/store";
 import { motion } from "framer-motion";
 import Scrollable from "@/components/scrollable";
 import { useGetDifferences } from "@/hooks/useGetDifferences";
-import _ from "lodash";
 import { useGetMonthlyProgress } from "@/hooks/useGetMonthlyProgress";
 import { useGetDailyProgress } from "@/hooks/useGetDailyProgress";
 export default function Charts() {
   const { logs } = useLogsStore();
-  const { moneys } = useMoneysStore();
+  const { moneys, totalMoneys } = useMoneysStore();
   const chartState = useChartsState();
-  const currentTotal = _.sum(moneys.map((m) => m.amount));
   const moneyLogs = logs
     .map((l) => ({ ...l, money: l.changes.latest.name }))
     .sort(
@@ -24,7 +22,7 @@ export default function Charts() {
     );
   const differences = useGetDifferences(
     moneyLogs,
-    currentTotal,
+    totalMoneys(moneys),
     chartState.progressDays
   );
   const monthlyData = useGetMonthlyProgress(moneyLogs ?? []);

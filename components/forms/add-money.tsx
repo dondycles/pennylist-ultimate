@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useLogsStore, useMoneysStore } from "@/store";
-import _ from "lodash";
 const formSchema = z.object({
   id: z.string(),
   name: z.string().min(1).max(24),
@@ -32,7 +31,7 @@ const formSchema = z.object({
 });
 
 export default function AddMoneyForm({ done }: { done: () => void }) {
-  const { addMoney, moneys } = useMoneysStore();
+  const { addMoney, moneys, totalMoneys } = useMoneysStore();
   const { addLog } = useLogsStore();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -48,7 +47,6 @@ export default function AddMoneyForm({ done }: { done: () => void }) {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const currentTotal = _.sum(moneys.map((m) => m.amount));
     const id = crypto.randomUUID();
     addMoney({
       ...values,
@@ -59,14 +57,15 @@ export default function AddMoneyForm({ done }: { done: () => void }) {
     addLog({
       action: "add",
       changes: {
-        latest: { ...values, total: currentTotal + values.amount },
-        prev: { ...values, total: currentTotal, name: "", amount: 0 },
+        latest: { ...values, total: totalMoneys(moneys) + values.amount },
+        prev: { ...values, total: totalMoneys(moneys), name: "", amount: 0 },
       },
       created_at: new Date().toISOString(),
-      current_total: currentTotal + values.amount,
+      current_total: totalMoneys(moneys) + values.amount,
       id: crypto.randomUUID(),
       money_id: id,
       reason: "add",
+      money_name: values.name,
     });
     done();
   }

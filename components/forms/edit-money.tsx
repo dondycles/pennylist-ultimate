@@ -29,9 +29,8 @@ export default function EditMoneyForm({
   done: () => void;
   money: Money;
 }) {
-  const { editMoney, moneys } = useMoneysStore();
+  const { editMoney, moneys, totalMoneys } = useMoneysStore();
   const { addLog } = useLogsStore();
-  const currentTotal = _.sum(moneys.map((m) => m.amount));
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { ...money, reason: undefined },
@@ -51,21 +50,22 @@ export default function EditMoneyForm({
     });
     addLog({
       changes: {
-        prev: { ...money, total: currentTotal },
+        prev: { ...money, total: totalMoneys(moneys) },
         latest: {
           ...money,
           amount: latest.amount,
           name: latest.name,
           last_updated_at: new Date().toISOString(),
-          total: currentTotal + amountDiff,
+          total: totalMoneys(moneys) + amountDiff,
         },
       },
       action: "edit",
       reason: latest.reason ?? "",
       created_at: new Date().toISOString(),
-      current_total: currentTotal + amountDiff,
+      current_total: totalMoneys(moneys) + amountDiff,
       id: crypto.randomUUID(),
       money_id: latest.id,
+      money_name: latest.name,
     });
     done();
   }

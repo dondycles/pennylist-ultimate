@@ -20,15 +20,13 @@ import { useGetMonthlyProgress } from "@/hooks/useGetMonthlyProgress";
 import { Log, useChartsState, useLogsStore, useMoneysStore } from "@/store";
 import { motion } from "framer-motion";
 import Scrollable from "@/components/scrollable";
-import _ from "lodash";
 
 export default function MoneyPage({ params }: { params: { id: string } }) {
   const chartsState = useChartsState();
-  const { moneys } = useMoneysStore();
+  const { moneys, totalMoneys } = useMoneysStore();
   const { logs } = useLogsStore();
-  const currentTotal = _.sum(moneys.map((m) => m.amount));
   const money = moneys.find((m) => m.id === params.id);
-  const moneyLogs: Array<Log & { money: string }> = logs
+  const moneyLogs: Log[] = logs
     .filter((l) => l.money_id === money?.id)
     .map((l) => ({ ...l, money: l.changes.latest.name }))
     .sort(
@@ -40,7 +38,7 @@ export default function MoneyPage({ params }: { params: { id: string } }) {
   const monthlyData = useGetMonthlyProgress(logs ?? []);
   const differences = useGetDifferences(
     moneyLogs ?? [],
-    currentTotal,
+    totalMoneys(moneys),
     chartsState.progressDays
   );
   const chartData = chartsState.type === "daily" ? dailyData : monthlyData;
@@ -54,7 +52,7 @@ export default function MoneyPage({ params }: { params: { id: string } }) {
       >
         {money && (
           <Money
-            currentTotal={currentTotal}
+            currentTotal={totalMoneys(moneys)}
             specific={true}
             money={money}
             key={money.id}
