@@ -35,7 +35,7 @@ export default function UserLayout({
   return (
     <main className="w-full h-full flex-1 flex flex-col justify-center overflow-hidden">
       <Dialog open={locked}>
-        <DialogOverlay className="backdrop-blur-sm z-[100]" />
+        <DialogOverlay className="backdrop-blur-md z-[100]" />
         <DialogContent className=" z-[101]">
           <DialogHeader>
             <DialogTitle hideCloseBtn>Enter PIN</DialogTitle>
