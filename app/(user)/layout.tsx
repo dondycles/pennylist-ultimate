@@ -30,8 +30,8 @@ export default function UserLayout({
   }, [password, pin]);
 
   useEffect(() => {
-    setLocked(true);
-  }, []);
+    if (password) setLocked(true);
+  }, [password]);
   return (
     <main className="w-full h-full flex-1 flex flex-col justify-center overflow-hidden">
       <Dialog open={locked}>
