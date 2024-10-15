@@ -240,6 +240,7 @@ const NavBar = forwardRef(function NavBar(
   function deleteData() {
     deleteLogs();
     deleteMoneys();
+    lockerState.setPassword(null);
   }
 
   useEffect(() => {
