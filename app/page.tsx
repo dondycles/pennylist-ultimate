@@ -2,6 +2,7 @@ import Logo from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Footer from "@/components/footer";
+import Redirect from "@/components/redirect";
 export default async function Page() {
   return (
     <div className="w-full pt-8 sm:pt-16 md:pt-32  h-full flex flex-col screen-x-padding gap-6">
@@ -36,6 +37,7 @@ export default async function Page() {
         </div>
       </div>
       <Footer />
+      <Redirect />
     </div>
   );
 }

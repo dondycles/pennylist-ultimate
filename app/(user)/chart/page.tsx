@@ -29,22 +29,28 @@ export default function Charts() {
   const dailyData = useGetDailyProgress(moneyLogs ?? []);
   return (
     <Scrollable>
-      <motion.div
-        initial={{ opacity: 0, translateY: 20 }}
-        animate={{ opacity: 1, translateY: 0 }}
-        exit={{ opacity: 0, translateY: 20 }}
-      >
-        <ProgressBarChart
-          differences={differences}
-          chartData={chartState.type === "daily" ? dailyData : monthlyData}
-        />
-        <Separator />
-        <HistoryTable
-          defaultSearchBy="money"
-          columns={historyColumns}
-          data={moneyLogs ?? []}
-        />
-      </motion.div>
+      {moneys.length || logs.length ? (
+        <motion.div
+          initial={{ opacity: 0, translateY: 20 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          exit={{ opacity: 0, translateY: 20 }}
+        >
+          <ProgressBarChart
+            differences={differences}
+            chartData={chartState.type === "daily" ? dailyData : monthlyData}
+          />
+          <Separator />
+          <HistoryTable
+            defaultSearchBy="money"
+            columns={historyColumns}
+            data={moneyLogs ?? []}
+          />
+        </motion.div>
+      ) : (
+        <p className="text-muted-foreground text-xs mt-4 text-center">
+          No data yet. Start listing moneys now.
+        </p>
+      )}
     </Scrollable>
   );
 }

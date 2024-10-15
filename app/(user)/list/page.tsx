@@ -25,29 +25,35 @@ export default function List() {
         animate={{ opacity: 1, translateY: 0 }}
         exit={{ opacity: 0, translateY: 20 }}
       >
-        {moneys.map((m) => {
-          return (
-            <Money
-              currentTotal={totalMoneys(moneys)}
-              specific={false}
-              money={m}
-              key={`${m.id}-${m.last_updated_at}`}
-            >
-              <MoneyBar>
-                <MoneyHeader />
-                <MoneyAmount />
-                <MoneyActions>
-                  <MoneyExternalLinkBtn />
-                  <MoneyPaletteBtn />
-                  <MoneyTransferBtn />
-                  <MoneyEditBtn />
-                  <MoneyCommentBtn />
-                  <MoneyDeleteBtn />
-                </MoneyActions>
-              </MoneyBar>
-            </Money>
-          );
-        })}
+        {moneys.length ? (
+          moneys.map((m) => {
+            return (
+              <Money
+                currentTotal={totalMoneys(moneys)}
+                specific={false}
+                money={m}
+                key={`${m.id}-${m.last_updated_at}`}
+              >
+                <MoneyBar>
+                  <MoneyHeader />
+                  <MoneyAmount />
+                  <MoneyActions>
+                    <MoneyExternalLinkBtn />
+                    <MoneyPaletteBtn />
+                    <MoneyTransferBtn />
+                    <MoneyEditBtn />
+                    <MoneyCommentBtn />
+                    <MoneyDeleteBtn />
+                  </MoneyActions>
+                </MoneyBar>
+              </Money>
+            );
+          })
+        ) : (
+          <p className="text-muted-foreground text-center text-xs mt-4">
+            No moneys to show yet, start listing now.
+          </p>
+        )}
       </motion.div>
     </Scrollable>
   );

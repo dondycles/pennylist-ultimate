@@ -2,6 +2,7 @@
 import {
   AlignJustify,
   ArrowRightLeft,
+  ArrowUpDown,
   Bolt,
   Calendar,
   ChartNoAxesColumnIncreasing,
@@ -10,9 +11,12 @@ import {
   EyeOff,
   HardDriveDownload,
   HardDriveUpload,
+  HelpCircle,
   LetterText,
+  Lock,
   MoonIcon,
   RectangleHorizontal,
+  Shirt,
   SortAsc,
   SortDesc,
   SunIcon,
@@ -37,6 +41,9 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { useTheme } from "next-themes";
@@ -62,10 +69,13 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
+  DialogOverlay,
   DialogTitle,
 } from "./ui/dialog";
 import { Input } from "./ui/input";
 import Amount from "./amount";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "./ui/input-otp";
+import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
 const NavContext = createContext<
   | {
       showProfile: boolean;
@@ -73,6 +83,8 @@ const NavContext = createContext<
       listState: ListState;
       showManageDataDialog: boolean;
       setShowManageDataDialog: React.Dispatch<React.SetStateAction<boolean>>;
+      showPasswordDialog: boolean;
+      setShowPasswordDialog: React.Dispatch<React.SetStateAction<boolean>>;
     }
   | undefined
 >(undefined);
@@ -86,6 +98,7 @@ function useNavContext() {
 function Nav({ children }: { children: React.ReactNode }) {
   const [showProfile, setShowProfile] = useState(false);
   const [showManageDataDialog, setShowManageDataDialog] = useState(false);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const listState = useListState();
   return (
     <NavContext.Provider
@@ -95,6 +108,8 @@ function Nav({ children }: { children: React.ReactNode }) {
         setShowProfile,
         showProfile,
         listState,
+        showPasswordDialog,
+        setShowPasswordDialog,
       }}
     >
       {children}
@@ -111,12 +126,19 @@ const NavBar = forwardRef(function NavBar(
   },
   ref: React.Ref<HTMLDivElement>
 ) {
-  const { setShowManageDataDialog, showManageDataDialog } = useNavContext();
+  const {
+    setShowManageDataDialog,
+    showManageDataDialog,
+    showPasswordDialog,
+    setShowPasswordDialog,
+    listState,
+  } = useNavContext();
   const {
     moneys,
     delete: deleteMoneys,
     import: importMoneys,
   } = useMoneysStore();
+  const [pin, setPin] = useState<string | null>(null);
   const { logs, delete: deleteLogs, import: importLogs } = useLogsStore();
   const [dialogState, setDialogState] = useState<"import" | "delete" | null>(
     null
@@ -186,6 +208,7 @@ const NavBar = forwardRef(function NavBar(
       >
         <AnimatePresence mode="popLayout">{children}</AnimatePresence>
         <Dialog
+          key={"manage-data"}
           open={showManageDataDialog}
           onOpenChange={(open) => {
             setShowManageDataDialog(open);
@@ -195,6 +218,7 @@ const NavBar = forwardRef(function NavBar(
             }
           }}
         >
+          <DialogOverlay />
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Manage Your Data</DialogTitle>
@@ -332,6 +356,55 @@ const NavBar = forwardRef(function NavBar(
             </div>
           </DialogContent>
         </Dialog>
+        <Dialog
+          key={"password"}
+          open={showPasswordDialog}
+          onOpenChange={setShowPasswordDialog}
+        >
+          <DialogOverlay />
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {listState.password ? "Remove " : "Set "}PIN
+              </DialogTitle>
+              <DialogDescription>
+                {listState.password
+                  ? "Removing your password will allow visitors to sneak in."
+                  : "To protect your data from unwanted visitors, set PIN. Please remember your password."}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="p-4 pt-0 flex flex-col gap-4">
+              <InputOTP
+                onChange={setPin}
+                maxLength={4}
+                pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
+              >
+                <InputOTPGroup className=" mx-auto">
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                </InputOTPGroup>
+              </InputOTP>
+              <Button
+                disabled={
+                  listState.password ? pin !== listState.password : !pin
+                }
+                variant={"secondary"}
+                onClick={() => {
+                  listState.setState({
+                    ...listState,
+                    password: listState.password ? null : pin,
+                  });
+                  setPin(null);
+                  setShowPasswordDialog(false);
+                }}
+              >
+                {listState.password ? "Confirm Remove" : "Set"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </m.div>
     </nav>
   );
@@ -356,85 +429,109 @@ function NavFilterOptions() {
   const { sortBy, asc, sortMoneys } = useMoneysStore();
   return (
     <>
-      <DropdownMenuLabel className="text-muted-foreground text-xs">
-        Ordering
-      </DropdownMenuLabel>
-      <DropdownMenuRadioGroup value={String(asc)}>
-        <DropdownMenuRadioItem
-          onClick={() => {
-            sortMoneys(sortBy, true);
-          }}
-          value="true"
-        >
-          <SortAsc className="mr-2" size={16} />
-          Ascending
-        </DropdownMenuRadioItem>
-        <DropdownMenuRadioItem
-          onClick={() => {
-            sortMoneys(sortBy, false);
-          }}
-          value="false"
-        >
-          <SortDesc className="mr-2" size={16} />
-          Descending
-        </DropdownMenuRadioItem>
-      </DropdownMenuRadioGroup>
-      <DropdownMenuSeparator />
-      <DropdownMenuLabel className="text-muted-foreground text-xs">
-        Sorting
-      </DropdownMenuLabel>
-      <DropdownMenuRadioGroup value={sortBy}>
-        <DropdownMenuRadioItem
-          onClick={() => {
-            sortMoneys("created_at", asc);
-          }}
-          value="created_at"
-        >
-          <Calendar className="mr-2" size={16} />
-          Date Added
-        </DropdownMenuRadioItem>
-        <DropdownMenuRadioItem
-          onClick={() => {
-            sortMoneys("amount", asc);
-          }}
-          value="amount"
-        >
-          <DollarSign className="mr-2" size={16} />
-          Amount
-        </DropdownMenuRadioItem>
-        <DropdownMenuRadioItem
-          onClick={() => {
-            sortMoneys("name", asc);
-          }}
-          value="name"
-        >
-          <LetterText className="mr-2" size={16} /> Name
-        </DropdownMenuRadioItem>
-      </DropdownMenuRadioGroup>
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger>
+          <ArrowUpDown size={16} className="mr-2" /> Ordering
+        </DropdownMenuSubTrigger>
+        <DropdownMenuSubContent sideOffset={8}>
+          <DropdownMenuRadioGroup value={String(asc)}>
+            <DropdownMenuRadioItem
+              onClick={() => {
+                sortMoneys(sortBy, true);
+              }}
+              value="true"
+            >
+              <SortAsc className="mr-2" size={16} />
+              Ascending
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem
+              onClick={() => {
+                sortMoneys(sortBy, false);
+              }}
+              value="false"
+            >
+              <SortDesc className="mr-2" size={16} />
+              Descending
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuRadioGroup value={sortBy}>
+            <DropdownMenuRadioItem
+              onClick={() => {
+                sortMoneys("created_at", asc);
+              }}
+              value="created_at"
+            >
+              <Calendar className="mr-2" size={16} />
+              Date Added
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem
+              onClick={() => {
+                sortMoneys("amount", asc);
+              }}
+              value="amount"
+            >
+              <DollarSign className="mr-2" size={16} />
+              Amount
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem
+              onClick={() => {
+                sortMoneys("name", asc);
+              }}
+              value="name"
+            >
+              <LetterText className="mr-2" size={16} /> Name
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
     </>
   );
 }
 
-function NavHideOption() {
-  const { listState } = useNavContext();
+function NavPrivacyOption() {
+  const { listState, setShowPasswordDialog } = useNavContext();
+  return (
+    <>
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger>
+          {" "}
+          <Lock size={16} className="mr-2" /> Privacy
+        </DropdownMenuSubTrigger>
+        <DropdownMenuSubContent sideOffset={8}>
+          <DropdownMenuRadioGroup value={String(listState.hidden)}>
+            <DropdownMenuRadioItem
+              onClick={() =>
+                listState.setState({ ...listState, hidden: !listState.hidden })
+              }
+              value="true"
+            >
+              <EyeOff size={16} className="mr-2" />
+              Hide Values
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+          <DropdownMenuRadioGroup value={String(listState.password !== null)}>
+            <DropdownMenuRadioItem
+              onClick={() => setShowPasswordDialog(true)}
+              value="true"
+            >
+              <Lock size={16} className="mr-2" />
+              Lock On Open
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+    </>
+  );
+}
+
+function NavHelpBtn() {
   return (
     <>
       <DropdownMenuSeparator />
-
-      <DropdownMenuLabel className="text-muted-foreground text-xs">
-        Privacy
-      </DropdownMenuLabel>
-      <DropdownMenuRadioGroup value={String(listState.hidden)}>
-        <DropdownMenuRadioItem
-          onClick={() =>
-            listState.setState({ ...listState, hidden: !listState.hidden })
-          }
-          value="true"
-        >
-          <EyeOff size={16} className="mr-2" />
-          Hide Values
-        </DropdownMenuRadioItem>
-      </DropdownMenuRadioGroup>
+      <DropdownMenuItem>
+        <HelpCircle size={16} className="mr-2" /> Help
+      </DropdownMenuItem>
     </>
   );
 }
@@ -443,50 +540,51 @@ function NavThemeOptions() {
   const { setTheme, theme } = useTheme();
 
   return (
-    <>
-      <DropdownMenuSeparator />
-      <DropdownMenuLabel className="text-muted-foreground text-xs">
-        Theme
-      </DropdownMenuLabel>
-      <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
-        <DropdownMenuRadioItem value="dark">
-          <MoonIcon size={16} className="mr-2" />
-          Dark
-        </DropdownMenuRadioItem>
-        <DropdownMenuRadioItem value="light">
-          <SunIcon size={16} className="mr-2" />
-          Light
-        </DropdownMenuRadioItem>
-      </DropdownMenuRadioGroup>
-    </>
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger>
+        <MoonIcon size={16} className="mr-2" /> Theme
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent sideOffset={8}>
+        <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+          <DropdownMenuRadioItem value="dark">
+            <MoonIcon size={16} className="mr-2" />
+            Dark
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="light">
+            <SunIcon size={16} className="mr-2" />
+            Light
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
   );
 }
 
-function NavCompactMoneyOption() {
+function NavAppearanceOption() {
   const { listState } = useNavContext();
-  const pathname = usePathname();
   return (
-    <>
-      {pathname === "/list" && <DropdownMenuSeparator />}
-
-      <DropdownMenuLabel className="text-muted-foreground text-xs">
-        Moneys
-      </DropdownMenuLabel>
-      <DropdownMenuRadioGroup
-        value={String(listState.compactMoney)}
-        onValueChange={() =>
-          listState.setState({
-            ...listState,
-            compactMoney: !listState.compactMoney,
-          })
-        }
-      >
-        <DropdownMenuRadioItem value="true">
-          <RectangleHorizontal size={16} className="mr-2" />
-          Compact
-        </DropdownMenuRadioItem>
-      </DropdownMenuRadioGroup>
-    </>
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger>
+        <Shirt size={16} className="mr-2" />
+        Appearance
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent sideOffset={8}>
+        <DropdownMenuRadioGroup
+          value={String(listState.compactMoney)}
+          onValueChange={() =>
+            listState.setState({
+              ...listState,
+              compactMoney: !listState.compactMoney,
+            })
+          }
+        >
+          <DropdownMenuRadioItem value="true">
+            <RectangleHorizontal size={16} className="mr-2" />
+            Compact
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
   );
 }
 
@@ -513,16 +611,10 @@ function NavChartBtn() {
 function NavManageDataBtn() {
   const { setShowManageDataDialog } = useNavContext();
   return (
-    <>
-      <DropdownMenuSeparator />
-      <DropdownMenuLabel className="text-muted-foreground text-xs">
-        Data
-      </DropdownMenuLabel>
-      <DropdownMenuItem onClick={() => setShowManageDataDialog(true)}>
-        <HardDriveDownload size={16} className="mr-2" />
-        Manage My Data
-      </DropdownMenuItem>
-    </>
+    <DropdownMenuItem onClick={() => setShowManageDataDialog(true)}>
+      <HardDriveDownload size={16} className="mr-2" />
+      Manage My Data
+    </DropdownMenuItem>
   );
 }
 
@@ -799,9 +891,10 @@ export default function AnimatedNav() {
                 >
                   <NavOptions>
                     {pathname === "/list" ? <NavFilterOptions /> : null}
-                    <NavCompactMoneyOption />
-                    <NavHideOption />
+                    <NavAppearanceOption />
+                    <NavPrivacyOption />
                     <NavThemeOptions />
+                    <NavHelpBtn />
                     <NavManageDataBtn />
                   </NavOptions>
                 </m.div>

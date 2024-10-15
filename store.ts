@@ -130,16 +130,22 @@ export type ListState = {
   view: "list" | "grid";
   hidden: boolean;
   compactMoney: boolean;
+  lockOnOpen: boolean;
+  password: string | null;
   setState: ({
     view,
     hidden,
     minimizeTotalMoney,
     compactMoney,
+    lockOnOpen,
+    password,
   }: {
     view: "list" | "grid";
     hidden: boolean;
     minimizeTotalMoney: boolean;
     compactMoney: boolean;
+    lockOnOpen: boolean;
+    password: string | null;
   }) => void;
 };
 export const useListState = create<ListState>()(
@@ -151,6 +157,8 @@ export const useListState = create<ListState>()(
       view: "list",
       minimizeTotalMoney: false,
       compactMoney: false,
+      lockOnOpen: false,
+      password: null,
       setState: (state) => set(() => ({ ...state })),
     }),
     {

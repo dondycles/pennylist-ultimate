@@ -24,6 +24,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
+  DialogOverlay,
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
@@ -706,6 +707,8 @@ export function MoneyDeleteBtn() {
             />
           </Button>
         </DialogTrigger>
+
+        <DialogOverlay />
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
@@ -849,6 +852,8 @@ export function MoneyPaletteBtn() {
             />
           </Button>
         </DialogTrigger>
+
+        <DialogOverlay />
         <DialogContent className="max-h-[75%] gap-0">
           <DialogHeader>
             <DialogTitle>Colorize money</DialogTitle>

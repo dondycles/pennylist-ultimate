@@ -50,31 +50,37 @@ export default function MoneyPage({ params }: { params: { id: string } }) {
         animate={{ opacity: 1, translateY: 0 }}
         exit={{ opacity: 0, translateY: 20 }}
       >
-        {money && (
-          <Money
-            currentTotal={totalMoneys(moneys)}
-            specific={true}
-            money={money}
-            key={money.id}
-          >
-            <MoneyBar>
-              <MoneyHeader />
-              <MoneyAmount />
-              <MoneyActions>
-                <MoneyPaletteBtn />
-                <MoneyEditBtn />
-                <MoneyCommentBtn />
-                <MoneyDeleteBtn />
-              </MoneyActions>
-            </MoneyBar>
-          </Money>
+        {money ? (
+          <>
+            <Money
+              currentTotal={totalMoneys(moneys)}
+              specific={true}
+              money={money}
+              key={money.id}
+            >
+              <MoneyBar>
+                <MoneyHeader />
+                <MoneyAmount />
+                <MoneyActions>
+                  <MoneyPaletteBtn />
+                  <MoneyEditBtn />
+                  <MoneyCommentBtn />
+                  <MoneyDeleteBtn />
+                </MoneyActions>
+              </MoneyBar>
+            </Money>
+            <ProgressBarChart chartData={chartData} differences={differences} />
+            <HistoryTable
+              defaultSearchBy="reason"
+              columns={historyColumns}
+              data={moneyLogs ?? []}
+            />
+          </>
+        ) : (
+          <p className="text-muted-foreground text-xs mt-4 text-center">
+            Money is missing.
+          </p>
         )}
-        <ProgressBarChart chartData={chartData} differences={differences} />
-        <HistoryTable
-          defaultSearchBy="reason"
-          columns={historyColumns}
-          data={moneyLogs ?? []}
-        />
       </motion.div>
     </Scrollable>
   );

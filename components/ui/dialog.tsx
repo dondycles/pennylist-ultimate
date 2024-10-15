@@ -5,7 +5,6 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "./button";
 
 const Dialog = DialogPrimitive.Root;
 
@@ -35,7 +34,6 @@ const DialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => (
   <DialogPortal>
-    <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
@@ -74,8 +72,10 @@ DialogFooter.displayName = "DialogFooter";
 
 const DialogTitle = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ children, className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title> & {
+    hideCloseBtn?: boolean;
+  }
+>(({ hideCloseBtn, children, className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
@@ -85,10 +85,12 @@ const DialogTitle = React.forwardRef<
     {...props}
   >
     <span>{children}</span>
-    <DialogPrimitive.Close>
-      <X size={16} />
-      <span className="sr-only">Close</span>
-    </DialogPrimitive.Close>
+    {hideCloseBtn === undefined ? (
+      <DialogPrimitive.Close>
+        <X size={16} />
+        <span className="sr-only">Close</span>
+      </DialogPrimitive.Close>
+    ) : null}
   </DialogPrimitive.Title>
 ));
 DialogTitle.displayName = DialogPrimitive.Title.displayName;
