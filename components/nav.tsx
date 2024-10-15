@@ -26,9 +26,11 @@ import {
 import { Button } from "./ui/button";
 import {
   ListState,
+  LockerState,
   LogsStore,
   MoneysStore,
   useListState,
+  useLockerState,
   useLogsStore,
   useMoneysStore,
   useTransferState,
@@ -106,6 +108,7 @@ const NavContext = createContext<
       showProfile: boolean;
       setShowProfile: React.Dispatch<React.SetStateAction<boolean>>;
       listState: ListState;
+      lockerState: LockerState;
       showManageDataDialog: boolean;
       setShowManageDataDialog: React.Dispatch<React.SetStateAction<boolean>>;
       showPasswordDialog: boolean;
@@ -125,6 +128,7 @@ function Nav({ children }: { children: React.ReactNode }) {
   const [showManageDataDialog, setShowManageDataDialog] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const listState = useListState();
+  const lockerState = useLockerState();
   return (
     <NavContext.Provider
       value={{
@@ -133,6 +137,7 @@ function Nav({ children }: { children: React.ReactNode }) {
         setShowProfile,
         showProfile,
         listState,
+        lockerState,
         showPasswordDialog,
         setShowPasswordDialog,
       }}
@@ -156,7 +161,7 @@ const NavBar = forwardRef(function NavBar(
     showManageDataDialog,
     showPasswordDialog,
     setShowPasswordDialog,
-    listState,
+    lockerState,
   } = useNavContext();
   const {
     moneys,
@@ -183,10 +188,7 @@ const NavBar = forwardRef(function NavBar(
   });
 
   function setPin(data: z.infer<typeof PINFormSchema>) {
-    listState.setState({
-      ...listState,
-      password: listState.password ? null : data.pin,
-    });
+    lockerState.setPassword(lockerState.password ? null : data.pin);
     pinForm.reset();
     setShowPasswordDialog(false);
   }
@@ -241,8 +243,8 @@ const NavBar = forwardRef(function NavBar(
   }
 
   useEffect(() => {
-    if (showPasswordDialog) pinForm.setValue("pin", listState.password ?? "");
-  }, [listState, pinForm, showPasswordDialog]);
+    if (showPasswordDialog) pinForm.setValue("pin", lockerState.password ?? "");
+  }, [lockerState.password, pinForm, showPasswordDialog]);
 
   return (
     <nav className="flex justify-evenly gap-2 w-full overflow-hidden fixed bottom-0">
@@ -413,11 +415,10 @@ const NavBar = forwardRef(function NavBar(
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {listState.password ? "Remove " : "Set "}PIN
-                {listState.password}
+                {lockerState.password ? "Remove " : "Set "}PIN
               </DialogTitle>
               <DialogDescription>
-                {listState.password
+                {lockerState.password
                   ? "Removing your password will allow visitors to sneak in."
                   : "To protect your data from unwanted visitors, set PIN. Please remember your password."}
               </DialogDescription>
@@ -433,7 +434,7 @@ const NavBar = forwardRef(function NavBar(
                     name="pin"
                     render={({ field }) => (
                       <FormItem
-                        hidden={listState.password !== null}
+                        hidden={lockerState.password !== null}
                         className="w-fit mx-auto"
                       >
                         <FormControl>
@@ -482,7 +483,7 @@ const NavBar = forwardRef(function NavBar(
                     type="submit"
                     variant={"secondary"}
                   >
-                    {listState.password ? "Remove" : "Set"} PIN
+                    {lockerState.password ? "Remove" : "Set"} PIN
                   </Button>
                 </form>
               </Form>
@@ -574,7 +575,7 @@ function NavFilterOptions() {
 }
 
 function NavPrivacyOption() {
-  const { listState, setShowPasswordDialog } = useNavContext();
+  const { listState, setShowPasswordDialog, lockerState } = useNavContext();
   return (
     <>
       <DropdownMenuSub>
@@ -594,7 +595,7 @@ function NavPrivacyOption() {
               Hide Values
             </DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>
-          <DropdownMenuRadioGroup value={String(listState.password !== null)}>
+          <DropdownMenuRadioGroup value={String(lockerState.password !== null)}>
             <DropdownMenuRadioItem
               onClick={() => setShowPasswordDialog(true)}
               value="true"

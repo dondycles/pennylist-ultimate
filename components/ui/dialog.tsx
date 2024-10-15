@@ -84,9 +84,9 @@ const DialogTitle = React.forwardRef<
     )}
     {...props}
   >
-    <span>{children}</span>
+    <span className="text-center sm:text-left flex-1">{children}</span>
     {hideCloseBtn === undefined ? (
-      <DialogPrimitive.Close>
+      <DialogPrimitive.Close className="absolute right-4 top-4">
         <X size={16} />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
@@ -101,7 +101,10 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-muted-foreground px-4", className)}
+    className={cn(
+      "text-sm text-center sm:text-left text-muted-foreground px-4",
+      className
+    )}
     {...props}
   />
 ));

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useListState } from "@/store";
+import { useListState, useLockerState } from "@/store";
 import { ClassNameValue } from "tailwind-merge";
 
 export default function Amount({
@@ -15,6 +15,7 @@ export default function Amount({
   settings: { decimals?: number; sign: boolean; hide?: boolean };
   color?: string;
 }) {
+  const { locked } = useLockerState();
   const listState = useListState();
   const stringedAmount = amount.toString();
   const asteriskedAmount = "*".repeat(stringedAmount.length);
@@ -32,7 +33,9 @@ export default function Amount({
       style={{ color: color ?? "" }}
       className={cn("text-2xl font-readex font-black", className)}
     >
-      {settings.hide === false
+      {locked
+        ? asteriskedAmount
+        : settings.hide === false
         ? settings?.sign
           ? withSign.format(amount)
           : withoutSign.format(amount)

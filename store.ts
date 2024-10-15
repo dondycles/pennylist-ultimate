@@ -5,15 +5,15 @@ import _ from "lodash";
 
 const storage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
-    console.log(name, "has been retrieved");
+    // console.log(name, "has been retrieved");
     return (await get(name)) || null;
   },
   setItem: async (name: string, value: string): Promise<void> => {
-    console.log(name, "with value", value, "has been saved");
+    // console.log(name, "with value", value, "has been saved");
     await set(name, value);
   },
   removeItem: async (name: string): Promise<void> => {
-    console.log(name, "has been deleted");
+    // console.log(name, "has been deleted");
     await del(name);
   },
 };
@@ -130,22 +130,16 @@ export type ListState = {
   view: "list" | "grid";
   hidden: boolean;
   compactMoney: boolean;
-  lockOnOpen: boolean;
-  password: string | null;
   setState: ({
     view,
     hidden,
     minimizeTotalMoney,
     compactMoney,
-    lockOnOpen,
-    password,
   }: {
     view: "list" | "grid";
     hidden: boolean;
     minimizeTotalMoney: boolean;
     compactMoney: boolean;
-    lockOnOpen: boolean;
-    password: string | null;
   }) => void;
 };
 export const useListState = create<ListState>()(
@@ -157,8 +151,6 @@ export const useListState = create<ListState>()(
       view: "list",
       minimizeTotalMoney: false,
       compactMoney: false,
-      lockOnOpen: false,
-      password: null,
       setState: (state) => set(() => ({ ...state })),
     }),
     {
@@ -348,5 +340,30 @@ export const useLogsStore = create<LogsStore>()(
         }),
     }),
     { name: "logs" }
+  )
+);
+
+export type LockerState = {
+  locked: boolean;
+  setLock: (state: boolean) => void;
+  password: null | string;
+  setPassword: (password: string | null) => void;
+};
+
+export const useLockerState = create<LockerState>()(
+  persist(
+    (set) => ({
+      password: null,
+      setPassword: (password) =>
+        set(() => {
+          return { password };
+        }),
+      locked: false,
+      setLock: (locked) =>
+        set(() => {
+          return { locked };
+        }),
+    }),
+    { name: "locker" }
   )
 );
