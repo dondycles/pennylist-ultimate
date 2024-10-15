@@ -37,7 +37,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
@@ -51,6 +50,7 @@ import React, {
   createContext,
   forwardRef,
   useContext,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -76,6 +76,31 @@ import { Input } from "./ui/input";
 import Amount from "./amount";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "./ui/input-otp";
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const PINFormSchema = z
+  .object({
+    pin: z.string().min(4, {
+      message: "Your PIN must be 4 characters.",
+    }),
+    cPin: z.string().min(4, {
+      message: "Please confirm your PIN.",
+    }),
+  })
+  .refine((data) => data.cPin === data.pin, {
+    message: "PIN not matched!",
+    path: ["cPin"],
+  });
+
 const NavContext = createContext<
   | {
       showProfile: boolean;
@@ -138,7 +163,7 @@ const NavBar = forwardRef(function NavBar(
     delete: deleteMoneys,
     import: importMoneys,
   } = useMoneysStore();
-  const [pin, setPin] = useState<string | null>(null);
+
   const { logs, delete: deleteLogs, import: importLogs } = useLogsStore();
   const [dialogState, setDialogState] = useState<"import" | "delete" | null>(
     null
@@ -148,6 +173,24 @@ const NavBar = forwardRef(function NavBar(
     logs: LogsStore["logs"];
     moneys: MoneysStore["moneys"];
   } | null>(null);
+
+  const pinForm = useForm<z.infer<typeof PINFormSchema>>({
+    resolver: zodResolver(PINFormSchema),
+    defaultValues: {
+      cPin: "",
+      pin: "",
+    },
+  });
+
+  function setPin(data: z.infer<typeof PINFormSchema>) {
+    listState.setState({
+      ...listState,
+      password: listState.password ? null : data.pin,
+    });
+    pinForm.reset();
+    setShowPasswordDialog(false);
+  }
+
   function exportData() {
     const jsonBlob = new Blob([JSON.stringify({ logs, moneys }, null, 2)], {
       type: "application/json",
@@ -196,6 +239,11 @@ const NavBar = forwardRef(function NavBar(
     deleteLogs();
     deleteMoneys();
   }
+
+  useEffect(() => {
+    if (showPasswordDialog) pinForm.setValue("pin", listState.password ?? "");
+  }, [listState, pinForm, showPasswordDialog]);
+
   return (
     <nav className="flex justify-evenly gap-2 w-full overflow-hidden fixed bottom-0">
       <m.div
@@ -366,6 +414,7 @@ const NavBar = forwardRef(function NavBar(
             <DialogHeader>
               <DialogTitle>
                 {listState.password ? "Remove " : "Set "}PIN
+                {listState.password}
               </DialogTitle>
               <DialogDescription>
                 {listState.password
@@ -373,35 +422,70 @@ const NavBar = forwardRef(function NavBar(
                   : "To protect your data from unwanted visitors, set PIN. Please remember your password."}
               </DialogDescription>
             </DialogHeader>
-            <div className="p-4 pt-0 flex flex-col gap-4">
-              <InputOTP
-                onChange={setPin}
-                maxLength={4}
-                pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
-              >
-                <InputOTPGroup className=" mx-auto">
-                  <InputOTPSlot index={0} />
-                  <InputOTPSlot index={1} />
-                  <InputOTPSlot index={2} />
-                  <InputOTPSlot index={3} />
-                </InputOTPGroup>
-              </InputOTP>
-              <Button
-                disabled={
-                  listState.password ? pin !== listState.password : !pin
-                }
-                variant={"secondary"}
-                onClick={() => {
-                  listState.setState({
-                    ...listState,
-                    password: listState.password ? null : pin,
-                  });
-                  setPin(null);
-                  setShowPasswordDialog(false);
-                }}
-              >
-                {listState.password ? "Confirm Remove" : "Set"}
-              </Button>
+            <div className="p-4 pt-0 flex flex-col gap-4 items-center">
+              <Form {...pinForm}>
+                <form
+                  onSubmit={pinForm.handleSubmit(setPin)}
+                  className="space-y-4 w-full"
+                >
+                  <FormField
+                    control={pinForm.control}
+                    name="pin"
+                    render={({ field }) => (
+                      <FormItem
+                        hidden={listState.password !== null}
+                        className="w-fit mx-auto"
+                      >
+                        <FormControl>
+                          <InputOTP
+                            maxLength={4}
+                            pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
+                            {...field}
+                          >
+                            <InputOTPGroup className=" mx-auto">
+                              <InputOTPSlot index={0} />
+                              <InputOTPSlot index={1} />
+                              <InputOTPSlot index={2} />
+                              <InputOTPSlot index={3} />
+                            </InputOTPGroup>
+                          </InputOTP>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={pinForm.control}
+                    name="cPin"
+                    render={({ field }) => (
+                      <FormItem className="w-fit mx-auto">
+                        <FormControl>
+                          <InputOTP
+                            maxLength={4}
+                            pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
+                            {...field}
+                          >
+                            <InputOTPGroup className=" mx-auto">
+                              <InputOTPSlot index={0} />
+                              <InputOTPSlot index={1} />
+                              <InputOTPSlot index={2} />
+                              <InputOTPSlot index={3} />
+                            </InputOTPGroup>
+                          </InputOTP>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    className="w-full"
+                    type="submit"
+                    variant={"secondary"}
+                  >
+                    {listState.password ? "Remove" : "Set"} PIN
+                  </Button>
+                </form>
+              </Form>
             </div>
           </DialogContent>
         </Dialog>
@@ -516,7 +600,7 @@ function NavPrivacyOption() {
               value="true"
             >
               <Lock size={16} className="mr-2" />
-              Lock On Open
+              Ask PIN On Open
             </DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>
         </DropdownMenuSubContent>
