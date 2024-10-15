@@ -12,7 +12,7 @@ export default async function Page() {
           Avoid becoming penniless, <br /> start using pennylist.
         </h1>
         <p className="text-xl text-muted-foreground">
-          Designed to be your financial manager.
+          Designed to be your private financial manager.
         </p>
         <Button asChild>
           <Link href="/list">Get started</Link>
@@ -27,12 +27,19 @@ export default async function Page() {
         </div>
         <div className="w-full rounded-3xl border border-yellow-500 bg-yellow-500/5 text-yellow-500 p-4">
           <p className="pr-4 text-2xl font-black w-fit">Customizable</p>
-          <p>Make your moneys colorful and inspiring.</p>
+          <p>Make them moneys colorful and inspiring.</p>
         </div>
         <div className="w-full rounded-3xl border p-4">
           <p className="pr-4 text-2xl font-black w-fit">Analytics</p>
           <p className="text-muted-foreground">
             Dive into your progress with insightful charts and tables.
+          </p>
+        </div>
+        <div className="w-full rounded-3xl border p-4">
+          <p className="pr-4 text-2xl font-black w-fit">Local Storage</p>
+          <p className="text-muted-foreground">
+            Your data is only stored locally on your phone/pc and can be
+            accessed offline.
           </p>
         </div>
       </div>
