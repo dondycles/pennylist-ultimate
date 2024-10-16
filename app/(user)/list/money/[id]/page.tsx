@@ -1,4 +1,5 @@
-"use client";
+"use client";;
+import { use } from "react";
 import { historyColumns } from "@/components/charts/history-columns";
 import { HistoryTable } from "@/components/charts/history-table";
 import ProgressBarChart from "@/components/charts/progress-bar-chart";
@@ -21,7 +22,8 @@ import { Log, useChartsState, useLogsStore, useMoneysStore } from "@/store";
 import { motion } from "framer-motion";
 import Scrollable from "@/components/scrollable";
 
-export default function MoneyPage({ params }: { params: { id: string } }) {
+export default function MoneyPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const chartsState = useChartsState();
   const { moneys, totalMoneys } = useMoneysStore();
   const { logs } = useLogsStore();
