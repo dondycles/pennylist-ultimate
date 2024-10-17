@@ -10,6 +10,7 @@ import Scrollable from "@/components/scrollable";
 import { useGetDifferences } from "@/hooks/useGetDifferences";
 import { useGetMonthlyProgress } from "@/hooks/useGetMonthlyProgress";
 import { useGetDailyProgress } from "@/hooks/useGetDailyProgress";
+import { MoneysPieChart } from "@/components/charts/moneys-pie-chart";
 export default function Charts() {
   const { logs } = useLogsStore();
   const { moneys, totalMoneys } = useMoneysStore();
@@ -40,6 +41,7 @@ export default function Charts() {
             chartData={chartState.type === "daily" ? dailyData : monthlyData}
           />
           <Separator />
+          <MoneysPieChart moneys={moneys} />
           <HistoryTable
             defaultSearchBy="money"
             columns={historyColumns}
