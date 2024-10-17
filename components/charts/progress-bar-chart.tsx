@@ -180,7 +180,6 @@ export default function ProgressBarChart({
             <Area
               isAnimationActive={false}
               dataKey="gainOrLoss"
-              fill="var(--color-gainOrLoss)"
               type="monotone"
             />
             <Line

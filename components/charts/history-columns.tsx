@@ -9,8 +9,18 @@ export const historyColumns: ColumnDef<Log | undefined>[] = [
     accessorKey: "action",
     header: "Action",
     cell: ({ row }) => {
+      const action = row.original?.action;
       return (
-        <Badge className="capitalize text-xs">{row.original?.action}</Badge>
+        <Badge
+          className={`capitalize text-xs ${
+            (action === "transfer" && "text-blue-600") ||
+            (action === "delete" && "text-destructive") ||
+            (action === "add" && "text-green-600") ||
+            (action === "edit" && "text-yellow-600")
+          }`}
+        >
+          {row.original?.action}
+        </Badge>
       );
     },
   },
@@ -45,23 +55,25 @@ export const historyColumns: ColumnDef<Log | undefined>[] = [
     accessorKey: "changes",
     header: "Changes",
     cell: ({ row }) => {
+      const prev = row.original?.changes.prev;
+      const latest = row.original?.changes.latest;
+      const isNegative = (latest?.amount ?? 0) - (prev?.amount ?? 0) >= 0;
       return (
         <div className="truncate text-xs">
           {row.original?.changes?.prev.name !==
           row.original?.changes?.latest.name ? (
             <p>
-              <span>{row.original?.changes.prev.name}</span>
+              <span>{prev?.name}</span>
               <span> to </span>
-              <span>{row.original?.changes.latest.name}</span>
+              <span>{latest?.name}</span>
             </p>
           ) : null}
-          {row.original?.changes?.prev.amount !==
-          row.original?.changes?.latest.amount ? (
+          {prev?.amount !== latest?.amount ? (
             <p>
               <span>
                 <Amount
                   className="text-xs"
-                  amount={row.original?.changes?.prev.amount ?? 0}
+                  amount={prev?.amount ?? 0}
                   settings={{ sign: true }}
                 />
               </span>
@@ -69,7 +81,20 @@ export const historyColumns: ColumnDef<Log | undefined>[] = [
               <span>
                 <Amount
                   className="text-xs"
-                  amount={row.original?.changes?.latest.amount ?? 0}
+                  amount={latest?.amount ?? 0}
+                  settings={{ sign: true }}
+                />
+                {" | "}
+              </span>
+              <span
+                className={`font-bold text-base ${
+                  !isNegative ? "text-destructive" : "text-green-600"
+                }`}
+              >
+                {isNegative ? "+" : "-"}
+                <Amount
+                  className="text-xs"
+                  amount={Math.abs((latest?.amount ?? 0) - (prev?.amount ?? 0))}
                   settings={{ sign: true }}
                 />
               </span>
