@@ -11,12 +11,17 @@ import { useGetDifferences } from "@/hooks/useGetDifferences";
 import { useGetMonthlyProgress } from "@/hooks/useGetMonthlyProgress";
 import { useGetDailyProgress } from "@/hooks/useGetDailyProgress";
 import { MoneysPieChart } from "@/components/charts/moneys-pie-chart";
+import { MovementLineGraph } from "@/components/charts/movement-line-graph";
 export default function Charts() {
   const { logs } = useLogsStore();
   const { moneys, totalMoneys } = useMoneysStore();
   const chartState = useChartsState();
   const moneyLogs = logs
-    .map((l) => ({ ...l, money: l.changes.latest.name }))
+    .map((l) => ({
+      ...l,
+      money: l.changes.latest.name,
+      movement: l.changes.prev.amount - l.changes.latest.amount,
+    }))
     .sort(
       (a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -36,6 +41,7 @@ export default function Charts() {
           animate={{ opacity: 1, translateY: 0 }}
           exit={{ opacity: 0, translateY: 20 }}
         >
+          <MovementLineGraph logs={moneyLogs} />
           <ProgressBarChart
             differences={differences}
             chartData={chartState.type === "daily" ? dailyData : monthlyData}
