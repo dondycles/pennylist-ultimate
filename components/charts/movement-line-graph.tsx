@@ -35,7 +35,7 @@ export function MovementLineGraph({ logs }: { logs: Log[] }) {
         <ChartContainer config={{}}>
           <LineChart
             accessibilityLayer
-            data={logs}
+            data={logs.slice(logs.length - 30, logs.length)}
             margin={{
               left: 12,
               right: 12,

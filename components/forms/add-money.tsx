@@ -31,7 +31,8 @@ const formSchema = z.object({
 });
 
 export default function AddMoneyForm({ done }: { done: () => void }) {
-  const { addMoney, moneys, totalMoneys } = useMoneysStore();
+  const { addMoney, moneys, totalMoneys, sortMoneys, sortBy, asc } =
+    useMoneysStore();
   const { addLog } = useLogsStore();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -67,6 +68,8 @@ export default function AddMoneyForm({ done }: { done: () => void }) {
       reason: "add",
       money_name: values.name,
     });
+    sortMoneys(sortBy, asc);
+
     done();
   }
 

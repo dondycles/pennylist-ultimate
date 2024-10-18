@@ -1,13 +1,11 @@
 "use client";
 
-import { TrendingUp } from "lucide-react";
-import { Label, LabelList, Pie, PieChart } from "recharts";
+import { Pie, PieChart } from "recharts";
 
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -20,7 +18,6 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Money } from "@/store";
-import Amount from "../amount";
 
 export const description = "A simple pie chart";
 

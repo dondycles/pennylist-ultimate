@@ -649,8 +649,8 @@ export function MoneyDeleteBtn() {
     deleting,
     setDeleting,
     darken,
-    transferState: { transferrings, setTransferrings },
-    moneysStore: { delMoney, moneys, totalMoneys },
+    transferState: { transferrings },
+    moneysStore: { delMoney, moneys, totalMoneys, sortBy, asc, sortMoneys },
   } = useMoneyBarContext();
   const { addLog } = useLogsStore();
   async function deleteMoney() {
@@ -675,20 +675,21 @@ export function MoneyDeleteBtn() {
       money_name: money.name,
     });
 
-    if (transferrings) {
-      const root = transferrings?.root;
-      const isRoot = root?.id === money.id;
-      const isInBranch = transferrings?.branches.find((b) => b.id === money.id);
-      const branches = transferrings.branches.filter((b) => b.id !== money.id);
-      if (isInBranch)
-        setTransferrings({
-          ...transferrings,
-          branches,
-        });
-      if (isRoot) setTransferrings(null);
-    }
+    // if (transferrings) {
+    //   const root = transferrings?.root;
+    //   const isRoot = root?.id === money.id;
+    //   const isInBranch = transferrings?.branches.find((b) => b.id === money.id);
+    //   const branches = transferrings.branches.filter((b) => b.id !== money.id);
+    //   if (isInBranch)
+    //     setTransferrings({
+    //       ...transferrings,
+    //       branches,
+    //     });
+    //   if (isRoot) setTransferrings(null);
+    // }
 
-    setTransferrings(null);
+    // setTransferrings(null);
+    sortMoneys(sortBy, asc);
   }
   if (transferrings === null)
     return (

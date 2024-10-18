@@ -705,7 +705,8 @@ function NavManageDataBtn() {
 }
 
 function NavTransferCard() {
-  const { moneys, editMoney, totalMoneys } = useMoneysStore();
+  const { moneys, editMoney, totalMoneys, sortMoneys, asc, sortBy } =
+    useMoneysStore();
   const { transferrings, setTransferrings } = useTransferState();
   const { addLog } = useLogsStore();
 
@@ -791,6 +792,7 @@ function NavTransferCard() {
       });
     }
     setTransferrings(null);
+    sortMoneys(sortBy, asc);
   }
   return (
     <div className="w-full h-full flex flex-col justify-end gap-4 p-4">

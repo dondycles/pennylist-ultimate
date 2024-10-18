@@ -29,7 +29,8 @@ export default function EditMoneyForm({
   done: () => void;
   money: Money;
 }) {
-  const { editMoney, moneys, totalMoneys } = useMoneysStore();
+  const { editMoney, moneys, totalMoneys, sortMoneys, sortBy, asc } =
+    useMoneysStore();
   const { addLog } = useLogsStore();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -67,6 +68,8 @@ export default function EditMoneyForm({
       money_id: latest.id,
       money_name: latest.name,
     });
+
+    sortMoneys(sortBy, asc);
     done();
   }
 
