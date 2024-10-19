@@ -20,7 +20,7 @@ export default function Charts() {
     .map((l) => ({
       ...l,
       money: l.changes.latest.name,
-      movement: l.changes.prev.amount - l.changes.latest.amount,
+      movement: l.changes.latest.amount - l.changes.prev.amount,
     }))
     .sort(
       (a, b) =>
@@ -41,7 +41,11 @@ export default function Charts() {
           animate={{ opacity: 1, translateY: 0 }}
           exit={{ opacity: 0, translateY: 20 }}
         >
-          <MovementLineGraph logs={moneyLogs} />
+          <MovementLineGraph
+            logs={moneyLogs.filter(
+              (l) => l.changes.latest.total !== l.changes.prev.total
+            )}
+          />
           <ProgressBarChart
             differences={differences}
             chartData={chartState.type === "daily" ? dailyData : monthlyData}

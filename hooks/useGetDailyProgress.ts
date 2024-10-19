@@ -20,7 +20,7 @@ export const useGetDailyProgress = (logs: Log[] | null) => {
   }[] = [];
 
   logs
-    .filter((l) => l.action !== "transfer")
+    .filter((l) => l.changes.latest.total !== l.changes.prev.total)
     .toReversed()
     .forEach((log) => {
       //each log has a record of changes in a money, so it will be stored here for later use

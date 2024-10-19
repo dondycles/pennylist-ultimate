@@ -1,18 +1,15 @@
 "use client";
 
-import { TrendingUp } from "lucide-react";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import {
-  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
@@ -28,14 +25,15 @@ export function MovementLineGraph({ logs }: { logs: Log[] }) {
       <CardHeader>
         <CardTitle>Movement</CardTitle>
         <CardDescription>
-          Last 30 movements of gains and expenses logged
+          Last 30 movements of gains and expenses logged (not including
+          transfers)
         </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={{}}>
           <LineChart
             accessibilityLayer
-            data={logs.slice(logs.length - 30, logs.length)}
+            data={logs.toReversed()}
             margin={{
               left: 12,
               right: 12,
@@ -69,6 +67,7 @@ export function MovementLineGraph({ logs }: { logs: Log[] }) {
               type="natural"
               stroke="hsl(var(--primary))"
               strokeWidth={2}
+              dot={false}
             />
           </LineChart>
         </ChartContainer>
