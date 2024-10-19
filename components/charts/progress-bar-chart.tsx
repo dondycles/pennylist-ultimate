@@ -140,7 +140,9 @@ export default function ProgressBarChart({
             data={
               chartsState.type === "daily"
                 ? chartData.slice(
-                    chartData.length - Number(chartsState.progressDays),
+                    chartData.length - Number(chartsState.progressDays) < 0
+                      ? 0
+                      : chartData.length - Number(chartsState.progressDays),
                     chartData.length
                   )
                 : chartData

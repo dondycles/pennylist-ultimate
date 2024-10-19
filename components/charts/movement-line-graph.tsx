@@ -33,7 +33,9 @@ export function MovementLineGraph({ logs }: { logs: Log[] }) {
         <ChartContainer config={{}}>
           <LineChart
             accessibilityLayer
-            data={logs.toReversed()}
+            data={logs
+              .toReversed()
+              .slice(logs.length - 30 < 0 ? 0 : logs.length - 30, logs.length)}
             margin={{
               left: 12,
               right: 12,
