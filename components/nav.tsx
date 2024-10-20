@@ -88,6 +88,7 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 
 const PINFormSchema = z
   .object({
@@ -852,7 +853,7 @@ function NavTransferCard() {
         {transferrings?.branches.length !== 0 ? (
           <div className="flex flex-row gap-2 items-baseline border-t pt-2">
             <p className="text-muted-foreground text-xs">Receiver(s): </p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-1 w-full overflow-auto">
               {transferrings?.branches.map((b) => {
                 return (
                   <React.Fragment key={b.id}>
@@ -861,7 +862,7 @@ function NavTransferCard() {
                       style={{
                         color: b?.color ?? "hsl(var(--foreground))",
                       }}
-                      className="gap-1"
+                      className="gap-1 shrink-0"
                     >
                       <span>{b?.name}</span>
 
