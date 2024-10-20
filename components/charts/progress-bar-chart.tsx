@@ -1,6 +1,14 @@
 "use client";
 
-import { Area, Bar, CartesianGrid, ComposedChart, Line, XAxis } from "recharts";
+import {
+  Area,
+  Bar,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  XAxis,
+  YAxis,
+} from "recharts";
 import {
   Card,
   CardContent,
@@ -168,6 +176,8 @@ export default function ProgressBarChart({
                 return value;
               }}
             />
+            <YAxis tickMargin={8} tickLine={false} axisLine={false} />
+
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent indicator="line" />}

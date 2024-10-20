@@ -54,7 +54,7 @@ export default function Locker({
           pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
         >
           <InputOTPGroup className="pb-4 mx-auto">
-            <InputOTPSlot index={0} />
+            <InputOTPSlot autoFocus={true} index={0} />
             <InputOTPSlot index={1} />
             <InputOTPSlot index={2} />
             <InputOTPSlot index={3} />

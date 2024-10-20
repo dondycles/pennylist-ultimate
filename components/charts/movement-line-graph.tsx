@@ -1,6 +1,6 @@
 "use client";
 
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 import {
   Card,
@@ -39,6 +39,8 @@ export function MovementLineGraph({ logs }: { logs: Log[] }) {
             margin={{
               left: 12,
               right: 12,
+              top: 12,
+              bottom: 12,
             }}
           >
             <CartesianGrid vertical={false} />
@@ -60,13 +62,14 @@ export function MovementLineGraph({ logs }: { logs: Log[] }) {
                   : new Date(value).getDate().toString();
               }}
             />
+            <YAxis tickMargin={8} tickLine={false} axisLine={false} />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
             />
             <Line
               dataKey="movement"
-              type="natural"
+              type="monotone"
               stroke="hsl(var(--primary))"
               strokeWidth={2}
               dot={false}
