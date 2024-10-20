@@ -42,9 +42,7 @@ export default function Charts() {
           exit={{ opacity: 0, translateY: 20 }}
         >
           <MovementLineGraph
-            logs={moneyLogs.filter(
-              (l) => l.changes.latest.total !== l.changes.prev.total
-            )}
+            logs={moneyLogs.filter((l) => l.action !== "transfer")}
           />
           <ProgressBarChart
             differences={differences}

@@ -68,38 +68,50 @@ export const historyColumns: ColumnDef<Log | undefined>[] = [
               <span>{latest?.name}</span>
             </p>
           ) : null}
-          {prev?.amount !== latest?.amount ? (
-            <p>
-              <span>
-                <Amount
-                  className="text-xs"
-                  amount={prev?.amount ?? 0}
-                  settings={{ sign: true }}
-                />
-              </span>
-              <span> to </span>
-              <span>
+          <p>
+            {row.original?.action === "fee" ? (
+              <span className="text-destructive font-bold text-base">
                 <Amount
                   className="text-xs"
                   amount={latest?.amount ?? 0}
                   settings={{ sign: true }}
                 />
-                {" | "}
               </span>
-              <span
-                className={`font-bold text-base ${
-                  !isNegative ? "text-destructive" : "text-green-600"
-                }`}
-              >
-                {isNegative ? "+" : "-"}
-                <Amount
-                  className="text-xs"
-                  amount={Math.abs((latest?.amount ?? 0) - (prev?.amount ?? 0))}
-                  settings={{ sign: true }}
-                />
-              </span>
-            </p>
-          ) : null}
+            ) : (
+              <>
+                <span>
+                  <Amount
+                    className="text-xs"
+                    amount={prev?.amount ?? 0}
+                    settings={{ sign: true }}
+                  />
+                </span>
+                <span> to </span>
+                <span>
+                  <Amount
+                    className="text-xs"
+                    amount={latest?.amount ?? 0}
+                    settings={{ sign: true }}
+                  />
+                  {" | "}
+                </span>
+                <span
+                  className={`font-bold text-base ${
+                    !isNegative ? "text-destructive" : "text-green-600"
+                  }`}
+                >
+                  {isNegative ? "+" : "-"}
+                  <Amount
+                    className="text-xs"
+                    amount={Math.abs(
+                      (latest?.amount ?? 0) - (prev?.amount ?? 0)
+                    )}
+                    settings={{ sign: true }}
+                  />
+                </span>
+              </>
+            )}
+          </p>
         </div>
       );
     },

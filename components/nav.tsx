@@ -758,6 +758,25 @@ function NavTransferCard() {
       money_name: root.name,
     });
 
+    if (root.fee > 0) {
+      addLog({
+        changes: {
+          prev: { ...root, total: totalMoneys(moneys), amount: 0 },
+          latest: {
+            ...root,
+            amount: -root.fee,
+            total: totalMoneys(moneys) - branchesDemandSum - root.fee,
+          },
+        },
+        action: "fee",
+        created_at: new Date().toISOString(),
+        current_total: totalMoneys(moneys) - branchesDemandSum - root.fee,
+        id: crypto.randomUUID(),
+        money_id: root.id,
+        reason: "fee",
+        money_name: root.name,
+      });
+    }
     for (let index = 0; index < branches.length; index++) {
       const branch = branches[index];
       const previousBranches = branches.slice(0, index);
@@ -786,6 +805,25 @@ function NavTransferCard() {
         reason: branch.reason,
         money_name: branch.name,
       });
+      if (branch.fee > 0) {
+        addLog({
+          changes: {
+            prev: { ...branch, total: totalMoneys(moneys), amount: 0 },
+            latest: {
+              ...branch,
+              amount: -branch.fee,
+              total: totalMoneys(moneys) - branchesDemandSum - branch.fee,
+            },
+          },
+          action: "fee",
+          created_at: new Date().toISOString(),
+          current_total: totalMoneys(moneys) - branchesDemandSum - branch.fee,
+          id: crypto.randomUUID(),
+          money_id: branch.id,
+          reason: "fee",
+          money_name: branch.name,
+        });
+      }
       editMoney({
         ...branch,
         amount: branch.amount + (branch.transferAmount ?? 0) - branch.fee,
