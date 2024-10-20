@@ -88,7 +88,6 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 
 const PINFormSchema = z
   .object({
@@ -254,7 +253,7 @@ const NavBar = forwardRef(function NavBar(
         ref={ref}
         layout
         className={cn(
-          `h-full max-w-[800px] w-screen duration-500 bg-background`,
+          `h-full max-w-[800px] w-screen duration-500 bg-transparent backdrop-blur`,
           className
         )}
       >
