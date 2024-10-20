@@ -25,8 +25,7 @@ export function MovementLineGraph({ logs }: { logs: Log[] }) {
       <CardHeader>
         <CardTitle>Movement</CardTitle>
         <CardDescription>
-          Last 30 movements of gains and expenses logged (not including
-          transfers)
+          Last 30 movements of gains and expenses logged
         </CardDescription>
       </CardHeader>
       <CardContent>

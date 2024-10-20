@@ -16,7 +16,8 @@ export const historyColumns: ColumnDef<Log | undefined>[] = [
             (action === "transfer" && "text-blue-600") ||
             (action === "delete" && "text-destructive") ||
             (action === "add" && "text-green-600") ||
-            (action === "edit" && "text-yellow-600")
+            (action === "edit" && "text-yellow-600") ||
+            (action === "fee" && "text-destructive")
           }`}
         >
           {row.original?.action}
