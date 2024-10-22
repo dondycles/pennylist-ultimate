@@ -54,7 +54,7 @@ export function HistoryTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<SortingState>([
     {
-      id: "createdAt",
+      id: "created_at",
       desc: true,
     },
   ]);
