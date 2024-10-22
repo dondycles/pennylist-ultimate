@@ -1,8 +1,9 @@
 import MoneyComponent from "./money";
 
-export default async function MoneyPage(props: {
-  params: Promise<{ id: string }>;
+export default async function MoneyPage({
+  params,
+}: {
+  params: { id: string };
 }) {
-  const params = await props.params;
   return <MoneyComponent id={params.id} />;
 }
