@@ -55,7 +55,7 @@ export default function TotalMoney() {
         }}
       >
         <Amount
-          className="text-4xl"
+          className="text-4xl text-primary"
           amount={totalMoneys(moneys) - transfersFees}
           settings={{ sign: true }}
         />
