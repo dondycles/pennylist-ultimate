@@ -883,9 +883,7 @@ function NavTransferCard() {
             })}
           </div>
         ) : (
-          <p className="text-muted-foreground text-xs">
-            Receiver(s): Please select money(s)
-          </p>
+          <p className="text-muted-foreground text-xs">...</p>
         )}
       </div>
       <div className="flex flex-row gap-2">
