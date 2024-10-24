@@ -21,7 +21,7 @@ const formSchema = z.object({
   name: z.string(),
   amount: z.coerce.number(),
   reason: z.string().max(24).optional(),
-  plusMinus: z.coerce.number(),
+  plusMinus: z.coerce.number().optional(),
 });
 export default function EditMoneyForm({
   done,
