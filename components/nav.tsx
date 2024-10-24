@@ -937,7 +937,7 @@ export default function AnimatedNav() {
       <NavBar
         ref={navBar}
         className={`${!width ? "opacity-0" : "opacity-100"} ${
-          transferrings ? "h-[120px]" : "h-[66px]"
+          transferrings ? "h-[120px]" : "h-[56px]"
         }`}
       >
         <AnimatePresence initial={false}>
