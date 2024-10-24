@@ -112,7 +112,7 @@ export default function EditMoneyForm({
               <FormLabel>Amount</FormLabel>
               <FormControl>
                 <Input
-                  disabled={form.watch("plusMinus")}
+                  disabled={!!form.watch("plusMinus")}
                   type="number"
                   placeholder="117"
                   {...field}
