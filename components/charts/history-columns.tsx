@@ -12,6 +12,7 @@ export const historyColumns: ColumnDef<Log | undefined>[] = [
       const action = row.original?.action;
       return (
         <Badge
+          variant={"outline"}
           className={`capitalize text-xs ${
             (action === "transfer" && "text-blue-600") ||
             (action === "delete" && "text-destructive") ||
