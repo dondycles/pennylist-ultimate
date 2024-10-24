@@ -650,7 +650,7 @@ export function MoneyDeleteBtn() {
     setDeleting,
     darken,
     transferState: { transferrings },
-    moneysStore: { delMoney, moneys, totalMoneys, sortBy, asc, sortMoneys },
+    moneysStore: { delMoney, moneys, totalMoneys },
   } = useMoneyBarContext();
   const { addLog } = useLogsStore();
   async function deleteMoney() {
@@ -689,7 +689,6 @@ export function MoneyDeleteBtn() {
     // }
 
     // setTransferrings(null);
-    sortMoneys(sortBy, asc);
   }
   if (transferrings === null)
     return (

@@ -15,8 +15,43 @@ import {
 import { motion } from "framer-motion";
 import Scrollable from "@/components/scrollable";
 import { useMoneysStore } from "@/store";
+import { useCallback } from "react";
 export default function List() {
-  const { moneys, totalMoneys } = useMoneysStore();
+  const { moneys, totalMoneys, asc, sortBy } = useMoneysStore();
+
+  function sortMoneys() {
+    if (asc) {
+      if (sortBy === "amount") {
+        return moneys.toSorted((a, b) => a.amount - b.amount);
+      }
+      if (sortBy === "created_at") {
+        return moneys.toSorted(
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+      }
+      if (sortBy === "name") {
+        return moneys.toSorted((a, b) => b.name.localeCompare(a.name));
+      }
+      return moneys;
+    }
+    if (sortBy === "amount") {
+      return moneys.toSorted((a, b) => b.amount - a.amount);
+    }
+    if (sortBy === "created_at") {
+      return moneys.toSorted(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    }
+    if (sortBy === "name") {
+      return moneys.toSorted((a, b) => a.name.localeCompare(b.name));
+    }
+    return moneys;
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const sortedMoneys = useCallback(() => sortMoneys(), [moneys, asc, sortBy]);
 
   return (
     <Scrollable>
@@ -25,8 +60,8 @@ export default function List() {
         animate={{ opacity: 1, translateY: 0 }}
         exit={{ opacity: 0, translateY: 20 }}
       >
-        {moneys.length ? (
-          moneys.map((m) => {
+        {sortedMoneys().length ? (
+          sortedMoneys().map((m) => {
             return (
               <Money
                 currentTotal={totalMoneys(moneys)}

@@ -25,7 +25,7 @@ export function MoneysPieChart({ moneys }: { moneys: Money[] }) {
   const modifiedMoney = moneys.map((m) => ({ ...m, fill: m.color }));
 
   const generateChartConfig = (): ChartConfig => {
-    return modifiedMoney.reduce((acc, { name, color, id }) => {
+    return modifiedMoney.reduce((acc, { name, color }) => {
       acc[name] = {
         label: name,
         color: color,

@@ -263,41 +263,8 @@ export const useMoneysStore = create<MoneysStore>()(
       sortBy: "amount",
       asc: false,
       sortMoneys: (sortBy, asc) =>
-        set(({ moneys }) => {
-          function sortMoneys() {
-            if (asc) {
-              if (sortBy === "amount") {
-                return moneys.toSorted((a, b) => a.amount - b.amount);
-              }
-              if (sortBy === "created_at") {
-                return moneys.toSorted(
-                  (a, b) =>
-                    new Date(a.created_at).getTime() -
-                    new Date(b.created_at).getTime()
-                );
-              }
-              if (sortBy === "name") {
-                return moneys.toSorted((a, b) => b.name.localeCompare(a.name));
-              }
-              return moneys;
-            }
-            if (sortBy === "amount") {
-              return moneys.toSorted((a, b) => b.amount - a.amount);
-            }
-            if (sortBy === "created_at") {
-              return moneys.toSorted(
-                (a, b) =>
-                  new Date(b.created_at).getTime() -
-                  new Date(a.created_at).getTime()
-              );
-            }
-            if (sortBy === "name") {
-              return moneys.toSorted((a, b) => a.name.localeCompare(b.name));
-            }
-            return moneys;
-          }
-          const sortedMoneys = sortMoneys();
-          return { moneys: sortedMoneys, sortBy, asc };
+        set(() => {
+          return { sortBy, asc };
         }),
       import: (moneys) =>
         set(() => {

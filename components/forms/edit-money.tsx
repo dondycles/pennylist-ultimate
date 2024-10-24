@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Money, useLogsStore, useMoneysStore } from "@/store";
-import _ from "lodash";
 
 const formSchema = z.object({
   id: z.string(),
@@ -29,8 +28,7 @@ export default function EditMoneyForm({
   done: () => void;
   money: Money;
 }) {
-  const { editMoney, moneys, totalMoneys, sortMoneys, sortBy, asc } =
-    useMoneysStore();
+  const { editMoney, moneys, totalMoneys } = useMoneysStore();
   const { addLog } = useLogsStore();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -68,8 +66,6 @@ export default function EditMoneyForm({
       money_id: latest.id,
       money_name: latest.name,
     });
-
-    sortMoneys(sortBy, asc);
     done();
   }
 
