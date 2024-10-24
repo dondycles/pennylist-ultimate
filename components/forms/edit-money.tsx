@@ -14,12 +14,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Money, useLogsStore, useMoneysStore } from "@/store";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   id: z.string(),
   name: z.string(),
   amount: z.coerce.number(),
   reason: z.string().max(24).optional(),
+  plusMinus: z.coerce.number(),
 });
 export default function EditMoneyForm({
   done,
@@ -32,7 +34,11 @@ export default function EditMoneyForm({
   const { addLog } = useLogsStore();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { ...money, reason: undefined },
+    defaultValues: {
+      ...money,
+      reason: undefined,
+      plusMinus: undefined,
+    },
   });
 
   async function onSubmit(latest: z.infer<typeof formSchema>) {
@@ -69,6 +75,16 @@ export default function EditMoneyForm({
     done();
   }
 
+  useEffect(() => {
+    const plusMinus = form.watch("plusMinus");
+    if (plusMinus) {
+      form.setValue("amount", Number(money.amount) + Number(plusMinus));
+    } else {
+      form.setValue("amount", money.amount);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.watch("plusMinus")]);
+
   return (
     <Form {...form}>
       <form
@@ -95,12 +111,35 @@ export default function EditMoneyForm({
             <FormItem>
               <FormLabel>Amount</FormLabel>
               <FormControl>
-                <Input placeholder="117" {...field} />
+                <Input
+                  disabled={form.watch("plusMinus")}
+                  type="number"
+                  placeholder="117"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+        <p className="text-xs text-center text-muted-foreground">or</p>
+
+        <FormField
+          control={form.control}
+          name="plusMinus"
+          render={({ field }) => (
+            <FormItem className="flex-1">
+              <FormLabel>
+                Add or deduct (append a minus sign if deducting)
+              </FormLabel>
+              <FormControl>
+                <Input type="number" placeholder="0" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="reason"

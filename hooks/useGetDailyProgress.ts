@@ -5,9 +5,11 @@ import _ from "lodash";
 export const useGetDailyProgress = (logs: Log[] | null) => {
   if (!logs) return [];
 
+  // this will be also used by monthly progress
+
   // all data will be coming from logs, since logs has all the movements in money
 
-  // group each log by date, to also handle multiple logs in a single date.
+  // group each log by date, to also handle multiple logs in a single date. e.g. June 2 has 10 logs, June 3 has 4 logs
   const groupedByDate: {
     [key: string]: Progress;
   } = {};
@@ -20,7 +22,7 @@ export const useGetDailyProgress = (logs: Log[] | null) => {
   }[] = [];
 
   logs
-    // does not include the transfers
+    // does not include the transfers since this action does not make any movement in the TOTAL unless it has FEE. Therefore, the FEE is logged separately
     .filter((l) => l.action !== "transfer")
     .toReversed()
     .forEach((log) => {

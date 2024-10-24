@@ -17,42 +17,41 @@ import Scrollable from "@/components/scrollable";
 import { useMoneysStore } from "@/store";
 import { useCallback } from "react";
 export default function List() {
-  const { moneys, totalMoneys, asc, sortBy } = useMoneysStore();
+  const { moneys: rawMoneys, totalMoneys, asc, sortBy } = useMoneysStore();
 
-  function sortMoneys() {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const sortMoneys = useCallback(() => {
     if (asc) {
       if (sortBy === "amount") {
-        return moneys.toSorted((a, b) => a.amount - b.amount);
+        return rawMoneys.toSorted((a, b) => a.amount - b.amount);
       }
       if (sortBy === "created_at") {
-        return moneys.toSorted(
+        return rawMoneys.toSorted(
           (a, b) =>
             new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         );
       }
       if (sortBy === "name") {
-        return moneys.toSorted((a, b) => b.name.localeCompare(a.name));
+        return rawMoneys.toSorted((a, b) => b.name.localeCompare(a.name));
       }
-      return moneys;
+      return rawMoneys;
     }
     if (sortBy === "amount") {
-      return moneys.toSorted((a, b) => b.amount - a.amount);
+      return rawMoneys.toSorted((a, b) => b.amount - a.amount);
     }
     if (sortBy === "created_at") {
-      return moneys.toSorted(
+      return rawMoneys.toSorted(
         (a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
     }
     if (sortBy === "name") {
-      return moneys.toSorted((a, b) => a.name.localeCompare(b.name));
+      return rawMoneys.toSorted((a, b) => a.name.localeCompare(b.name));
     }
-    return moneys;
-  }
+    return rawMoneys;
+  }, [rawMoneys, asc, sortBy]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const sortedMoneys = useCallback(() => sortMoneys(), [moneys, asc, sortBy]);
-
+  const moneys = sortMoneys();
   return (
     <Scrollable>
       <motion.div
@@ -60,8 +59,8 @@ export default function List() {
         animate={{ opacity: 1, translateY: 0 }}
         exit={{ opacity: 0, translateY: 20 }}
       >
-        {sortedMoneys().length ? (
-          sortedMoneys().map((m) => {
+        {moneys.length ? (
+          moneys.map((m) => {
             return (
               <Money
                 currentTotal={totalMoneys(moneys)}
