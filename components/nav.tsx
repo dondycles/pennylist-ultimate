@@ -6,6 +6,7 @@ import {
   Bolt,
   Calendar,
   ChartNoAxesColumnIncreasing,
+  ChevronRight,
   CornerRightDown,
   DollarSign,
   EyeOff,
@@ -833,47 +834,53 @@ function NavTransferCard() {
     sortMoneys(sortBy, asc);
   }
   return (
-    <div className="w-full h-full flex flex-col justify-end gap-4 p-4">
-      <div className="flex flex-col gap-2 border border-input bg-muted  dark:bg-[#171717] rounded-3xl p-4">
-        <div className="flex flex-row gap-2 items-baseline">
-          <p className="text-xs text-muted-foreground">Sender: </p>
+    <div className="w-full h-full flex flex-col justify-end gap-2 px-4 py-2">
+      <div className="flex flex-row gap-2 border border-input bg-muted  dark:bg-[#171717] rounded-3xl p-4">
+        <div className="flex flex-row gap-2 items-center">
           <Badge
             variant={"outline"}
-            className="font-bold text-base gap-1"
+            className="gap-1 text-xs"
             style={{ color: root?.color ?? "hsl(var(--foreground))" }}
           >
-            <span>{root?.name}</span>
+            <span>
+              {root?.name} :{" "}
+              {Number(root?.amount ?? 0) -
+                Number(branchesDemandSum) -
+                Number(root?.fee ?? 0)}
+            </span>
             <button onClick={removeRoot}>
               <X className="text-destructive" size={16} />
             </button>
           </Badge>
-          <CornerRightDown className="text-muted-foreground" size={16} />
+          <ChevronRight className="text-muted-foreground" size={16} />
         </div>
         {transferrings?.branches.length !== 0 ? (
-          <div className="flex flex-row gap-2 items-baseline border-t pt-2">
-            <p className="text-muted-foreground text-xs">Receiver(s): </p>
-            <div className="flex gap-2 flex-1 w-full overflow-auto">
-              {transferrings?.branches.map((b) => {
-                return (
-                  <React.Fragment key={b.id}>
-                    <Badge
-                      variant={"outline"}
-                      style={{
-                        color: b?.color ?? "hsl(var(--foreground))",
-                      }}
-                      className="gap-1 shrink-0"
-                    >
-                      <span>{b?.name}</span>
+          <div className="flex gap-2 flex-1  overflow-auto">
+            {transferrings?.branches.map((b) => {
+              return (
+                <React.Fragment key={b.id}>
+                  <Badge
+                    variant={"outline"}
+                    style={{
+                      color: b?.color ?? "hsl(var(--foreground))",
+                    }}
+                    className="gap-1 shrink-0"
+                  >
+                    <span>
+                      {b?.name} :{" "}
+                      {Number(b?.amount ?? 0) +
+                        Number(b.transferAmount ?? 0) -
+                        Number(b.fee)}
+                    </span>
 
-                      <button onClick={() => removeBranch(b?.id)}>
-                        <X className="text-destructive" size={16} />
-                      </button>
-                    </Badge>
-                    <span className="last:hidden">,</span>
-                  </React.Fragment>
-                );
-              })}
-            </div>
+                    <button onClick={() => removeBranch(b?.id)}>
+                      <X className="text-destructive" size={16} />
+                    </button>
+                  </Badge>
+                  <span className="last:hidden">,</span>
+                </React.Fragment>
+              );
+            })}
           </div>
         ) : (
           <p className="text-muted-foreground text-xs">
@@ -881,7 +888,7 @@ function NavTransferCard() {
           </p>
         )}
       </div>
-      <div className="flex flex-row gap-4 ">
+      <div className="flex flex-row gap-2">
         <Button
           disabled={transferrings?.branches.length === 0}
           onClick={transfer}
@@ -930,7 +937,7 @@ export default function AnimatedNav() {
       <NavBar
         ref={navBar}
         className={`${!width ? "opacity-0" : "opacity-100"} ${
-          transferrings ? "h-[178px] " : "h-[74px]"
+          transferrings ? "h-[120px]" : "h-[66px]"
         }`}
       >
         <AnimatePresence initial={false}>
@@ -958,7 +965,7 @@ export default function AnimatedNav() {
                 <m.div
                   key={"pages-btn"}
                   initial={false}
-                  className={`flex justify-center absolute left-0 bottom-4 h-10 `}
+                  className={`flex justify-center absolute left-0 bottom-2 h-10 `}
                   animate={{
                     width:
                       showListBtn && showChartBtn
@@ -994,7 +1001,7 @@ export default function AnimatedNav() {
                   </div>
                 </m.div>
                 <m.div
-                  className={`flex justify-center absolute right-[50%] bottom-4 z-50`}
+                  className={`flex justify-center absolute right-[50%] bottom-2 z-50`}
                   key={"add-btn"}
                   initial={false}
                   animate={{
@@ -1008,7 +1015,7 @@ export default function AnimatedNav() {
                   <AddMoneyDrawer />
                 </m.div>
                 <m.div
-                  className={`flex justify-center absolute right-0 bottom-4`}
+                  className={`flex justify-center absolute right-0 bottom-2`}
                   key={"options"}
                   initial={false}
                   animate={{

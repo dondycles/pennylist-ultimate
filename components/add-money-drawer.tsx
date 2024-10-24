@@ -21,7 +21,7 @@ export default function AddMoneyDrawer() {
     <Drawer onOpenChange={setOpen} open={open}>
       <DrawerTrigger asChild>
         <Button className="flex-1" variant={"default"}>
-          <Plus className="text-foreground" size={24} />
+          <Plus size={24} />
         </Button>
       </DrawerTrigger>
       <DrawerContent>
