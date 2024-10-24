@@ -839,7 +839,7 @@ function NavTransferCard() {
         <div className="flex flex-row gap-2 items-center">
           <Badge
             variant={"outline"}
-            className="gap-1 text-xs"
+            className="gap-1 text-xs shrink-0"
             style={{ color: root?.color ?? "hsl(var(--foreground))" }}
           >
             <span>
