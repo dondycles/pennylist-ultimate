@@ -14,8 +14,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Money, useLogsStore, useMoneysStore } from "@/store";
-import { useEffect } from "react";
-
+import { useEffect, useState } from "react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Minus, Plus, RotateCw } from "lucide-react";
 const formSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -32,6 +33,7 @@ export default function EditMoneyForm({
 }) {
   const { editMoney, moneys, totalMoneys } = useMoneysStore();
   const { addLog } = useLogsStore();
+  const [operation, setOperation] = useState<1 | -1>(1);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -78,12 +80,15 @@ export default function EditMoneyForm({
   useEffect(() => {
     const plusMinus = form.watch("plusMinus");
     if (plusMinus) {
-      form.setValue("amount", Number(money.amount) + Number(plusMinus));
+      form.setValue(
+        "amount",
+        Number(money.amount) + Number(plusMinus) * operation
+      );
     } else {
       form.setValue("amount", money.amount);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.watch("plusMinus")]);
+  }, [form.watch("plusMinus"), operation]);
 
   return (
     <Form {...form}>
@@ -104,41 +109,81 @@ export default function EditMoneyForm({
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="amount"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Amount</FormLabel>
-              <FormControl>
-                <Input
-                  disabled={!!form.watch("plusMinus")}
-                  type="number"
-                  placeholder="117"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <p className="text-xs text-center text-muted-foreground">or</p>
+        <div className="flex flex-row gap-1 items-end">
+          <FormField
+            control={form.control}
+            name="amount"
+            render={({ field }) => (
+              <div className="flex-1 flex gap-1 items-end">
+                <FormItem className="flex-1">
+                  <FormLabel>Amount</FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={!!form.watch("plusMinus")}
+                      type="number"
+                      placeholder="117"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+                {Number(field.value) === money.amount ? null : (
+                  <Button
+                    onClick={() => form.setValue("amount", money.amount)}
+                    size={"icon"}
+                    variant={"secondary"}
+                  >
+                    <RotateCw size={16} />
+                  </Button>
+                )}
+              </div>
+            )}
+          />
+        </div>
 
-        <FormField
-          control={form.control}
-          name="plusMinus"
-          render={({ field }) => (
-            <FormItem className="flex-1">
-              <FormLabel>
-                Add or deduct (append a minus sign if deducting)
-              </FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="0" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="flex flex-row-reverse items-end justify-center gap-1">
+          <ToggleGroup
+            value={String(operation)}
+            onValueChange={(v) => setOperation(v === "1" ? 1 : -1)}
+            type="single"
+          >
+            <ToggleGroupItem
+              className="rounded-full"
+              value="1"
+              aria-label="Toggle Plus"
+            >
+              <Plus className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              className="rounded-full"
+              value="-1"
+              aria-label="Toggle Minus"
+            >
+              <Minus className="h-4 w-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+          <FormField
+            control={form.control}
+            name="plusMinus"
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormLabel>or Add/Deduct</FormLabel>
+                <FormControl>
+                  <Input
+                    disabled={
+                      Number(form.watch("amount")) !== money.amount &&
+                      !field.value
+                    }
+                    type="number"
+                    placeholder="0"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}
