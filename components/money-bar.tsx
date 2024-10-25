@@ -487,6 +487,8 @@ export function MoneyHeader() {
     money,
     darken,
     listState: { compactMoney },
+    transferDetails: { isRoot, isInBranch },
+    transferState: { transferrings },
   } = useMoneyBarContext();
   const color = [
     money.color ? money.color + "88" : "hsl(var(--muted-foreground))",
@@ -498,7 +500,7 @@ export function MoneyHeader() {
       key={`${money.id}-${money.color}`}
       className={`flex items-baseline gap-2 h-fit  ${
         compactMoney && "flex-1 truncate"
-      }`}
+      } ${transferrings ? (isRoot ? "" : isInBranch ? "" : "opacity-25") : ""}`}
     >
       {compactMoney ? (
         <m.p
@@ -550,6 +552,7 @@ export function MoneyAmount() {
       branch,
       branchesDemandedAmounts,
     },
+    transferState: { transferrings },
   } = useMoneyBarContext();
 
   const isBranchNegative =
@@ -559,7 +562,9 @@ export function MoneyAmount() {
     <m.div
       key={`amount-${money.id}`}
       layout
-      className="flex flex-col overflow-hidden "
+      className={`flex flex-col overflow-hidden ${
+        transferrings ? (isRoot ? "" : isInBranch ? "" : "opacity-25") : ""
+      }`}
     >
       <Amount
         className={`${darken} text-base`}
