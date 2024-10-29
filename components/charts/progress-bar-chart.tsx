@@ -37,23 +37,22 @@ import {
 import { useChartsState } from "@/store";
 import { Progress } from "@/lib/types";
 import { Differences } from "@/hooks/useGetDifferences";
+import Amount from "../amount";
+import { ChartSpline, GitCommitVertical, Square } from "lucide-react";
+import { ReactNode } from "react";
 
 const chartConfig = {
   expensesSum: {
-    label: "Expenses",
-    color: "hsl(var(--chart-5))",
+    color: "var(--expenses)",
   },
   gainsSum: {
-    label: "Gains",
-    color: "hsl(var(--chart-2))",
+    color: "var(--gains)",
   },
   currentTotal: {
-    label: "Total Money",
     color: "hsl(var(--primary))",
   },
   gainOrLoss: {
-    label: "Difference",
-    color: "hsl(var(--chart-3))",
+    color: "var(--difference)",
   },
 } satisfies ChartConfig;
 
@@ -176,11 +175,80 @@ export default function ProgressBarChart({
                 return value;
               }}
             />
-            <YAxis tickMargin={8} tickLine={false} axisLine={false} />
 
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
+              content={
+                <ChartTooltipContent
+                  formatter={(data, i) => {
+                    const label: {
+                      icon: ReactNode;
+                      className: string;
+                      label: string;
+                    } | null =
+                      (i === "currentTotal" && {
+                        label: "Total Money",
+                        className: "",
+                        icon: (
+                          <Square size={16} fill="var(--color-currentTotal)" />
+                        ),
+                      }) ||
+                      (i === "gainOrLoss" && {
+                        label: "Difference",
+                        className: "",
+                        icon: (
+                          <div className="size-4 overflow-hidden">
+                            <ChartSpline
+                              size={16}
+                              stroke="var(--color-gainOrLoss)"
+                              className="translate-y-[2px] -translate-x-[2px] box-content scale-150"
+                            />
+                          </div>
+                        ),
+                      }) ||
+                      (i === "expensesSum" && {
+                        label: "Expenses",
+                        className: "",
+                        icon: (
+                          <GitCommitVertical
+                            className="rotate-90"
+                            size={16}
+                            stroke="var(--color-expensesSum)"
+                          />
+                        ),
+                      }) ||
+                      (i === "gainsSum" && {
+                        label: "Gains",
+                        className: "",
+                        icon: (
+                          <GitCommitVertical
+                            className="rotate-90"
+                            size={16}
+                            stroke="var(--color-gainsSum)"
+                          />
+                        ),
+                      }) ||
+                      null;
+                    return (
+                      <div className="flex gap-1  flex-1">
+                        {label ? label.icon : null}
+                        <p className="flex-1">
+                          {(i === "currentTotal" && "Total Money") ||
+                            (i === "gainOrLoss" && "Difference") ||
+                            (i === "expensesSum" && "Expenses") ||
+                            (i === "gainsSum" && "Gains")}
+                        </p>
+                        <Amount
+                          className="text-xs "
+                          settings={{ sign: true }}
+                          amount={data as number}
+                        />
+                      </div>
+                    );
+                  }}
+                  indicator="line"
+                />
+              }
             />
             <ChartLegend content={<ChartLegendContent />} />
             <Bar
@@ -192,6 +260,8 @@ export default function ProgressBarChart({
             <Area
               isAnimationActive={false}
               dataKey="gainOrLoss"
+              stroke="var(--color-gainOrLoss)"
+              fill="var(--color-gainOrLoss)"
               type="monotone"
             />
             <Line

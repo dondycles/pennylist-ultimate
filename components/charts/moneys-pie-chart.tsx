@@ -18,6 +18,8 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Money } from "@/store";
+import { Square } from "lucide-react";
+import Amount from "../amount";
 
 export const description = "A simple pie chart";
 
@@ -50,7 +52,28 @@ export function MoneysPieChart({ moneys }: { moneys: Money[] }) {
           <PieChart key={"money-pie-chart"}>
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent hideLabel />}
+              content={
+                <ChartTooltipContent
+                  hideLabel
+                  formatter={(amount, i) => {
+                    return (
+                      <div className="flex items-center gap-1">
+                        <Square
+                          fill={moneys.find((m) => m.name === i)?.color}
+                          stroke={moneys.find((m) => m.name === i)?.color}
+                          size={16}
+                        />
+                        <p>{i}</p>
+                        <Amount
+                          className="text-xs"
+                          settings={{ sign: true }}
+                          amount={amount as number}
+                        />
+                      </div>
+                    );
+                  }}
+                />
+              }
             />
             <Pie
               data={modifiedMoney}
