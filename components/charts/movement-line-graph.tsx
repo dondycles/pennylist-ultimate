@@ -19,8 +19,6 @@ import { toMonthWord } from "@/lib/utils";
 import { GitCommitVertical } from "lucide-react";
 import Amount from "../amount";
 
-export const description = "A line chart";
-
 export function MovementLineGraph({ logs }: { logs: Log[] }) {
   return (
     <Card>

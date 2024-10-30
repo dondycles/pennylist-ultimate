@@ -21,8 +21,6 @@ import { Money } from "@/store";
 import { Square } from "lucide-react";
 import Amount from "../amount";
 
-export const description = "A simple pie chart";
-
 export function MoneysPieChart({ moneys }: { moneys: Money[] }) {
   const modifiedMoney = moneys.map((m) => ({ ...m, fill: m.color }));
 

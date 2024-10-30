@@ -26,14 +26,14 @@ export default function TotalMoney() {
     <motion.div
       initial={false}
       animate={{
-        height: listState.minimizeTotalMoney ? 34 : 152,
+        height: listState.minimizeTotalMoney ? 34 : 120,
       }}
       transition={{
         ease: "anticipate",
       }}
       className="w-full flex flex-col gap-4 items-center px-4 py-6  rounded-b-3xl shadow-lg max-w-[800px] mx-auto z-50 overflow-hidden relative bg-muted/50"
     >
-      <motion.p
+      {/* <motion.p
         initial={false}
         animate={{
           opacity: listState.minimizeTotalMoney ? 0 : 1,
@@ -42,12 +42,12 @@ export default function TotalMoney() {
         className="text-xs text-muted-foreground"
       >
         total money
-      </motion.p>
+      </motion.p> */}
       <motion.div
         initial={false}
         animate={{
           scale: listState.minimizeTotalMoney ? 0.5 : 1,
-          translateY: listState.minimizeTotalMoney ? -52 : 0,
+          translateY: listState.minimizeTotalMoney ? -20 : 0,
           opacity: 1,
         }}
         transition={{
