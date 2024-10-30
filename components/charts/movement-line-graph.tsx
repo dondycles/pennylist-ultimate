@@ -24,7 +24,7 @@ export function MovementLineGraph({ logs }: { logs: Log[] }) {
     <Card>
       <CardHeader>
         <CardTitle>Movement</CardTitle>
-        <CardDescription>Last 30 movements logged</CardDescription>
+        <CardDescription>Last 60 movements logged</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer className="aspect-[5/2]" config={{}}>
@@ -32,7 +32,7 @@ export function MovementLineGraph({ logs }: { logs: Log[] }) {
             accessibilityLayer
             data={logs
               .toReversed()
-              .slice(logs.length - 30 < 0 ? 0 : logs.length - 30, logs.length)}
+              .slice(logs.length - 60 < 0 ? 0 : logs.length - 60, logs.length)}
             margin={{
               left: 12,
               right: 12,
