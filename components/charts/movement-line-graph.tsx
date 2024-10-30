@@ -16,7 +16,15 @@ import {
 } from "@/components/ui/chart";
 import { Log } from "@/store";
 import { toMonthWord } from "@/lib/utils";
-import { GitCommitVertical } from "lucide-react";
+import {
+  AreaChart,
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  ChevronUp,
+  Equal,
+  GitCommitVertical,
+} from "lucide-react";
 import Amount from "../amount";
 
 export function MovementLineGraph({ logs }: { logs: Log[] }) {
@@ -59,51 +67,47 @@ export function MovementLineGraph({ logs }: { logs: Log[] }) {
                   : new Date(value).getDate().toString();
               }}
             />
-
-            <Line
-              isAnimationActive={false}
-              dataKey="movement"
-              type="monotone"
-              stroke="hsl(var(--muted))"
-              strokeWidth={2}
-              dot={({ cx, cy, payload }) => {
-                const r = 16;
-                return (
-                  <GitCommitVertical
-                    key={payload.id}
-                    x={cx - r / 2}
-                    y={cy - r / 2}
-                    width={r}
-                    height={r}
-                    fill="hsl(var(--muted))"
-                    stroke={`${
-                      payload.movement >= 0 ? "var(--gains)" : "var(--expenses)"
-                    }`}
-                  />
-                );
-              }}
-            />
             <ChartTooltip
               cursor={false}
               content={
                 <ChartTooltipContent
-                  formatter={(movement) => {
+                  formatter={(value) => {
+                    const movement = value as number;
                     return (
                       <div className="flex items-center gap-1">
-                        <GitCommitVertical
-                          stroke={`${
-                            (movement as number) >= 0
-                              ? "var(--gains)"
-                              : "var(--expenses)"
-                          }`}
-                          size={16}
-                        />
-                        <p>movement</p>
-                        <Amount
-                          className="text-xs"
-                          settings={{ sign: true }}
-                          amount={movement as number}
-                        />
+                        {(movement > 0 && (
+                          <ChevronUp
+                            fill="hsl(var(--muted))"
+                            stroke="var(--gains)"
+                            size={16}
+                          />
+                        )) ||
+                          (movement < 0 && (
+                            <ChevronDown
+                              fill="hsl(var(--muted))"
+                              stroke="var(--expenses)"
+                              size={16}
+                            />
+                          )) || (
+                            <Equal
+                              fill="hsl(var(--muted))"
+                              stroke="hsl(var(--muted-foreground))"
+                              size={16}
+                            />
+                          ) ||
+                          null}
+                        <div>
+                          {movement > 0 ? (
+                            <span className="font-bold text-base">+</span>
+                          ) : (
+                            <span className="font-bold text-base">-</span>
+                          )}
+                          <Amount
+                            className="text-xs"
+                            settings={{ sign: true }}
+                            amount={Math.abs(movement)}
+                          />
+                        </div>
                       </div>
                     );
                   }}
@@ -111,6 +115,51 @@ export function MovementLineGraph({ logs }: { logs: Log[] }) {
                   cursor={false}
                 />
               }
+            />
+            <Line
+              isAnimationActive={false}
+              dataKey="movement"
+              type="monotone"
+              stroke="#88888811"
+              strokeWidth={2}
+              dot={({ cx, cy, payload }) => {
+                const r = 16;
+                return (
+                  (payload.movement > 0 && (
+                    <ChevronUp
+                      key={payload.id}
+                      x={cx - r / 2}
+                      y={cy - r / 2}
+                      width={r}
+                      height={r}
+                      fill="hsl(var(--muted))"
+                      stroke="var(--gains)"
+                    />
+                  )) ||
+                  (payload.movement < 0 && (
+                    <ChevronDown
+                      key={payload.id}
+                      x={cx - r / 2}
+                      y={cy - r / 2}
+                      width={r}
+                      height={r}
+                      fill="hsl(var(--muted))"
+                      stroke="var(--expenses)"
+                    />
+                  )) || (
+                    <Equal
+                      key={payload.id}
+                      x={cx - r / 2}
+                      y={cy - r / 2}
+                      width={r}
+                      height={r}
+                      fill="hsl(var(--muted))"
+                      stroke="hsl(var(--muted-foreground))"
+                    />
+                  ) ||
+                  null
+                );
+              }}
             />
           </LineChart>
         </ChartContainer>

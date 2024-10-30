@@ -35,15 +35,19 @@ import { ReactNode } from "react";
 
 const chartConfig = {
   expensesSum: {
+    label: "Expenses",
     color: "var(--expenses)",
   },
   gainsSum: {
+    label: "Gains",
     color: "var(--gains)",
   },
   currentTotal: {
+    label: "Total Money",
     color: "hsl(var(--primary))",
   },
   gainOrLoss: {
+    label: "Difference",
     color: "var(--difference)",
   },
 } satisfies ChartConfig;
