@@ -33,16 +33,6 @@ export default function TotalMoney() {
       }}
       className="w-full flex flex-col gap-4 items-center px-4 py-6  rounded-b-3xl shadow-lg max-w-[800px] mx-auto z-50 overflow-hidden relative bg-muted/50"
     >
-      {/* <motion.p
-        initial={false}
-        animate={{
-          opacity: listState.minimizeTotalMoney ? 0 : 1,
-          translateY: listState.minimizeTotalMoney ? -10 : 0,
-        }}
-        className="text-xs text-muted-foreground"
-      >
-        total money
-      </motion.p> */}
       <motion.div
         initial={false}
         animate={{

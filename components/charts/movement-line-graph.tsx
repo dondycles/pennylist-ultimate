@@ -1,6 +1,6 @@
 "use client";
 
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
 import {
   Card,
@@ -24,12 +24,10 @@ export function MovementLineGraph({ logs }: { logs: Log[] }) {
     <Card>
       <CardHeader>
         <CardTitle>Movement</CardTitle>
-        <CardDescription>
-          Last 30 movements of gains and expenses logged
-        </CardDescription>
+        <CardDescription>Last 30 movements logged</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={{}}>
+        <ChartContainer className="aspect-[5/2]" config={{}}>
           <LineChart
             accessibilityLayer
             data={logs
@@ -69,7 +67,7 @@ export function MovementLineGraph({ logs }: { logs: Log[] }) {
               stroke="hsl(var(--muted))"
               strokeWidth={2}
               dot={({ cx, cy, payload }) => {
-                const r = 26;
+                const r = 16;
                 return (
                   <GitCommitVertical
                     key={payload.id}

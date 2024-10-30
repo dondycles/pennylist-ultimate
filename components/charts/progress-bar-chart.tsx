@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Area,
-  Bar,
-  CartesianGrid,
-  ComposedChart,
-  Line,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Area, Bar, CartesianGrid, ComposedChart, Line, XAxis } from "recharts";
 import {
   Card,
   CardContent,
