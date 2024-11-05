@@ -16,15 +16,7 @@ import {
 } from "@/components/ui/chart";
 import { Log } from "@/store";
 import { toMonthWord } from "@/lib/utils";
-import {
-  AreaChart,
-  ArrowDown,
-  ArrowUp,
-  ChevronDown,
-  ChevronUp,
-  Equal,
-  GitCommitVertical,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, Equal } from "lucide-react";
 import Amount from "../amount";
 
 export function MovementLineGraph({ logs }: { logs: Log[] }) {

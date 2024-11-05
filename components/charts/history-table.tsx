@@ -39,6 +39,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { Log, Money } from "@/store";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -125,7 +126,7 @@ export function HistoryTable<TData, TValue>({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>{" "}
-        <div>
+        {/* <div>
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -174,6 +175,25 @@ export function HistoryTable<TData, TValue>({
               )}
             </TableBody>
           </Table>
+        </div> */}
+        <div className="flex flex-col gap-4 px-4">
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => {
+              const log = row.original as Log;
+              return (
+                <div key={row.id} className="p-4 rounded-xl bg-muted">
+                  {/* {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))} */}
+                  {log.changes.latest.name}
+                </div>
+              );
+            })
+          ) : (
+            <p>No results.</p>
+          )}
         </div>
         <div className="flex flex-row justify-center gap-4 mt-4">
           <Button

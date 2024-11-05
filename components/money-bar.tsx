@@ -239,7 +239,7 @@ export function MoneyBar({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className={cn(
-        `w-full overflow-hidden p-4 flex flex-col border-b last:border-b-0 ${
+        `w-full overflow-hidden p-4 flex flex-col border-b border-b-muted/75 last:border-b-0 ${
           deleting && "animate-pulse scale-95"
         }`,
         className
