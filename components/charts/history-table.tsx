@@ -92,7 +92,7 @@ export function HistoryTable<TData, TValue>({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center p-4 pt-0 gap-4">
+        <div className="flex items-center p-4 pt-0 gap-2">
           <Input
             placeholder={`Search by ${searchBy}...`}
             value={
@@ -128,60 +128,33 @@ export function HistoryTable<TData, TValue>({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>{" "}
-        {/* <div>
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead className="text-xs" key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
+        {table.getHeaderGroups().map((headerGroup) => (
+          <div key={headerGroup.id} className="flex justify-end px-4 gap-2">
+            {headerGroup.headers
+              .filter((h) => h.id === "created_at" || h.id === "action")
+              .map((header) => {
+                return (
+                  <Button
+                    variant={"secondary"}
+                    className="text-muted-foreground"
+                    key={header.id}
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
                         )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div> */}
-        <div className="flex flex-col gap-4 px-4">
+                  </Button>
+                );
+              })}
+          </div>
+        ))}
+        <div className="flex flex-col gap-4 p-4">
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => {
               const log = row.original as Log;
+              const action = log.action;
               return (
                 <div
                   key={row.id}
@@ -193,25 +166,36 @@ export function HistoryTable<TData, TValue>({
                   </TableCell>
                 ))} */}
                   <div className="flex gap-4 items-start justify-between">
-                    <Badge className="capitalize">{log.action}</Badge>
+                    <Badge
+                      variant={"outline"}
+                      className={`capitalize text-xs ${
+                        (action === "transfer" && "text-blue-600") ||
+                        (action === "delete" && "text-destructive") ||
+                        (action === "add" && "text-green-600") ||
+                        (action === "edit" && "text-yellow-600") ||
+                        (action === "fee" && "text-destructive")
+                      }`}
+                    >
+                      {action}
+                    </Badge>
                     <p className="text-xs text-muted-foreground">
                       {new Date(log.created_at).toLocaleDateString()}
                     </p>
                   </div>
                   <div
                     style={{ color: log.changes.latest.color }}
-                    className="flex flex-col items-center truncate w-full"
+                    className="flex flex-col items-center w-full"
                   >
                     <p className="text-sm font-bold">
                       {log.changes.latest.name}
                     </p>
-                    <div className="flex items-baseline gap-1">
+                    <div className="flex items-baseline gap-1 justify-center w-full truncate ">
                       <Amount
                         amount={log.changes.prev.amount}
                         settings={{ sign: true }}
                         className="text-xs text-muted-foreground"
                       />
-                      <div className="flex gap-1">
+                      <div className="flex">
                         <p className="text-xl font-semibold">
                           {log.changes.latest.amount - log.changes.prev.amount >
                           0
@@ -219,7 +203,9 @@ export function HistoryTable<TData, TValue>({
                             : "-"}
                         </p>
                         <Amount
-                          amount={log.changes.latest.amount}
+                          amount={Math.abs(
+                            log.changes.latest.amount - log.changes.prev.amount
+                          )}
                           settings={{ sign: true }}
                           className="text-xl"
                         />
@@ -227,9 +213,7 @@ export function HistoryTable<TData, TValue>({
                       </div>
                       <div>
                         <Amount
-                          amount={Math.abs(
-                            log.changes.latest.amount - log.changes.prev.amount
-                          )}
+                          amount={log.changes.latest.amount}
                           settings={{ sign: true }}
                           className="text-xs text-muted-foreground"
                         />
