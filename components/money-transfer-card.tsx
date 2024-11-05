@@ -3,7 +3,7 @@ import Amount from "./amount";
 import { Button } from "./ui/button";
 import { useMoneyTransferringDetails } from "@/hooks/useMoneyTransferringDetails";
 import { Input } from "./ui/input";
-
+import { AnimatePresence, motion } from "framer-motion";
 export default function MoneysTransferCard({ m }: { m: Money }) {
   const { setTransferrings, transferrings, setBranchState } =
     useTransferState();
@@ -16,12 +16,14 @@ export default function MoneysTransferCard({ m }: { m: Money }) {
     Number(branch?.transferAmount ?? 0) - Number(branch?.fee ?? 0) < 0;
 
   return (
-    <div
+    <motion.div
+      layout
       style={{ color: m.color }}
       className="w-full p-4 border rounded-2xl flex flex-col gap-4"
       key={m.id}
     >
-      <div
+      <motion.div
+        layout
         className={`flex flex-col ${isInBranch ? "opacity-100" : "opacity-25"}`}
       >
         <p className="font-bold truncate text-sm ">{m.name}</p>
@@ -39,97 +41,114 @@ export default function MoneysTransferCard({ m }: { m: Money }) {
           )}
           settings={{ sign: true }}
         />
-      </div>
-      {isInBranch ? (
-        <div className="text-foreground space-y-4">
-          <Input
-            placeholder="Receiving amount"
-            type="number"
-            min={0}
-            value={
-              Number(branch?.transferAmount) <= 0
-                ? undefined
-                : branch?.transferAmount ?? 0
-            }
-            onChange={(v) => {
-              if (!branch) return;
-              if (!Number(v.currentTarget.value))
-                return setBranchState(
-                  0,
-                  branch?.id,
-                  branch?.reason ?? "",
-                  branch?.fee
-                );
-              setBranchState(
-                Number(v.target.value),
-                branch?.id,
-                branch?.reason ?? "",
-                branch?.fee
+      </motion.div>
+      <AnimatePresence mode="popLayout">
+        {isInBranch ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            layout
+            className="text-foreground space-y-4 "
+          >
+            <motion.div>
+              <Input
+                placeholder="Receiving amount"
+                type="number"
+                min={0}
+                value={
+                  Number(branch?.transferAmount) <= 0
+                    ? undefined
+                    : branch?.transferAmount ?? 0
+                }
+                onChange={(v) => {
+                  if (!branch) return;
+                  if (!Number(v.currentTarget.value))
+                    return setBranchState(
+                      0,
+                      branch?.id,
+                      branch?.reason ?? "",
+                      branch?.fee
+                    );
+                  setBranchState(
+                    Number(v.target.value),
+                    branch?.id,
+                    branch?.reason ?? "",
+                    branch?.fee
+                  );
+                }}
+              />
+            </motion.div>
+            <motion.div>
+              <Input
+                placeholder="Fee (optional)"
+                type="number"
+                min={0}
+                value={Number(branch?.fee) <= 0 ? undefined : branch?.fee ?? 0}
+                onChange={(v) => {
+                  if (!branch) return;
+                  if (!Number(v.currentTarget.value))
+                    return setBranchState(
+                      branch.transferAmount ?? 0,
+                      branch.id,
+                      branch.reason ?? "",
+                      0
+                    );
+                  setBranchState(
+                    branch.transferAmount ?? 0,
+                    branch.id,
+                    branch.reason ?? "",
+                    Number(v.target.value)
+                  );
+                }}
+              />
+            </motion.div>
+            <motion.div>
+              <Input
+                placeholder="Reason (optional)"
+                value={branch?.reason ?? ""}
+                onChange={(v) =>
+                  setBranchState(
+                    branch?.transferAmount ?? 0,
+                    m.id,
+                    v.currentTarget.value,
+                    branch?.fee ?? 0
+                  )
+                }
+              />
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
+      <motion.div layout className="mb-0 mt-auto w-full">
+        <Button
+          className="w-full"
+          variant={isInBranch ? "destructive" : "secondary"}
+          onClick={() => {
+            if (!transferrings) return;
+            if (isInBranch) {
+              const newBranches = transferrings.branches.filter(
+                (money) => money.id !== m.id
               );
-            }}
-          />
-          <Input
-            placeholder="Fee (optional)"
-            type="number"
-            min={0}
-            value={Number(branch?.fee) <= 0 ? undefined : branch?.fee ?? 0}
-            onChange={(v) => {
-              if (!branch) return;
-              if (!Number(v.currentTarget.value))
-                return setBranchState(
-                  branch.transferAmount ?? 0,
-                  branch.id,
-                  branch.reason ?? "",
-                  0
-                );
-              setBranchState(
-                branch.transferAmount ?? 0,
-                branch.id,
-                branch.reason ?? "",
-                Number(v.target.value)
-              );
-            }}
-          />
-          <Input
-            placeholder="Reason (optional)"
-            value={branch?.reason ?? ""}
-            onChange={(v) =>
-              setBranchState(
-                branch?.transferAmount ?? 0,
-                m.id,
-                v.currentTarget.value,
-                branch?.fee ?? 0
-              )
+              setTransferrings({
+                root: transferrings.root,
+                branches: newBranches,
+              });
+              return;
             }
-          />
-        </div>
-      ) : null}
-      <Button
-        className="mb-0 mt-auto"
-        variant={isInBranch ? "destructive" : "secondary"}
-        onClick={() => {
-          if (!transferrings) return;
-          if (isInBranch) {
-            const newBranches = transferrings.branches.filter(
-              (money) => money.id !== m.id
-            );
             setTransferrings({
               root: transferrings.root,
-              branches: newBranches,
+              branches: [
+                ...transferrings.branches,
+                { ...m, transferAmount: 0, reason: "", fee: 0 },
+              ],
             });
-            return;
-          }
-          setTransferrings({
-            root: transferrings.root,
-            branches: [
-              ...transferrings.branches,
-              { ...m, transferAmount: 0, reason: "", fee: 0 },
-            ],
-          });
-        }}
-      >
-        {isInBranch ? "Remove" : "Cash In"}
-      </Button>
-    </div>
+          }}
+        >
+          {isInBranch ? "Remove" : "Cash In"}
+        </Button>
+      </motion.div>
+    </motion.div>
   );
 }
