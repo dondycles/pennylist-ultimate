@@ -33,20 +33,18 @@ import EditMoneyForm from "./forms/edit-money";
 import { ClassNameValue } from "tailwind-merge";
 import { cn } from "@/lib/utils";
 import { colors } from "@/lib/colors";
-import { useDarkenColor } from "@/hooks/useDarkenColor";
 import {
-  ListState,
+  type ListState,
   type Money,
-  MoneysStore,
-  MoneyTransfer,
-  TransferState,
+  type MoneysStore,
+  type MoneyTransfer,
+  type TransferState,
   useListState,
   useLogsStore,
   useMoneysStore,
   useTransferState,
 } from "@/store";
 import { Input } from "./ui/input";
-import _ from "lodash";
 import { Textarea } from "./ui/textarea";
 import { ScrollArea } from "./ui/scroll-area";
 import {
@@ -54,6 +52,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { useMoneyTransferringDetails } from "@/hooks/useMoneyTransferringDetails";
 
 type MoneyBarProps = PropsWithChildren & {
   money: Money;
@@ -83,7 +82,6 @@ const MoneyBarContext = createContext<
       setCommenting: React.Dispatch<React.SetStateAction<boolean>>;
       specific: boolean;
       currentTotal: number;
-      darken: string;
       transferDetails: {
         root: MoneyTransfer | null;
         branch: MoneyTransfer | null;
@@ -91,6 +89,7 @@ const MoneyBarContext = createContext<
         isInBranch: boolean;
         branchesDemandedAmounts: number;
         isRootNegative: boolean;
+        branchesFees: number;
       };
       transferState: TransferState;
       listState: ListState;
@@ -106,32 +105,6 @@ function useMoneyBarContext() {
   return context;
 }
 
-function useMoneyTransferringDetails(
-  transferrings: TransferState["transferrings"],
-  money: Money
-) {
-  const root = transferrings?.root ?? null;
-  const branch = transferrings?.branches.find((b) => b.id === money.id) ?? null;
-  const isRoot = root?.id === money.id;
-  const isInBranch = Boolean(
-    transferrings?.branches.find((b) => b.id === money.id)
-  );
-  const branchesDemandedAmounts = _.sum(
-    transferrings?.branches.map((b) => b.transferAmount)
-  );
-
-  const isRootNegative =
-    (root?.amount ?? 0) - (root?.fee ?? 0) - branchesDemandedAmounts < 0;
-  return {
-    root,
-    branch,
-    isRoot,
-    isInBranch,
-    branchesDemandedAmounts,
-    isRootNegative,
-  };
-}
-
 export function Money({
   children,
   money,
@@ -140,7 +113,6 @@ export function Money({
 }: MoneyBarProps) {
   const [deleting, setDeleting] = useState(false);
   const [commenting, setCommenting] = useState(false);
-  const darken = useDarkenColor(money.color ?? "");
   const transferState = useTransferState();
   const listState = useListState();
   const moneysStore = useMoneysStore();
@@ -185,7 +157,6 @@ export function Money({
         setDeleting,
         specific,
         currentTotal,
-        darken,
         transferDetails,
         commenting,
         setCommenting,
@@ -212,9 +183,9 @@ export function MoneyBar({
     deleting,
     commenting,
     setCommenting,
-    transferDetails: { isInBranch, isRoot, root, branch },
+    transferDetails: { isRoot, root },
     listState,
-    transferState: { setBranchState, setRootState },
+    transferState: { setRootState, transferrings },
   } = useMoneyBarContext();
   const { addNote, delNote } = useMoneysStore();
   const [note, setNote] = useState("");
@@ -234,12 +205,14 @@ export function MoneyBar({
   return (
     <m.div
       layout
-      key={`${money.id}-${money.last_updated_at}-${listState.compactMoney}-${listState.hidden}`}
+      key={`${money.id}-${money.last_updated_at}-${listState.compactMoney}-${listState.hidden}-${transferrings}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className={cn(
-        `w-full overflow-hidden p-4 flex flex-col border-b border-b-muted/75 last:border-b-0 ${
+        `w-full overflow-hidden p-4 ${
+          transferrings ? (isRoot ? "flex" : "hidden") : "flex"
+        }  flex-col border-b border-b-muted/75 last:border-b-0 ${
           deleting && "animate-pulse scale-95"
         }`,
         className
@@ -336,98 +309,7 @@ export function MoneyBar({
           </m.div>
         )}
 
-        {isInBranch ? (
-          <m.div
-            layout
-            initial={"close"}
-            animate={"open"}
-            exit={"close"}
-            variants={variants}
-            transition={{ duration: 0.8, ease: [0.04, 0.62, 0.23, 0.98] }}
-            key={"branch"}
-            className="flex flex-col gap-4"
-          >
-            <div className="space-y-1.5">
-              <p className="text-muted-foreground text-xs">
-                Receiving from {root?.name}
-              </p>
-              <Input
-                type="number"
-                min={0}
-                value={
-                  Number(branch?.transferAmount) <= 0
-                    ? undefined
-                    : branch?.transferAmount ?? 0
-                }
-                onChange={(v) => {
-                  if (!branch) return;
-                  if (!Number(v.currentTarget.value))
-                    return setBranchState(
-                      0,
-                      branch?.id,
-                      branch?.reason ?? "",
-                      branch?.fee
-                    );
-                  setBranchState(
-                    Number(v.target.value),
-                    branch?.id,
-                    branch?.reason ?? "",
-                    branch?.fee
-                  );
-                }}
-                placeholder={`Amount to receive from ${root?.name}`}
-              />
-            </div>
-            <div className="flex flex-col xs:flex-row xs:items-end gap-4">
-              <div className="space-y-1.5 flex-1 xs:max-w-32">
-                <p className="text-muted-foreground text-xs truncate">
-                  Receiving transfer fee (optional)
-                </p>
-                <Input
-                  type="number"
-                  min={0}
-                  value={
-                    Number(branch?.fee) <= 0 ? undefined : branch?.fee ?? 0
-                  }
-                  onChange={(v) => {
-                    if (!branch) return;
-                    if (!Number(v.currentTarget.value))
-                      return setBranchState(
-                        branch.transferAmount ?? 0,
-                        branch.id,
-                        branch.reason ?? "",
-                        0
-                      );
-                    setBranchState(
-                      branch.transferAmount ?? 0,
-                      branch.id,
-                      branch.reason ?? "",
-                      Number(v.target.value)
-                    );
-                  }}
-                  placeholder={`Fee (optional)`}
-                />
-              </div>
-              <div className="space-y-1.5 flex-1">
-                <p className="text-muted-foreground text-xs">
-                  Reason (optional)
-                </p>
-                <Input
-                  value={branch?.reason ?? ""}
-                  onChange={(v) =>
-                    setBranchState(
-                      branch?.transferAmount ?? 0,
-                      money.id,
-                      v.currentTarget.value,
-                      branch?.fee ?? 0
-                    )
-                  }
-                  placeholder="Reason (optional)"
-                />
-              </div>
-            </div>
-          </m.div>
-        ) : isRoot ? (
+        {isRoot ? (
           <m.div
             layout
             initial={"close"}
@@ -438,38 +320,11 @@ export function MoneyBar({
             key={"root"}
           >
             <div className="flex flex-col xs:flex-row xs:items-end gap-4">
-              <div className="space-y-1.5 flex-1 xs:max-w-32">
-                <p className="text-muted-foreground text-xs truncate">
-                  Sender transfer fee (optional)
-                </p>
-                <Input
-                  type="number"
-                  min={0}
-                  value={Number(root?.fee) <= 0 ? undefined : root?.fee ?? 0}
-                  onChange={(v) => {
-                    if (!Number(v.currentTarget.value))
-                      return setRootState(root!.id, root?.reason ?? "", 0);
-                    setRootState(
-                      root!.id,
-                      root?.reason ?? "",
-                      Number(v.target.value)
-                    );
-                  }}
-                  placeholder={`Fee (optional)`}
-                />
-              </div>
               <div className="space-y-1.5 flex-1">
-                <p className="text-muted-foreground text-xs">
-                  Reason (optional)
-                </p>
                 <Input
                   value={root?.reason ?? ""}
                   onChange={(v) =>
-                    setRootState(
-                      root!.id,
-                      v.currentTarget.value,
-                      root?.fee ?? 0
-                    )
+                    setRootState(root!.id, v.currentTarget.value)
                   }
                   placeholder="Reason (optional)"
                 />
@@ -485,7 +340,7 @@ export function MoneyBar({
 export function MoneyHeader() {
   const {
     money,
-    darken,
+
     listState: { compactMoney },
     transferDetails: { isRoot, isInBranch },
     transferState: { transferrings },
@@ -503,20 +358,12 @@ export function MoneyHeader() {
       } ${transferrings ? (isRoot ? "" : isInBranch ? "" : "opacity-25") : ""}`}
     >
       {compactMoney ? (
-        <m.p
-          layout
-          className={`font-bold ${darken} `}
-          style={{ color: color[1] }}
-        >
+        <m.p layout className={`font-bold  `} style={{ color: color[1] }}>
           {money.name}
         </m.p>
       ) : (
         <>
-          <m.p
-            layout
-            className={`font-bold ${darken} `}
-            style={{ color: color[1] }}
-          >
+          <m.p layout className={`font-bold  `} style={{ color: color[1] }}>
             {money.name}
           </m.p>
           <Dot
@@ -543,14 +390,13 @@ export function MoneyHeader() {
 export function MoneyAmount() {
   const {
     money,
-    darken,
     transferDetails: {
       isInBranch,
       isRoot,
       isRootNegative,
-      root,
       branch,
       branchesDemandedAmounts,
+      branchesFees,
     },
     transferState: { transferrings },
   } = useMoneyBarContext();
@@ -567,7 +413,7 @@ export function MoneyAmount() {
       }`}
     >
       <Amount
-        className={`${darken} text-base`}
+        className={`text-base`}
         color={
           isRootNegative
             ? "hsl(var(--destructive))"
@@ -577,10 +423,8 @@ export function MoneyAmount() {
         }
         amount={Number(
           money.amount +
-            (isInBranch
-              ? Number(branch?.transferAmount ?? 0) - Number(branch?.fee ?? 0)
-              : isRoot
-              ? Number(-branchesDemandedAmounts) - Number(root?.fee ?? 0)
+            (isRoot
+              ? Number(-branchesDemandedAmounts) - Number(branchesFees)
               : 0)
         )}
         settings={{ sign: true }}
@@ -653,7 +497,7 @@ export function MoneyDeleteBtn() {
     money,
     deleting,
     setDeleting,
-    darken,
+
     transferState: { transferrings },
     moneysStore: { delMoney, moneys, totalMoneys },
   } = useMoneyBarContext();
@@ -679,21 +523,6 @@ export function MoneyDeleteBtn() {
       reason: "delete",
       money_name: money.name,
     });
-
-    // if (transferrings) {
-    //   const root = transferrings?.root;
-    //   const isRoot = root?.id === money.id;
-    //   const isInBranch = transferrings?.branches.find((b) => b.id === money.id);
-    //   const branches = transferrings.branches.filter((b) => b.id !== money.id);
-    //   if (isInBranch)
-    //     setTransferrings({
-    //       ...transferrings,
-    //       branches,
-    //     });
-    //   if (isRoot) setTransferrings(null);
-    // }
-
-    // setTransferrings(null);
   }
   if (transferrings === null)
     return (
@@ -706,7 +535,7 @@ export function MoneyDeleteBtn() {
             variant={"ghost"}
           >
             <Trash
-              className={`${darken}`}
+              className={``}
               style={{ color: money.color ?? "" }}
               size={16}
             />
@@ -727,7 +556,7 @@ export function MoneyDeleteBtn() {
                 borderColor: money.color ?? "hsl(var(--border))",
                 color: money.color ?? "hsl(var(--foreground))",
               }}
-              className={`border flex-1 flex gap-4 items-center justify-between py-2 px-6 rounded-full ${darken}`}
+              className={`border flex-1 flex gap-4 items-center justify-between py-2 px-6 rounded-full `}
             >
               <p className="font-bold ">{money.name}</p>
               <Amount
@@ -755,7 +584,7 @@ export function MoneyDeleteBtn() {
 export function MoneyExternalLinkBtn() {
   const {
     money,
-    darken,
+
     transferState: { transferrings },
   } = useMoneyBarContext();
   if (transferrings === null)
@@ -773,7 +602,7 @@ export function MoneyExternalLinkBtn() {
           ${transferrings !== null && "pointer-events-none opacity-50"}`}
         >
           <ExternalLink
-            className={`${darken}`}
+            className={``}
             style={{ color: money.color ?? "hsl(var(--foreground))" }}
             size={16}
           />
@@ -785,7 +614,7 @@ export function MoneyExternalLinkBtn() {
 export function MoneyEditBtn() {
   const {
     money,
-    darken,
+
     transferState: { transferrings, setTransferrings },
   } = useMoneyBarContext();
   const [openEditDialog, setOpenEditDialog] = useState(false);
@@ -804,7 +633,7 @@ export function MoneyEditBtn() {
             variant={"ghost"}
           >
             <Pencil
-              className={`${darken}`}
+              className={``}
               style={{ color: money.color ?? "hsl(var(--foreground))" }}
               size={16}
             />
@@ -831,7 +660,7 @@ export function MoneyPaletteBtn() {
     money,
     specific,
     currentTotal,
-    darken,
+
     transferState: { setTransferrings, transferrings },
     moneysStore: { setMoneyColor },
   } = useMoneyBarContext();
@@ -851,7 +680,7 @@ export function MoneyPaletteBtn() {
             variant={"ghost"}
           >
             <Palette
-              className={`${darken}`}
+              className={``}
               style={{ color: money.color ?? "hsl(var(--foreground))" }}
               size={16}
             />
@@ -921,53 +750,40 @@ export function MoneyPaletteBtn() {
 export function MoneyTransferBtn() {
   const {
     money,
-    darken,
     transferDetails: { isRoot, isInBranch },
     transfer,
     listState: { compactMoney },
+    transferState: { transferrings },
   } = useMoneyBarContext();
-  return (
-    <Button
-      size={"icon"}
-      className={`rounded-full ${
-        isRoot || isInBranch
-          ? compactMoney
-            ? "size-6 aspect-square"
-            : "h-6 px-2 w-fit"
-          : "size-6 aspect-square"
-      } w-fit gap-1 disabled:opacity-100`}
-      variant={isRoot || isInBranch ? "secondary" : "ghost"}
-      onClick={transfer}
-    >
-      {isRoot ? (
-        <>
-          {!compactMoney && (
-            <span className="text-muted-foreground text-xs">Sender</span>
-          )}
-          <X className={`text-destructive`} size={16} />
-        </>
-      ) : isInBranch ? (
-        <>
-          {!compactMoney && (
-            <span className="text-muted-foreground text-xs">Receiver</span>
-          )}
-          <X className={`text-destructive`} size={16} />
-        </>
-      ) : (
-        <ArrowRightLeft
-          className={`${darken}`}
-          style={{ color: money.color ?? "hsl(var(--foreground))" }}
-          size={16}
-        />
-      )}
-    </Button>
-  );
+  if (!transferrings)
+    return (
+      <Button
+        size={"icon"}
+        className={`rounded-full ${
+          isRoot || isInBranch
+            ? compactMoney
+              ? "size-6 aspect-square"
+              : "h-6 px-2 w-fit"
+            : "size-6 aspect-square"
+        } w-fit gap-1 disabled:opacity-100`}
+        variant={isRoot || isInBranch ? "secondary" : "ghost"}
+        onClick={transfer}
+      >
+        {
+          <ArrowRightLeft
+            className={``}
+            style={{ color: money.color ?? "hsl(var(--foreground))" }}
+            size={16}
+          />
+        }
+      </Button>
+    );
 }
 
 export function MoneyCommentBtn() {
   const {
     money,
-    darken,
+
     setCommenting,
     commenting,
     transferState: { transferrings },
@@ -981,7 +797,7 @@ export function MoneyCommentBtn() {
         variant={"ghost"}
       >
         <MessageCircleMore
-          className={`${darken} z-10`}
+          className={` z-10`}
           style={{ color: money.color ?? "hsl(var(--foreground))" }}
           size={16}
         />

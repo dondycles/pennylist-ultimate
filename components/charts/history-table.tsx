@@ -6,23 +6,14 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon, ArrowRightIcon, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import {
@@ -43,7 +34,6 @@ import { Log } from "@/store";
 import { Badge } from "../ui/badge";
 import Amount from "../amount";
 import { ScrollArea } from "../ui/scroll-area";
-import { HistoryTableActionFilter } from "./history-table-action-filter";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -224,7 +214,7 @@ export function HistoryTable<TData, TValue>({
                       </div>
                       <p
                         hidden={!log.reason}
-                        className="text-sm text-muted-foreground"
+                        className="text-sm text-muted-foreground whitespace-pre-wrap"
                       >
                         {log.reason}
                       </p>

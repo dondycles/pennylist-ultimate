@@ -6,8 +6,6 @@ import {
   Bolt,
   Calendar,
   ChartNoAxesColumnIncreasing,
-  ChevronRight,
-  CornerRightDown,
   DollarSign,
   EyeOff,
   HardDriveDownload,
@@ -65,7 +63,6 @@ import { usePathname } from "next/navigation";
 import { useMeasure } from "@uidotdev/usehooks";
 import AddMoneyDrawer from "./add-money-drawer";
 import _ from "lodash";
-import { Badge } from "./ui/badge";
 import {
   Dialog,
   DialogClose,
@@ -714,16 +711,7 @@ function NavTransferCard() {
   const root = transferrings?.root;
   const branches = transferrings?.branches;
   const branchesDemandSum = _.sum(branches?.map((b) => b.transferAmount));
-
-  function removeRoot() {
-    setTransferrings(null);
-  }
-
-  function removeBranch(id: string) {
-    if (!transferrings) return;
-    const branches = transferrings.branches.filter((b) => b.id !== id);
-    setTransferrings({ ...transferrings, branches });
-  }
+  const branchesFees = _.sum(branches?.map((m) => m.fee));
 
   async function transfer() {
     if (!branches) return alert("!branches");
@@ -738,7 +726,7 @@ function NavTransferCard() {
 
     editMoney({
       ...root,
-      amount: root.amount - branchesDemandSum - root.fee,
+      amount: root.amount - branchesDemandSum - branchesFees,
     });
 
     addLog({
@@ -746,88 +734,86 @@ function NavTransferCard() {
         prev: { ...root, total: totalMoneys(moneys) },
         latest: {
           ...root,
-          amount: root.amount - branchesDemandSum - root.fee,
-          total: totalMoneys(moneys) - branchesDemandSum - root.fee,
+          amount: root.amount - branchesDemandSum - branchesFees,
+          total: totalMoneys(moneys) - branchesDemandSum - branchesFees,
         },
       },
       action: "transfer",
       created_at: new Date().toISOString(),
-      current_total: totalMoneys(moneys) - branchesDemandSum - root.fee,
+      current_total: totalMoneys(moneys) - branchesDemandSum - branchesFees,
       id: crypto.randomUUID(),
       money_id: root.id,
       reason: root.reason,
       money_name: root.name,
     });
 
-    if (root.fee > 0) {
-      addLog({
-        changes: {
-          prev: { ...root, total: totalMoneys(moneys), amount: 0 },
-          latest: {
-            ...root,
-            amount: -root.fee,
-            total: totalMoneys(moneys) - branchesDemandSum - root.fee,
-          },
+    addLog({
+      changes: {
+        prev: { ...root, total: totalMoneys(moneys), amount: 0 },
+        latest: {
+          ...root,
+          amount: -branchesFees,
+          total: totalMoneys(moneys) - branchesDemandSum - branchesFees,
         },
-        action: "fee",
-        created_at: new Date().toISOString(),
-        current_total: totalMoneys(moneys) - branchesDemandSum - root.fee,
-        id: crypto.randomUUID(),
-        money_id: root.id,
-        reason: "fee",
-        money_name: root.name,
-      });
-    }
+      },
+      action: "fee",
+      created_at: new Date().toISOString(),
+      current_total: totalMoneys(moneys) - branchesDemandSum - branchesFees,
+      id: crypto.randomUUID(),
+      money_id: root.id,
+      reason: `${branches
+        .map((b) => {
+          return `${b.name}: -${b.fee}`;
+        })
+        .join("\n")}`,
+      money_name: root.name,
+    });
+
     for (let index = 0; index < branches.length; index++) {
       const branch = branches[index];
-      const previousBranches = branches.slice(0, index);
-      const sumOfPreviousBranchesFees = _.sum(
-        previousBranches.map((b) => b.fee)
-      );
+      // const previousBranches = branches.slice(0, index);
+      // const sumOfPreviousBranchesFees = _.sum(
+      //   previousBranches.map((b) => b.fee)
+      // );
       addLog({
         changes: {
           prev: { ...branch, total: totalMoneys(moneys) },
           latest: {
             ...branch,
-            amount: branch.amount + (branch.transferAmount ?? 0) - branch.fee,
-            total:
-              totalMoneys(moneys) + (branch.transferAmount ?? 0) - branch.fee,
+            amount: branch.amount + (branch.transferAmount ?? 0),
+            total: totalMoneys(moneys) + (branch.transferAmount ?? 0),
           },
         },
         action: "transfer",
         created_at: new Date().toISOString(),
-        current_total:
-          totalMoneys(moneys) -
-          branches[index].fee -
-          root.fee -
-          (index > 0 ? sumOfPreviousBranchesFees : 0),
+        current_total: totalMoneys(moneys) - branchesFees,
         id: crypto.randomUUID(),
         money_id: branch.id,
         reason: branch.reason,
         money_name: branch.name,
       });
-      if (branch.fee > 0) {
-        addLog({
-          changes: {
-            prev: { ...branch, total: totalMoneys(moneys), amount: 0 },
-            latest: {
-              ...branch,
-              amount: -branch.fee,
-              total: totalMoneys(moneys) - branchesDemandSum - branch.fee,
-            },
-          },
-          action: "fee",
-          created_at: new Date().toISOString(),
-          current_total: totalMoneys(moneys) - branchesDemandSum - branch.fee,
-          id: crypto.randomUUID(),
-          money_id: branch.id,
-          reason: "fee",
-          money_name: branch.name,
-        });
-      }
+      // if (branch.fee > 0) {
+      //   addLog({
+      //     changes: {
+      //       prev: { ...branch, total: totalMoneys(moneys), amount: 0 },
+      //       latest: {
+      //         ...branch,
+      //         amount: -branch.fee,
+      //         total: totalMoneys(moneys) - branchesDemandSum - branch.fee,
+      //       },
+      //     },
+      //     action: "fee",
+      //     created_at: new Date().toISOString(),
+      //     current_total: totalMoneys(moneys) - branchesDemandSum - branch.fee,
+      //     id: crypto.randomUUID(),
+      //     money_id: branch.id,
+      //     reason: "fee",
+      //     money_name: branch.name,
+      //   });
+      // }
       editMoney({
         ...branch,
-        amount: branch.amount + (branch.transferAmount ?? 0) - branch.fee,
+        amount: branch.amount + (branch.transferAmount ?? 0),
       });
     }
     setTransferrings(null);
@@ -835,57 +821,6 @@ function NavTransferCard() {
   }
   return (
     <div className="w-full h-full flex flex-col justify-end gap-2 px-4 py-2">
-      <div className="flex flex-row gap-2 border border-input bg-muted  dark:bg-[#171717] rounded-3xl p-4">
-        <div className="flex flex-row gap-2 items-center">
-          <Badge
-            variant={"outline"}
-            className="gap-1 text-xs shrink-0"
-            style={{ color: root?.color ?? "hsl(var(--foreground))" }}
-          >
-            <span>
-              {root?.name} :{" "}
-              {Number(root?.amount ?? 0) -
-                Number(branchesDemandSum) -
-                Number(root?.fee ?? 0)}
-            </span>
-            <button onClick={removeRoot}>
-              <X className="text-destructive" size={16} />
-            </button>
-          </Badge>
-          <ChevronRight className="text-muted-foreground" size={16} />
-        </div>
-        {transferrings?.branches.length !== 0 ? (
-          <div className="flex gap-2 flex-1  overflow-auto">
-            {transferrings?.branches.map((b) => {
-              return (
-                <React.Fragment key={b.id}>
-                  <Badge
-                    variant={"outline"}
-                    style={{
-                      color: b?.color ?? "hsl(var(--foreground))",
-                    }}
-                    className="gap-1 shrink-0"
-                  >
-                    <span>
-                      {b?.name} :{" "}
-                      {Number(b?.amount ?? 0) +
-                        Number(b.transferAmount ?? 0) -
-                        Number(b.fee)}
-                    </span>
-
-                    <button onClick={() => removeBranch(b?.id)}>
-                      <X className="text-destructive" size={16} />
-                    </button>
-                  </Badge>
-                  <span className="last:hidden">,</span>
-                </React.Fragment>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="text-muted-foreground text-xs">...</p>
-        )}
-      </div>
       <div className="flex flex-row gap-2">
         <Button
           disabled={transferrings?.branches.length === 0}
@@ -934,9 +869,7 @@ export default function AnimatedNav() {
     <Nav>
       <NavBar
         ref={navBar}
-        className={`${!width ? "opacity-0" : "opacity-100"} ${
-          transferrings ? "h-[120px]" : "h-[56px]"
-        }`}
+        className={`${!width ? "opacity-0" : "opacity-100"} h-[56px]`}
       >
         <AnimatePresence initial={false}>
           {transferrings ? (

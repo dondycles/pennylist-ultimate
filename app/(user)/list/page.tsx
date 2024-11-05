@@ -16,6 +16,7 @@ import { motion } from "framer-motion";
 import Scrollable from "@/components/scrollable";
 import { useMoneysStore } from "@/store";
 import { useCallback } from "react";
+import SelectBranches from "@/components/select-branches";
 export default function List() {
   const { moneys: rawMoneys, totalMoneys, asc, sortBy } = useMoneysStore();
 
@@ -88,6 +89,7 @@ export default function List() {
             No moneys to show yet, start listing now.
           </p>
         )}
+        <SelectBranches />
       </motion.div>
     </Scrollable>
   );

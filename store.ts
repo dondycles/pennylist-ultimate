@@ -65,7 +65,7 @@ export type TransferState = {
     reason: string,
     fee: number
   ) => void;
-  setRootState: (id: string, reason: string, fee: number) => void;
+  setRootState: (id: string, reason: string) => void;
   setTransferrings: (
     state: { root: MoneyTransfer; branches: MoneyTransfer[] } | null
   ) => void;
