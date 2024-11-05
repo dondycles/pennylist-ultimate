@@ -32,10 +32,12 @@ export const useGetDifferences = (
     return ((current - past) / current) * 100;
   };
 
+  console.log(sumCurrentSpan, sumPastSpan);
+
   if (days === "1") {
     const yesterday = calculatePercentageDifference(
       currentTotal,
-      reversedDailyTotal[0]?.currentTotal
+      reversedDailyTotal[1]?.currentTotal
     );
     const numValue = isNaN(yesterday) ? 0 : Number(yesterday);
     return {
