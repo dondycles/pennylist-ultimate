@@ -41,30 +41,14 @@ export default function Charts() {
         >
           <Tabs defaultValue={chartState.page}>
             <div className="p-4 pb-0">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger
                   onClick={() => {
-                    chartState.setPage("movement");
+                    chartState.setPage("charts");
                   }}
-                  value="movement"
+                  value="charts"
                 >
-                  <p className="truncate">Movement</p>
-                </TabsTrigger>
-                <TabsTrigger
-                  onClick={() => {
-                    chartState.setPage("dailyprogress");
-                  }}
-                  value="dailyprogress"
-                >
-                  <p className="truncate">Daily Progress</p>
-                </TabsTrigger>
-                <TabsTrigger
-                  onClick={() => {
-                    chartState.setPage("breakdown");
-                  }}
-                  value="breakdown"
-                >
-                  <p className="truncate">Breakdown</p>
+                  <p className="truncate">Charts</p>
                 </TabsTrigger>
                 <TabsTrigger
                   onClick={() => {
@@ -76,25 +60,20 @@ export default function Charts() {
                 </TabsTrigger>
               </TabsList>
             </div>
-
-            <TabsContent value="movement">
+            <TabsContent value="history">
+              <HistoryList />
+            </TabsContent>
+            <TabsContent value="charts">
               <MovementLineGraph
                 logs={moneyLogs.filter((l) => l.action !== "transfer")}
               />
-            </TabsContent>
-            <TabsContent value="dailyprogress">
               <ProgressBarChart
                 differences={differences}
                 chartData={
                   chartState.type === "daily" ? dailyData : monthlyData
                 }
               />
-            </TabsContent>
-            <TabsContent value="breakdown">
               <MoneysPieChart moneys={moneys} />
-            </TabsContent>
-            <TabsContent value="history">
-              <HistoryList />
             </TabsContent>
           </Tabs>
         </motion.div>

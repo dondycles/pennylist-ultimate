@@ -685,7 +685,7 @@ function NavListBtn() {
 function NavChartBtn() {
   return (
     <Button asChild size={"icon"} variant={"ghost"}>
-      <Link href={"/chart"}>
+      <Link href={"/charts"}>
         <ChartNoAxesColumnIncreasing size={24} />
       </Link>
     </Button>
@@ -827,14 +827,14 @@ export default function AnimatedNav() {
   const calculateWidth = () => {
     if (pathname === "/list") return width! / 3 - 1;
     if (pathname.startsWith("/list/money/")) return width! / 3 - 1;
-    if (pathname === "/chart") return width! / 2 - 1;
+    if (pathname === "/charts") return width! / 2 - 1;
     return width! / 4 - 1;
   };
   const calculatedWidth = calculateWidth();
   const showListBtn =
     !Boolean(pathname.match("/list")) ||
     Boolean(pathname.startsWith("/list/money/"));
-  const showChartBtn = !Boolean(pathname.match("/chart"));
+  const showChartBtn = !Boolean(pathname.match("/charts"));
   const showAddBtn =
     Boolean(pathname.match("/list")) &&
     !Boolean(pathname.startsWith("/list/money/"));
