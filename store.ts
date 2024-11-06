@@ -93,7 +93,7 @@ export const useTransferState = create<TransferState>()(
             },
           };
         }),
-      setRootState: (id, reason, fee) =>
+      setRootState: (id, reason) =>
         set(({ transferrings }) => {
           if (!transferrings) return {};
           const root = transferrings?.root;
@@ -102,7 +102,7 @@ export const useTransferState = create<TransferState>()(
 
           return {
             transferrings: {
-              root: { ...transferrings?.root, fee, reason },
+              root: { ...transferrings?.root, reason },
               branches: transferrings.branches,
             },
           };
