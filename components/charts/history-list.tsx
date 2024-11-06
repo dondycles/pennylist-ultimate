@@ -12,22 +12,33 @@ import {
   CardTitle,
 } from "../ui/card";
 import { Input } from "../ui/input";
-import { Separator } from "../ui/separator";
+import { useDebounce } from "@uidotdev/usehooks";
+import { Button } from "../ui/button";
 export default function HistoryList() {
   const { logs } = useLogsStore();
   const [search, setSearch] = useState<string | null>(null);
+  const debouncedSearch = useDebounce(search, 500);
   const { ref, inView } = useInView();
+
+  const fuse = new Fuse([...logs.toReversed()], {
+    keys: ["money_name", "action", "reason"],
+  });
+
+  const filteredLogs = debouncedSearch
+    ? fuse.search(debouncedSearch).map((l) => l.item)
+    : logs.toReversed();
+
   const { data, fetchNextPage } = useInfiniteQuery({
-    queryKey: ["history-logs"],
+    queryKey: ["history-logs", debouncedSearch ?? "none"],
     queryFn: async ({ pageParam = 1 }) => {
-      return logs.toReversed().slice((pageParam - 1) * 4, pageParam * 4);
+      return filteredLogs.slice((pageParam - 1) * 4, pageParam * 4);
     },
     initialPageParam: 0,
     getNextPageParam: (_, pages) => {
       return pages.length + 1;
     },
     initialData: {
-      pages: [logs.toReversed().slice(0, 4)],
+      pages: [filteredLogs.slice(0, 4)],
       pageParams: [1],
     },
     staleTime: 0,
@@ -43,14 +54,6 @@ export default function HistoryList() {
   }
 
   const sortedLogs = sortLogs();
-
-  const fuse = new Fuse([...sortedLogs], {
-    keys: ["money_name", "action", "reason"],
-  });
-
-  const filteredAndSortedLogs = search
-    ? fuse.search(search).map((m) => m.item)
-    : sortedLogs;
 
   useEffect(() => {
     if (inView) {
@@ -69,16 +72,28 @@ export default function HistoryList() {
         <div className="px-4">
           <Input
             value={search ?? ""}
-            onChange={({ currentTarget: { value } }) => setSearch(value)}
+            onChange={({ currentTarget: { value } }) =>
+              setSearch(value.length === 0 ? null : value)
+            }
             placeholder="Search by money/action/reason"
           />
         </div>
 
         <div className="flex flex-col gap-4 px-4">
-          {filteredAndSortedLogs.map((l) => {
+          {sortedLogs.map((l) => {
             return <HistoryLogCard log={l} key={l.id} />;
           })}
-          <Separator ref={ref} />
+          {sortedLogs.length !== filteredLogs.length ? (
+            <Button
+              variant={"secondary"}
+              ref={ref}
+              onClick={() => {
+                fetchNextPage();
+              }}
+            >
+              Load More
+            </Button>
+          ) : null}
         </div>
       </CardContent>
     </Card>
