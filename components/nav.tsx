@@ -932,8 +932,13 @@ export default function AnimatedNav() {
                   }}
                 >
                   <NavOptions>
-                    {pathname === "/list" ? <NavFilterOptions /> : null}
-                    <NavAppearanceOption />
+                    {pathname === "/list" ? (
+                      <>
+                        <NavFilterOptions />
+                        <NavAppearanceOption />
+                      </>
+                    ) : null}
+
                     <NavPrivacyOption />
                     <NavThemeOptions />
                     <NavHelpBtn />
