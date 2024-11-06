@@ -20,6 +20,10 @@ import { ChevronDown, ChevronUp, Equal } from "lucide-react";
 import Amount from "../amount";
 
 export function MovementLineGraph({ logs }: { logs: Log[] }) {
+  const modifiedLogs = logs
+    .toReversed()
+    .slice(logs.length - 30 < 0 ? 0 : logs.length - 30, logs.length);
+
   return (
     <Card>
       <CardHeader>
@@ -30,9 +34,7 @@ export function MovementLineGraph({ logs }: { logs: Log[] }) {
         <ChartContainer config={{}}>
           <LineChart
             accessibilityLayer
-            data={logs
-              .toReversed()
-              .slice(logs.length - 30 < 0 ? 0 : logs.length - 30, logs.length)}
+            data={modifiedLogs}
             margin={{
               left: 12,
               right: 12,
@@ -46,17 +48,10 @@ export function MovementLineGraph({ logs }: { logs: Log[] }) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value, i) => {
-                return new Date(value).toDateString() ===
-                  new Date().toDateString()
-                  ? "Today"
-                  : new Date(value).getDate() === 1 || i === 0
-                  ? `${toMonthWord(value)} ${new Date(
-                      value
-                    ).getDate()}, ${new Date(value).getFullYear()}`
-                  : i % 2 === 0
-                  ? ""
-                  : new Date(value).getDate().toString();
+              tickFormatter={(value) => {
+                return `${toMonthWord(value)} ${new Date(
+                  value
+                ).getDate()}, ${new Date(value).getFullYear()}`;
               }}
             />
             <ChartTooltip

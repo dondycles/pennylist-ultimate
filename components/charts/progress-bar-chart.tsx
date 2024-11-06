@@ -156,18 +156,11 @@ export default function ProgressBarChart({
               tickLine={false}
               tickMargin={10}
               axisLine={false}
-              tickFormatter={(value, i) => {
+              tickFormatter={(value) => {
                 if (chartsState.type === "daily")
-                  return new Date(value).toDateString() ===
-                    new Date().toDateString()
-                    ? "Today"
-                    : new Date(value).getDate() === 1 || i === 0
-                    ? `${toMonthWord(value)} ${new Date(
-                        value
-                      ).getDate()}, ${new Date(value).getFullYear()}`
-                    : i % 2 === 0
-                    ? ""
-                    : new Date(value).getDate().toString();
+                  return `${toMonthWord(value)} ${new Date(
+                    value
+                  ).getDate()}, ${new Date(value).getFullYear()}`;
                 return value;
               }}
             />
