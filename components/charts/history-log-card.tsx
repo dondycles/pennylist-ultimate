@@ -4,13 +4,10 @@ import Amount from "../amount";
 
 export default function HistoryLogCard({ log }: { log: Log }) {
   return (
-    <div
-      key={log.id}
-      className="p-4 rounded-2xl bg-muted/50 flex flex-col gap-2"
-    >
+    <div key={log.id} className="pb-4 border-b flex flex-col gap-2">
       <div className="flex gap-4 items-start justify-between">
         <Badge
-          variant={"outline"}
+          variant={"secondary"}
           className={`capitalize text-xs ${
             (log.action === "transfer" && "text-blue-600") ||
             (log.action === "delete" && "text-destructive") ||

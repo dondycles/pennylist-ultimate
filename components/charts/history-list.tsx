@@ -78,7 +78,6 @@ export default function HistoryList() {
             placeholder="Search by money/action/reason"
           />
         </div>
-
         <div className="flex flex-col gap-4 px-4">
           {sortedLogs.map((l) => {
             return <HistoryLogCard log={l} key={l.id} />;
