@@ -1,7 +1,4 @@
 "use client";
-
-import { HistoryTable } from "@/components/charts/history-table";
-import { historyColumns } from "@/components/charts/history-columns";
 import ProgressBarChart from "@/components/charts/progress-bar-chart";
 import { useChartsState, useLogsStore, useMoneysStore } from "@/store";
 import { motion } from "framer-motion";
@@ -12,6 +9,7 @@ import { useGetDailyProgress } from "@/hooks/useGetDailyProgress";
 import { MoneysPieChart } from "@/components/charts/moneys-pie-chart";
 import { MovementLineGraph } from "@/components/charts/movement-line-graph";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import HistoryList from "@/components/charts/history-list";
 export default function Charts() {
   const { logs } = useLogsStore();
   const { moneys, totalMoneys } = useMoneysStore();
@@ -96,11 +94,7 @@ export default function Charts() {
               <MoneysPieChart moneys={moneys} />
             </TabsContent>
             <TabsContent value="history">
-              <HistoryTable
-                defaultSearchBy="money"
-                columns={historyColumns}
-                data={moneyLogs ?? []}
-              />
+              <HistoryList />
             </TabsContent>
           </Tabs>
         </motion.div>

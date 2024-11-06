@@ -1,6 +1,4 @@
 "use client";
-import { historyColumns } from "@/components/charts/history-columns";
-import { HistoryTable } from "@/components/charts/history-table";
 import ProgressBarChart from "@/components/charts/progress-bar-chart";
 import {
   Money,
@@ -20,6 +18,7 @@ import { useGetMonthlyProgress } from "@/hooks/useGetMonthlyProgress";
 import { Log, useChartsState, useLogsStore, useMoneysStore } from "@/store";
 import { motion } from "framer-motion";
 import Scrollable from "@/components/scrollable";
+import HistoryList from "@/components/charts/history-list";
 
 export default function MoneyComponent({ id }: { id: string }) {
   const chartsState = useChartsState();
@@ -70,11 +69,7 @@ export default function MoneyComponent({ id }: { id: string }) {
               </MoneyBar>
             </Money>
             <ProgressBarChart chartData={chartData} differences={differences} />
-            <HistoryTable
-              defaultSearchBy="reason"
-              columns={historyColumns}
-              data={moneyLogs ?? []}
-            />
+            <HistoryList />
           </>
         ) : (
           <p className="text-muted-foreground text-xs mt-4 text-center">
