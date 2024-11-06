@@ -3,7 +3,7 @@ import Amount from "./amount";
 import { Button } from "./ui/button";
 import { useMoneyTransferringDetails } from "@/hooks/useMoneyTransferringDetails";
 import { Input } from "./ui/input";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 export default function MoneysTransferCard({ m }: { m: Money }) {
   const { setTransferrings, transferrings, setBranchState } =
     useTransferState();
@@ -19,12 +19,14 @@ export default function MoneysTransferCard({ m }: { m: Money }) {
     <motion.div
       layout
       style={{ color: m.color }}
-      className="w-full p-4 border rounded-2xl flex flex-col gap-4"
+      className="w-full h-fit border rounded-2xl flex flex-col"
       key={m.id}
     >
       <motion.div
         layout
-        className={`flex flex-col ${isInBranch ? "opacity-100" : "opacity-25"}`}
+        className={`flex flex-col duration-200 pt-4 px-4 ${
+          isInBranch ? "opacity-100" : "opacity-25"
+        }`}
       >
         <p className="font-bold truncate text-sm ">{m.name}</p>
         <Amount
@@ -42,86 +44,87 @@ export default function MoneysTransferCard({ m }: { m: Money }) {
           settings={{ sign: true }}
         />
       </motion.div>
-      <AnimatePresence mode="popLayout">
-        {isInBranch ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            layout
-            className="text-foreground space-y-4 "
-          >
-            <motion.div>
-              <Input
-                placeholder="Receiving amount"
-                type="number"
-                min={0}
-                value={
-                  Number(branch?.transferAmount) <= 0
-                    ? undefined
-                    : branch?.transferAmount ?? 0
-                }
-                onChange={(v) => {
-                  if (!branch) return;
-                  if (!Number(v.currentTarget.value))
-                    return setBranchState(
-                      0,
-                      branch?.id,
-                      branch?.reason ?? "",
-                      branch?.fee
-                    );
-                  setBranchState(
-                    Number(v.target.value),
-                    branch?.id,
-                    branch?.reason ?? "",
-                    branch?.fee
-                  );
-                }}
-              />
-            </motion.div>
-            <motion.div>
-              <Input
-                placeholder="Fee (optional)"
-                type="number"
-                min={0}
-                value={Number(branch?.fee) <= 0 ? undefined : branch?.fee ?? 0}
-                onChange={(v) => {
-                  if (!branch) return;
-                  if (!Number(v.currentTarget.value))
-                    return setBranchState(
-                      branch.transferAmount ?? 0,
-                      branch.id,
-                      branch.reason ?? "",
-                      0
-                    );
-                  setBranchState(
-                    branch.transferAmount ?? 0,
-                    branch.id,
-                    branch.reason ?? "",
-                    Number(v.target.value)
-                  );
-                }}
-              />
-            </motion.div>
-            <motion.div>
-              <Input
-                placeholder="Reason (optional)"
-                value={branch?.reason ?? ""}
-                onChange={(v) =>
-                  setBranchState(
-                    branch?.transferAmount ?? 0,
-                    m.id,
-                    v.currentTarget.value,
-                    branch?.fee ?? 0
-                  )
-                }
-              />
-            </motion.div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
 
-      <motion.div layout className="mb-0 mt-auto w-full">
+      <motion.div
+        animate={{
+          opacity: isInBranch ? 1 : 0,
+          height: isInBranch ? 40 * 3 + 32 * 2 : 0,
+          padding: isInBranch ? "16px 16px 16px 16px" : "0px 16px 16px 16px",
+        }}
+        layout
+        className={`text-foreground space-y-4 overflow-hidden ${
+          !isInBranch && "pointer-events-none"
+        }`}
+      >
+        <motion.div>
+          <Input
+            placeholder="Receiving amount"
+            type="number"
+            min={0}
+            value={
+              Number(branch?.transferAmount) <= 0
+                ? undefined
+                : branch?.transferAmount ?? 0
+            }
+            onChange={(v) => {
+              if (!branch) return;
+              if (!Number(v.currentTarget.value))
+                return setBranchState(
+                  0,
+                  branch?.id,
+                  branch?.reason ?? "",
+                  branch?.fee
+                );
+              setBranchState(
+                Number(v.target.value),
+                branch?.id,
+                branch?.reason ?? "",
+                branch?.fee
+              );
+            }}
+          />
+        </motion.div>
+        <motion.div>
+          <Input
+            placeholder="Fee (optional)"
+            type="number"
+            min={0}
+            value={Number(branch?.fee) <= 0 ? undefined : branch?.fee ?? 0}
+            onChange={(v) => {
+              if (!branch) return;
+              if (!Number(v.currentTarget.value))
+                return setBranchState(
+                  branch.transferAmount ?? 0,
+                  branch.id,
+                  branch.reason ?? "",
+                  0
+                );
+              setBranchState(
+                branch.transferAmount ?? 0,
+                branch.id,
+                branch.reason ?? "",
+                Number(v.target.value)
+              );
+            }}
+          />
+        </motion.div>
+        <motion.div>
+          <Input
+            placeholder="Reason (optional)"
+            value={branch?.reason ?? ""}
+            onChange={(v) =>
+              setBranchState(
+                branch?.transferAmount ?? 0,
+                m.id,
+                v.currentTarget.value,
+                branch?.fee ?? 0
+              )
+            }
+          />
+        </motion.div>
+      </motion.div>
+
+      <motion.div layout className="mb-0 mt-auto w-full px-4 pb-4">
         <Button
           className="w-full"
           variant={isInBranch ? "destructive" : "secondary"}

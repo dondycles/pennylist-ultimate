@@ -3,7 +3,6 @@
 import { HistoryTable } from "@/components/charts/history-table";
 import { historyColumns } from "@/components/charts/history-columns";
 import ProgressBarChart from "@/components/charts/progress-bar-chart";
-import { Separator } from "@/components/ui/separator";
 import { useChartsState, useLogsStore, useMoneysStore } from "@/store";
 import { motion } from "framer-motion";
 import Scrollable from "@/components/scrollable";
@@ -12,6 +11,7 @@ import { useGetMonthlyProgress } from "@/hooks/useGetMonthlyProgress";
 import { useGetDailyProgress } from "@/hooks/useGetDailyProgress";
 import { MoneysPieChart } from "@/components/charts/moneys-pie-chart";
 import { MovementLineGraph } from "@/components/charts/movement-line-graph";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function Charts() {
   const { logs } = useLogsStore();
   const { moneys, totalMoneys } = useMoneysStore();
@@ -41,20 +41,68 @@ export default function Charts() {
           animate={{ opacity: 1, translateY: 0 }}
           exit={{ opacity: 0, translateY: 20 }}
         >
-          <MovementLineGraph
-            logs={moneyLogs.filter((l) => l.action !== "transfer")}
-          />
-          <ProgressBarChart
-            differences={differences}
-            chartData={chartState.type === "daily" ? dailyData : monthlyData}
-          />
-          <Separator />
-          <MoneysPieChart moneys={moneys} />
-          <HistoryTable
-            defaultSearchBy="money"
-            columns={historyColumns}
-            data={moneyLogs ?? []}
-          />
+          <Tabs defaultValue={chartState.page}>
+            <div className="p-4 pb-0">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger
+                  onClick={() => {
+                    chartState.setPage("movement");
+                  }}
+                  value="movement"
+                >
+                  <p className="truncate">Movement</p>
+                </TabsTrigger>
+                <TabsTrigger
+                  onClick={() => {
+                    chartState.setPage("dailyprogress");
+                  }}
+                  value="dailyprogress"
+                >
+                  <p className="truncate">Daily Progress</p>
+                </TabsTrigger>
+                <TabsTrigger
+                  onClick={() => {
+                    chartState.setPage("breakdown");
+                  }}
+                  value="breakdown"
+                >
+                  <p className="truncate">Breakdown</p>
+                </TabsTrigger>
+                <TabsTrigger
+                  onClick={() => {
+                    chartState.setPage("history");
+                  }}
+                  value="history"
+                >
+                  <p className="truncate">History</p>
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="movement">
+              <MovementLineGraph
+                logs={moneyLogs.filter((l) => l.action !== "transfer")}
+              />
+            </TabsContent>
+            <TabsContent value="dailyprogress">
+              <ProgressBarChart
+                differences={differences}
+                chartData={
+                  chartState.type === "daily" ? dailyData : monthlyData
+                }
+              />
+            </TabsContent>
+            <TabsContent value="breakdown">
+              <MoneysPieChart moneys={moneys} />
+            </TabsContent>
+            <TabsContent value="history">
+              <HistoryTable
+                defaultSearchBy="money"
+                columns={historyColumns}
+                data={moneyLogs ?? []}
+              />
+            </TabsContent>
+          </Tabs>
         </motion.div>
       ) : (
         <p className="text-muted-foreground text-xs mt-4 text-center">

@@ -747,6 +747,32 @@ function NavTransferCard() {
       money_name: root.name,
     });
 
+    for (let index = 0; index < branches.length; index++) {
+      const branch = branches[index];
+      addLog({
+        changes: {
+          prev: { ...branch, total: totalMoneys(moneys) },
+          latest: {
+            ...branch,
+            amount: branch.amount + (branch.transferAmount ?? 0),
+            total: totalMoneys(moneys) + (branch.transferAmount ?? 0),
+          },
+        },
+        action: "transfer",
+        created_at: new Date().toISOString(),
+        current_total: totalMoneys(moneys) - branchesFees,
+        id: crypto.randomUUID(),
+        money_id: branch.id,
+        reason: branch.reason,
+        money_name: branch.name,
+      });
+
+      editMoney({
+        ...branch,
+        amount: branch.amount + (branch.transferAmount ?? 0),
+      });
+    }
+
     addLog({
       changes: {
         prev: { ...root, total: totalMoneys(moneys), amount: 0 },
@@ -768,54 +794,6 @@ function NavTransferCard() {
         .join("\n")}`,
       money_name: root.name,
     });
-
-    for (let index = 0; index < branches.length; index++) {
-      const branch = branches[index];
-      // const previousBranches = branches.slice(0, index);
-      // const sumOfPreviousBranchesFees = _.sum(
-      //   previousBranches.map((b) => b.fee)
-      // );
-      addLog({
-        changes: {
-          prev: { ...branch, total: totalMoneys(moneys) },
-          latest: {
-            ...branch,
-            amount: branch.amount + (branch.transferAmount ?? 0),
-            total: totalMoneys(moneys) + (branch.transferAmount ?? 0),
-          },
-        },
-        action: "transfer",
-        created_at: new Date().toISOString(),
-        current_total: totalMoneys(moneys) - branchesFees,
-        id: crypto.randomUUID(),
-        money_id: branch.id,
-        reason: branch.reason,
-        money_name: branch.name,
-      });
-      // if (branch.fee > 0) {
-      //   addLog({
-      //     changes: {
-      //       prev: { ...branch, total: totalMoneys(moneys), amount: 0 },
-      //       latest: {
-      //         ...branch,
-      //         amount: -branch.fee,
-      //         total: totalMoneys(moneys) - branchesDemandSum - branch.fee,
-      //       },
-      //     },
-      //     action: "fee",
-      //     created_at: new Date().toISOString(),
-      //     current_total: totalMoneys(moneys) - branchesDemandSum - branch.fee,
-      //     id: crypto.randomUUID(),
-      //     money_id: branch.id,
-      //     reason: "fee",
-      //     money_name: branch.name,
-      //   });
-      // }
-      editMoney({
-        ...branch,
-        amount: branch.amount + (branch.transferAmount ?? 0),
-      });
-    }
     setTransferrings(null);
     sortMoneys(sortBy, asc);
   }

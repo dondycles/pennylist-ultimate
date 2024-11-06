@@ -63,7 +63,7 @@ export default function ProgressBarChart({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row justify-between gap-4 items-baseline">
+      <CardHeader className="flex flex-row justify-between gap-4 items-start">
         <div className="space-y-1.5">
           <CardTitle>
             <span className="capitalize">{chartsState.type}</span> Progress

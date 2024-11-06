@@ -170,6 +170,10 @@ type ChartsState = {
     progressDays: "7" | "14" | "28" | "365";
     type: "monthly" | "daily";
   }) => void;
+  page: "movement" | "dailyprogress" | "history" | "breakdown";
+  setPage: (
+    page: "movement" | "dailyprogress" | "history" | "breakdown"
+  ) => void;
 };
 export const useChartsState = create<ChartsState>()(
   persist(
@@ -177,6 +181,8 @@ export const useChartsState = create<ChartsState>()(
       progressDays: "7",
       type: "daily",
       setState: (state) => set(() => ({ ...state })),
+      page: "movement",
+      setPage: (page) => set(() => ({ page: page })),
     }),
     {
       name: "charts-state",
