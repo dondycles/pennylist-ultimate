@@ -114,7 +114,7 @@ export default function EditMoneyForm({
             control={form.control}
             name="amount"
             render={({ field }) => (
-              <div className="flex-1 flex gap-1 items-end">
+              <div className="flex-1 flex gap-2 items-end">
                 <FormItem className="flex-1">
                   <FormLabel>Amount</FormLabel>
                   <FormControl>
@@ -129,6 +129,7 @@ export default function EditMoneyForm({
                 </FormItem>
                 {Number(field.value) === money.amount ? null : (
                   <Button
+                    type="button"
                     onClick={() => form.setValue("amount", money.amount)}
                     size={"icon"}
                     variant={"secondary"}
@@ -141,13 +142,15 @@ export default function EditMoneyForm({
           />
         </div>
 
-        <div className="flex flex-row-reverse items-end justify-center gap-1">
+        <div className="flex flex-row-reverse items-end justify-center gap-2">
           <ToggleGroup
             value={String(operation)}
             onValueChange={(v) => setOperation(v === "1" ? 1 : -1)}
             type="single"
+            className="gap-2"
           >
             <ToggleGroupItem
+              type="button"
               className="rounded-full"
               value="1"
               aria-label="Toggle Plus"
@@ -155,6 +158,7 @@ export default function EditMoneyForm({
               <Plus className="h-4 w-4" />
             </ToggleGroupItem>
             <ToggleGroupItem
+              type="button"
               className="rounded-full"
               value="-1"
               aria-label="Toggle Minus"

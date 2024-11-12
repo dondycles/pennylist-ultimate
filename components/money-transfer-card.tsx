@@ -64,7 +64,7 @@ export default function MoneysTransferCard({ m }: { m: Money }) {
             value={
               Number(branch?.transferAmount) <= 0
                 ? undefined
-                : branch?.transferAmount ?? 0
+                : branch?.transferAmount ?? undefined
             }
             onChange={(v) => {
               if (!branch) return;
@@ -89,7 +89,9 @@ export default function MoneysTransferCard({ m }: { m: Money }) {
             placeholder="Fee (optional)"
             type="number"
             min={0}
-            value={Number(branch?.fee) <= 0 ? undefined : branch?.fee ?? 0}
+            value={
+              Number(branch?.fee) <= 0 ? undefined : branch?.fee ?? undefined
+            }
             onChange={(v) => {
               if (!branch) return;
               if (!Number(v.currentTarget.value))
