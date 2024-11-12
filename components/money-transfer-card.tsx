@@ -44,8 +44,8 @@ export default function MoneysTransferCard({ m }: { m: Money }) {
           settings={{ sign: true }}
         />
       </motion.div>
-
       <motion.div
+        initial={false}
         animate={{
           opacity: isInBranch ? 1 : 0,
           height: isInBranch ? 40 * 3 + 32 * 2 : 0,
