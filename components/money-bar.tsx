@@ -239,28 +239,34 @@ export function MoneyBar({
             <div className="flex flex-col border rounded-3xl overflow-hidden">
               {money.notes.length > 0 ? (
                 <ScrollArea className="w-full h-[30dvh]">
-                  {money.notes.map((note, i) => {
-                    return (
-                      <m.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        layout
-                        key={`${note.id}-${i}`}
-                        className="p-4 pb-0 last:mb-4"
-                      >
-                        <div className="rounded-3xl prose max-w-none text-muted-foreground p-4 bg-muted">
-                          <span className="text-xs opacity-25">
-                            {new Date(note.created_at).toLocaleDateString()}
-                          </span>
-                          <p className="whitespace-pre-wrap">{note.note}</p>
-                          <CommentDeleteBtn
-                            _delete={() => delete_note(note.id)}
-                          />
-                        </div>
-                      </m.div>
-                    );
-                  })}
+                  {money.notes
+                    .sort(
+                      (a, b) =>
+                        new Date(b.created_at).getTime() -
+                        new Date(a.created_at).getTime()
+                    )
+                    .map((note, i) => {
+                      return (
+                        <m.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          layout
+                          key={`${note.id}-${i}`}
+                          className="p-4 pb-0 last:mb-4"
+                        >
+                          <div className="rounded-3xl prose max-w-none text-muted-foreground p-4 bg-muted">
+                            <span className="text-xs opacity-25">
+                              {new Date(note.created_at).toLocaleDateString()}
+                            </span>
+                            <p className="whitespace-pre-wrap">{note.note}</p>
+                            <CommentDeleteBtn
+                              _delete={() => delete_note(note.id)}
+                            />
+                          </div>
+                        </m.div>
+                      );
+                    })}
                 </ScrollArea>
               ) : (
                 <m.p
