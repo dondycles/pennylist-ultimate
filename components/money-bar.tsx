@@ -255,7 +255,7 @@ export function MoneyBar({
                           key={`${note.id}-${i}`}
                           className="p-4 pb-0 last:mb-4"
                         >
-                          <div className="rounded-3xl prose max-w-none text-muted-foreground p-4 bg-muted">
+                          <div className="rounded-2xl prose max-w-none text-muted-foreground p-4 bg-muted">
                             <span className="text-xs opacity-25">
                               {new Date(note.created_at).toLocaleDateString()}
                             </span>
@@ -287,7 +287,7 @@ export function MoneyBar({
                 <Textarea
                   value={note}
                   onChange={(v) => setNote(v.currentTarget.value)}
-                  className="flex-1 "
+                  className="flex-1 rounded-2xl"
                   placeholder="Notes, comments, hmm...? "
                   rows={3}
                 />
