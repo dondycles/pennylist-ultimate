@@ -460,7 +460,7 @@ export function MoneyActions({ children }: { children: React.ReactNode }) {
       }`}
     >
       {!listState.compactMoney ? (
-        <div className={`flex flex-row gap-6 items-center`}>{children}</div>
+        <div className={`flex flex-row gap-2 items-center`}>{children}</div>
       ) : (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
