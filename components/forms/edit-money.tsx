@@ -145,6 +145,10 @@ export default function EditMoneyForm({
 
         <div className="flex flex-row-reverse items-end justify-center gap-2">
           <ToggleGroup
+            disabled={
+              Number(form.watch("amount")) !== money.amount &&
+              !form.watch("plusMinus")
+            }
             value={String(operation)}
             onValueChange={(v) => setOperation(v === "1" ? 1 : -1)}
             type="single"

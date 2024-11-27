@@ -187,6 +187,9 @@ export function MoneyBar({
     listState,
     transferState: { setRootState, transferrings },
   } = useMoneyBarContext();
+  const isUpdated =
+    new Date(money.last_updated_at).toDateString() ===
+    new Date().toDateString();
   const { addNote, delNote } = useMoneysStore();
   const [note, setNote] = useState("");
   async function add_note() {
@@ -207,12 +210,12 @@ export function MoneyBar({
       layout
       key={`${money.id}-${money.last_updated_at}-${listState.compactMoney}-${listState.hidden}-${transferrings}`}
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      animate={{ opacity: isUpdated ? 1 : 0.5 }}
       exit={{ opacity: 0 }}
       className={cn(
-        `w-full overflow-hidden p-4 ${
+        `w-full overflow-hidden p-4  ${
           transferrings ? (isRoot ? "flex" : "hidden") : "flex"
-        }  flex-col border-b border-b-muted/75 last:border-b-0 ${
+        }  flex-col border-b border-b-muted/75  last:border-b-0 ${
           deleting && "animate-pulse scale-95"
         }`,
         className
@@ -314,7 +317,6 @@ export function MoneyBar({
             </div>
           </m.div>
         )}
-
         {isRoot ? (
           <m.div
             layout
