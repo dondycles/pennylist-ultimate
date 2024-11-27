@@ -114,11 +114,12 @@ export default function EditMoneyForm({
             control={form.control}
             name="amount"
             render={({ field }) => (
-              <div className="flex-1 flex gap-2 items-end">
-                <FormItem className="flex-1">
-                  <FormLabel>Amount</FormLabel>
+              <FormItem className="flex-1">
+                <FormLabel>Amount</FormLabel>
+                <div className="flex-1 flex flex-row gap-2">
                   <FormControl>
                     <Input
+                      className="flex-1"
                       disabled={!!form.watch("plusMinus")}
                       type="number"
                       placeholder="117"
@@ -126,18 +127,18 @@ export default function EditMoneyForm({
                     />
                   </FormControl>
                   <FormMessage />
-                </FormItem>
-                {Number(field.value) === money.amount ? null : (
-                  <Button
-                    type="button"
-                    onClick={() => form.setValue("amount", money.amount)}
-                    size={"icon"}
-                    variant={"secondary"}
-                  >
-                    <RotateCw size={16} />
-                  </Button>
-                )}
-              </div>
+                  {Number(field.value) === money.amount ? null : (
+                    <Button
+                      type="button"
+                      onClick={() => form.setValue("amount", money.amount)}
+                      size={"icon"}
+                      variant={"secondary"}
+                    >
+                      <RotateCw size={16} />
+                    </Button>
+                  )}
+                </div>
+              </FormItem>
             )}
           />
         </div>
