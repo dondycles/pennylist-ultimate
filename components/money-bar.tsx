@@ -5,6 +5,8 @@ import Amount from "./amount";
 import {
   ArrowRightLeft,
   Check,
+  CheckCheck,
+  CheckCircle,
   ChevronUp,
   Dot,
   Ellipsis,
@@ -15,6 +17,7 @@ import {
   Pencil,
   Trash,
   X,
+  XCircle,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import Link from "next/link";
@@ -187,9 +190,7 @@ export function MoneyBar({
     listState,
     transferState: { setRootState, transferrings },
   } = useMoneyBarContext();
-  const isUpdated =
-    new Date(money.last_updated_at).toDateString() ===
-    new Date().toDateString();
+
   const { addNote, delNote } = useMoneysStore();
   const [note, setNote] = useState("");
   async function add_note() {
@@ -210,7 +211,7 @@ export function MoneyBar({
       layout
       key={`${money.id}-${money.last_updated_at}-${listState.compactMoney}-${listState.hidden}-${transferrings}`}
       initial={{ opacity: 0 }}
-      animate={{ opacity: isUpdated ? 1 : 0.5 }}
+      animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className={cn(
         `w-full overflow-hidden p-4  ${
@@ -357,11 +358,14 @@ export function MoneyHeader() {
     money.color ? money.color + "88" : "hsl(var(--muted-foreground))",
     money.color ?? "hsl(var(--foreground))",
   ];
+  const isUpdated =
+    new Date(money.last_updated_at).toDateString() ===
+    new Date().toDateString();
   return (
     <m.div
       layout
       key={`${money.id}-${money.color}`}
-      className={`flex items-baseline gap-2 h-fit  ${
+      className={`flex items-center gap-2 h-fit  ${
         compactMoney && "flex-1 truncate"
       } ${transferrings ? (isRoot ? "" : isInBranch ? "" : "opacity-25") : ""}`}
     >
@@ -374,12 +378,11 @@ export function MoneyHeader() {
           <m.p layout className={`font-bold  `} style={{ color: color[1] }}>
             {money.name}
           </m.p>
-          <Dot
-            style={{
-              color: color[0],
-            }}
-            size={12}
-          />
+          {isUpdated ? (
+            <CheckCircle opacity={0.75} size={12} />
+          ) : (
+            <XCircle opacity={0.75} size={12} />
+          )}
           <m.p
             layout
             style={{
