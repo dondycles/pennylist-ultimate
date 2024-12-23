@@ -1,4 +1,4 @@
-import { useLogsStore } from "@/store";
+import { Log, useLogsStore } from "@/store";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
@@ -14,8 +14,13 @@ import {
 import { Input } from "../ui/input";
 import { useDebounce } from "@uidotdev/usehooks";
 import { Button } from "../ui/button";
-export default function HistoryList() {
-  const { logs } = useLogsStore();
+export default function HistoryList({
+  modifiedlogs,
+}: {
+  modifiedlogs?: Log[];
+}) {
+  const { logs: rawLogs } = useLogsStore();
+  const logs = modifiedlogs ?? rawLogs;
   const [search, setSearch] = useState<string | null>(null);
   const debouncedSearch = useDebounce(search, 500);
   const { ref, inView } = useInView();

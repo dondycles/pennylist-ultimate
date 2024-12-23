@@ -33,8 +33,8 @@ export default function MoneyComponent({ id }: { id: string }) {
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
 
-  const dailyData = useGetDailyProgress(logs ?? []);
-  const monthlyData = useGetMonthlyProgress(logs ?? []);
+  const dailyData = useGetDailyProgress(moneyLogs ?? []);
+  const monthlyData = useGetMonthlyProgress(moneyLogs ?? []);
   const differences = useGetDifferences(
     moneyLogs ?? [],
     totalMoneys(moneys),
@@ -43,7 +43,7 @@ export default function MoneyComponent({ id }: { id: string }) {
   const chartData = chartsState.type === "daily" ? dailyData : monthlyData;
 
   return (
-    <Scrollable>
+    <Scrollable key={id}>
       <motion.div
         initial={{ opacity: 0, translateY: 20 }}
         animate={{ opacity: 1, translateY: 0 }}
@@ -69,7 +69,7 @@ export default function MoneyComponent({ id }: { id: string }) {
               </MoneyBar>
             </Money>
             <ProgressBarChart chartData={chartData} differences={differences} />
-            <HistoryList />
+            <HistoryList modifiedlogs={moneyLogs} />
           </>
         ) : (
           <p className="text-muted-foreground text-xs mt-4 text-center">
