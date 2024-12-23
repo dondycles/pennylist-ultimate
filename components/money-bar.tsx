@@ -379,10 +379,8 @@ export function MoneyHeader() {
             {money.name}
           </m.p>
           {isUpdated ? (
-            <CheckCircle opacity={0.75} size={12} />
-          ) : (
-            <XCircle opacity={0.75} size={12} />
-          )}
+            <CheckCircle style={{ color: color[1] }} opacity={0.75} size={12} />
+          ) : null}
           <m.p
             layout
             style={{
