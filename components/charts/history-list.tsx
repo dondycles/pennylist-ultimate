@@ -20,7 +20,7 @@ export default function HistoryList({
   modifiedlogs?: Log[];
 }) {
   const { logs: rawLogs } = useLogsStore();
-  const logs = modifiedlogs ?? rawLogs;
+  const logs = modifiedlogs ?? rawLogs?.toReversed();
   const [search, setSearch] = useState<string | null>(null);
   const debouncedSearch = useDebounce(search, 500);
   const { ref, inView } = useInView();
