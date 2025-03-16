@@ -13,10 +13,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Money, useLogsStore, useMoneysStore } from "@/store";
+import { Log, Money, useLogsStore, useMoneysStore } from "@/store";
 import { useEffect, useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Minus, Plus, RotateCw } from "lucide-react";
+import { Badge } from "../ui/badge";
+import CommonReasons from "../common-reasons";
 const formSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -32,7 +34,8 @@ export default function EditMoneyForm({
   money: Money;
 }) {
   const { editMoney, moneys, totalMoneys } = useMoneysStore();
-  const { addLog } = useLogsStore();
+  const { addLog, logs } = useLogsStore();
+
   const [operation, setOperation] = useState<1 | -1>(1);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -76,7 +79,6 @@ export default function EditMoneyForm({
     });
     done();
   }
-
   useEffect(() => {
     const plusMinus = form.watch("plusMinus");
     if (plusMinus) {
@@ -203,6 +205,11 @@ export default function EditMoneyForm({
             </FormItem>
           )}
         />
+        <CommonReasons
+          logs={logs}
+          setValue={(v) => form.setValue("reason", v)}
+        />
+
         <Button
           disabled={form.formState.isSubmitting}
           type="submit"
