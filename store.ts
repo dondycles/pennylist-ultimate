@@ -25,6 +25,7 @@ export type Money = {
   color: string;
   created_at: string;
   last_updated_at: string;
+  spendable: boolean;
   notes: MoneyNote[];
 };
 
@@ -201,8 +202,10 @@ export type MoneysStore = {
   asc: boolean;
   sortMoneys: (sortBy: "created_at" | "amount" | "name", asc: boolean) => void;
   totalMoneys: (moneys: Money[]) => number;
+  spendableTotalMoneys: (moneys: Money[]) => number;
   import: (moneys: Money[]) => void;
   delete: () => void;
+  setSpendable: (money: Money) => void;
 };
 export const useMoneysStore = create<MoneysStore>()(
   persist(
@@ -238,6 +241,9 @@ export const useMoneysStore = create<MoneysStore>()(
         }),
       totalMoneys: (moneys) => {
         return _.sum(moneys.map((m) => m.amount));
+      },
+      spendableTotalMoneys: (moneys) => {
+        return _.sum(moneys.filter((m) => m.spendable).map((m) => m.amount));
       },
       delNote: (id, noteId) =>
         set(({ moneys }) => {
@@ -277,6 +283,12 @@ export const useMoneysStore = create<MoneysStore>()(
       delete: () =>
         set(() => {
           return { moneys: [] };
+        }),
+      setSpendable: (money) =>
+        set(({ moneys }) => {
+          const newMoneys: Money[] = moneys.filter((m) => m.id !== money.id);
+          const newMoney: Money = { ...money, spendable: !money.spendable };
+          return { moneys: [...newMoneys, newMoney] };
         }),
     }),
     {

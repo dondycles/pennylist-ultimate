@@ -11,6 +11,7 @@ import {
   Dot,
   Ellipsis,
   ExternalLink,
+  HandCoins,
   MessageCircleMore,
   MessageCirclePlus,
   Palette,
@@ -390,6 +391,14 @@ export function MoneyHeader() {
           >
             {new Date(money.created_at).toLocaleDateString()}
           </m.p>
+          <p
+            style={{
+              color: color[0],
+            }}
+            className=" text-xs"
+          >
+            {money.spendable ? "spendable" : null}
+          </p>
         </>
       )}
     </m.div>
@@ -812,6 +821,31 @@ export function MoneyCommentBtn() {
         />
       </Button>
     );
+}
+
+export function MoneySpendableBtn() {
+  const {
+    money,
+    moneysStore: { setSpendable },
+  } = useMoneyBarContext();
+  return (
+    <Button
+      size={"icon"}
+      className="size-6 aspect-square relative"
+      variant={"ghost"}
+      onClick={() => setSpendable(money)}
+    >
+      <HandCoins
+        className={` z-10`}
+        style={{
+          color: money.spendable
+            ? money.color ?? "hsl(var(--foreground))"
+            : "hsl(var(--muted-foreground))",
+        }}
+        size={16}
+      />
+    </Button>
+  );
 }
 
 function CommentDeleteBtn({ _delete }: { _delete: () => void }) {

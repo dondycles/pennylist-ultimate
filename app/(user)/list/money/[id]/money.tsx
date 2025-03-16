@@ -10,6 +10,7 @@ import {
   MoneyEditBtn,
   MoneyHeader,
   MoneyPaletteBtn,
+  MoneySpendableBtn,
 } from "@/components/money-bar";
 
 import { useGetDailyProgress } from "@/hooks/useGetDailyProgress";
@@ -64,6 +65,8 @@ export default function MoneyComponent({ id }: { id: string }) {
                   <MoneyPaletteBtn />
                   <MoneyEditBtn />
                   <MoneyCommentBtn />
+                  <MoneySpendableBtn />
+
                   <MoneyDeleteBtn />
                 </MoneyActions>
               </MoneyBar>

@@ -28,6 +28,7 @@ const formSchema = z.object({
       created_at: z.string(),
     })
   ),
+  spendable: z.boolean(),
 });
 
 export default function AddMoneyForm({ done }: { done: () => void }) {
@@ -43,6 +44,7 @@ export default function AddMoneyForm({ done }: { done: () => void }) {
       created_at: "",
       last_updated_at: "",
       notes: [],
+      spendable: true,
     },
   });
 

@@ -11,6 +11,7 @@ import {
   MoneyBar,
   MoneyTransferBtn,
   MoneyCommentBtn,
+  MoneySpendableBtn,
 } from "@/components/money-bar";
 import { motion } from "framer-motion";
 import Scrollable from "@/components/scrollable";
@@ -78,6 +79,7 @@ export default function List() {
                     <MoneyTransferBtn />
                     <MoneyEditBtn />
                     <MoneyCommentBtn />
+                    <MoneySpendableBtn />
                     <MoneyDeleteBtn />
                   </MoneyActions>
                 </MoneyBar>

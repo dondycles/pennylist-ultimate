@@ -12,7 +12,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import _ from "lodash";
 import { useGetDifferences } from "@/hooks/useGetDifferences";
 export default function TotalMoney() {
-  const { moneys, totalMoneys } = useMoneysStore();
+  const { moneys, spendableTotalMoneys, totalMoneys } = useMoneysStore();
   const { logs } = useLogsStore();
   const { transferrings } = useTransferState();
   const listState = useListState();
@@ -20,13 +20,17 @@ export default function TotalMoney() {
     Number(transferrings?.root.fee ?? 0) +
     _.sum(transferrings?.branches.map((b) => b.fee));
 
-  const yesterdayDiff = useGetDifferences(logs ?? [], totalMoneys(moneys), "1");
+  const yesterdayDiff = useGetDifferences(
+    logs ?? [],
+    spendableTotalMoneys(moneys),
+    "1"
+  );
 
   return (
     <motion.div
       initial={false}
       animate={{
-        height: listState.minimizeTotalMoney ? 34 : 120,
+        height: listState.minimizeTotalMoney ? 34 : 156,
       }}
       transition={{
         ease: "anticipate",
@@ -46,9 +50,23 @@ export default function TotalMoney() {
       >
         <Amount
           className="text-4xl text-primary"
+          amount={spendableTotalMoneys(moneys) - transfersFees}
+          settings={{ sign: true }}
+        />
+      </motion.div>
+      <motion.div
+        initial={false}
+        animate={{
+          opacity: listState.minimizeTotalMoney ? 0 : 1,
+        }}
+        className="text-xs text-muted-foreground flex items-baseline gap-1"
+      >
+        <Amount
+          className="text-base text-primary"
           amount={totalMoneys(moneys) - transfersFees}
           settings={{ sign: true }}
         />
+        <p>with unspendables</p>
       </motion.div>
       <motion.p
         initial={false}

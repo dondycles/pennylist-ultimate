@@ -11,7 +11,11 @@ export default function CommonReasons({
 }) {
   const [commonReasons, setCommonReasons] = useState<string[]>([]);
   const getCommonReasons = (logs: Log[]): string[] => {
-    const reasons = logs.map((l) => l.reason).filter((a) => a !== "");
+    const reasons = logs
+      .filter((l) => l.action === "edit")
+      .map((l) => l.reason)
+      .filter((a) => a !== "")
+      .filter((a) => a !== "");
 
     const reasonCount: Record<string, number> = reasons.reduce(
       (acc, reason) => {
