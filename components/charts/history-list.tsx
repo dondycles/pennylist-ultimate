@@ -25,13 +25,13 @@ export default function HistoryList({
   const debouncedSearch = useDebounce(search, 500);
   const { ref, inView } = useInView();
 
-  const fuse = new Fuse([...logs.toReversed()], {
+  const fuse = new Fuse([...logs], {
     keys: ["money_name", "action", "reason"],
   });
 
   const filteredLogs = debouncedSearch
     ? fuse.search(debouncedSearch).map((l) => l.item)
-    : logs.toReversed();
+    : logs;
 
   const { data, fetchNextPage } = useInfiniteQuery({
     queryKey: ["history-logs", debouncedSearch ?? "none"],
