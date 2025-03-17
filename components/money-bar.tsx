@@ -803,7 +803,7 @@ export function MoneyCommentBtn() {
       <Button
         onClick={() => setCommenting(!commenting)}
         size={"icon"}
-        className="size-6 aspect-square relative"
+        className="size-6 aspect-square relative z-0"
         variant={"ghost"}
       >
         <MessageCircleMore
@@ -823,7 +823,7 @@ export function MoneySpendableBtn() {
   return (
     <Button
       size={"icon"}
-      className="size-6 aspect-square relative"
+      className="size-6 aspect-square relative z-0"
       variant={"ghost"}
       onClick={() => setSpendable(money)}
     >
