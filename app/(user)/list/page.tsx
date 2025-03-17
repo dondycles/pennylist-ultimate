@@ -18,42 +18,43 @@ import Scrollable from "@/components/scrollable";
 import { useMoneysStore } from "@/store";
 import { useCallback } from "react";
 import SelectBranches from "@/components/select-branches";
+import Unspendables from "@/components/unspendables";
 export default function List() {
-  const { moneys: rawMoneys, totalMoneys, asc, sortBy } = useMoneysStore();
+  const { moneys, totalMoneys, asc, sortBy } = useMoneysStore();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const spendableMoneys = moneys.filter((m) => m.spendable);
   const sortMoneys = useCallback(() => {
     if (asc) {
       if (sortBy === "amount") {
-        return rawMoneys.toSorted((a, b) => a.amount - b.amount);
+        return spendableMoneys.toSorted((a, b) => a.amount - b.amount);
       }
       if (sortBy === "created_at") {
-        return rawMoneys.toSorted(
+        return spendableMoneys.toSorted(
           (a, b) =>
             new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         );
       }
       if (sortBy === "name") {
-        return rawMoneys.toSorted((a, b) => b.name.localeCompare(a.name));
+        return spendableMoneys.toSorted((a, b) => b.name.localeCompare(a.name));
       }
-      return rawMoneys;
+      return spendableMoneys;
     }
     if (sortBy === "amount") {
-      return rawMoneys.toSorted((a, b) => b.amount - a.amount);
+      return spendableMoneys.toSorted((a, b) => b.amount - a.amount);
     }
     if (sortBy === "created_at") {
-      return rawMoneys.toSorted(
+      return spendableMoneys.toSorted(
         (a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
     }
     if (sortBy === "name") {
-      return rawMoneys.toSorted((a, b) => a.name.localeCompare(b.name));
+      return spendableMoneys.toSorted((a, b) => a.name.localeCompare(b.name));
     }
-    return rawMoneys;
-  }, [rawMoneys, asc, sortBy]);
+    return spendableMoneys;
+  }, [spendableMoneys, asc, sortBy]);
 
-  const moneys = sortMoneys();
+  const sortedMoneys = sortMoneys();
   return (
     <Scrollable>
       <motion.div
@@ -61,8 +62,8 @@ export default function List() {
         animate={{ opacity: 1, translateY: 0 }}
         exit={{ opacity: 0, translateY: 20 }}
       >
-        {moneys.length ? (
-          moneys.map((m) => {
+        {sortedMoneys.length ? (
+          sortedMoneys.map((m, i) => {
             return (
               <Money
                 currentTotal={totalMoneys(moneys)}
@@ -70,7 +71,7 @@ export default function List() {
                 money={m}
                 key={`${m.id}-${m.last_updated_at}`}
               >
-                <MoneyBar>
+                <MoneyBar key={i}>
                   <MoneyHeader />
                   <MoneyAmount />
                   <MoneyActions>
@@ -91,6 +92,7 @@ export default function List() {
             No moneys to show yet, start listing now.
           </p>
         )}
+        <Unspendables />
         <SelectBranches />
       </motion.div>
     </Scrollable>

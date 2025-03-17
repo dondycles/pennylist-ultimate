@@ -391,14 +391,6 @@ export function MoneyHeader() {
           >
             {new Date(money.created_at).toLocaleDateString()}
           </m.p>
-          <p
-            style={{
-              color: color[0],
-            }}
-            className=" text-xs"
-          >
-            {money.spendable ? "spendable" : null}
-          </p>
         </>
       )}
     </m.div>
