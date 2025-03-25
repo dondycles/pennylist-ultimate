@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme";
 import QueryProvider from "@/components/providers/query";
-
+import { Analytics } from "@vercel/analytics/react";
 const raleway = localFont({
   src: "./fonts/Raleway.ttf",
   variable: "--font-raleway",
@@ -88,6 +88,7 @@ export default function RootLayout({
       <body
         className={`${readex.variable} ${raleway.variable} font-raleway font-medium antialiased h-[100dvh]`}
       >
+        <Analytics />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
