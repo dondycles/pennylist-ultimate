@@ -88,14 +88,16 @@ export default function RootLayout({
       <body
         className={`${readex.variable} ${raleway.variable} font-raleway font-medium antialiased h-[100dvh]`}
       >
-        <Analytics />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            {children}
+            <Analytics />
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>
