@@ -705,7 +705,7 @@ function NavManageDataBtn() {
 function NavTransferCard() {
   const { moneys, editMoney, totalMoneys, sortMoneys, asc, sortBy } =
     useMoneysStore();
-  const { transferrings, setTransferrings } = useTransferState();
+  const { transferrings, setTransferrings, setRootState } = useTransferState();
   const { addLog } = useLogsStore();
 
   const root = transferrings?.root;
@@ -799,6 +799,27 @@ function NavTransferCard() {
   }
   return (
     <div className="w-full h-full flex flex-col justify-end gap-2 px-4 py-2">
+      <div className="flex flex-col">
+        <p style={{ color: root?.color }} className="font-bold">
+          {root?.name}
+        </p>
+        <p style={{ color: root?.color }}>
+          <Amount
+            settings={{ sign: true, hide: false }}
+            amount={Number(
+              Number(root?.amount) +
+                (Number(-branchesDemandSum) - Number(branchesFees))
+            )}
+            color={root?.color ?? ""}
+          />
+        </p>
+        <Input
+          value={root?.reason ?? ""}
+          onChange={(v) => setRootState(root!.id, v.currentTarget.value)}
+          placeholder="Reason (optional)"
+          className="mt-2"
+        />
+      </div>
       <div className="flex flex-row gap-2">
         <Button
           disabled={transferrings?.branches.length === 0}
@@ -847,7 +868,9 @@ export default function AnimatedNav() {
     <Nav>
       <NavBar
         ref={navBar}
-        className={`${!width ? "opacity-0" : "opacity-100"} h-[56px]`}
+        className={`${!width ? "opacity-0" : "opacity-100"} ${
+          transferrings ? "h-[164px]" : "h-[56px]"
+        }`}
       >
         <AnimatePresence initial={false}>
           {transferrings ? (

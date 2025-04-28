@@ -5,10 +5,8 @@ import Amount from "./amount";
 import {
   ArrowRightLeft,
   Check,
-  CheckCheck,
   CheckCircle,
   ChevronUp,
-  Dot,
   Ellipsis,
   ExternalLink,
   HandCoins,
@@ -18,7 +16,6 @@ import {
   Pencil,
   Trash,
   X,
-  XCircle,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import Link from "next/link";
@@ -48,7 +45,6 @@ import {
   useMoneysStore,
   useTransferState,
 } from "@/store";
-import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { ScrollArea } from "./ui/scroll-area";
 import {
@@ -187,9 +183,8 @@ export function MoneyBar({
     deleting,
     commenting,
     setCommenting,
-    transferDetails: { isRoot, root },
     listState,
-    transferState: { setRootState, transferrings },
+    transferState: { transferrings },
   } = useMoneyBarContext();
 
   const { addNote, delNote } = useMoneysStore();
@@ -216,7 +211,7 @@ export function MoneyBar({
       exit={{ opacity: 0 }}
       className={cn(
         `w-full overflow-hidden p-4  ${
-          transferrings ? (isRoot ? "flex" : "hidden") : "flex"
+          transferrings ? "hidden" : "flex"
         }  flex-col border-b border-b-muted/75  last:border-b-0 ${
           deleting && "animate-pulse scale-95"
         }`,
@@ -319,7 +314,7 @@ export function MoneyBar({
             </div>
           </m.div>
         )}
-        {isRoot ? (
+        {/* {isRoot ? (
           <m.div
             layout
             initial={"close"}
@@ -341,7 +336,7 @@ export function MoneyBar({
               </div>
             </div>
           </m.div>
-        ) : null}
+        ) : null} */}
       </AnimatePresence>
     </m.div>
   );
