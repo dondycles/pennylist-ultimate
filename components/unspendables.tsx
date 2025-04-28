@@ -1,4 +1,4 @@
-import { useMoneysStore } from "@/store";
+import { useMoneysStore, useTransferState } from "@/store";
 import {
   Money,
   MoneyActions,
@@ -18,6 +18,7 @@ import Scrollable from "./scrollable";
 import { motion } from "framer-motion";
 export default function Unspendables() {
   const { moneys, totalMoneys, asc, sortBy } = useMoneysStore();
+  const { transferrings } = useTransferState();
   const unspendableMoneys = moneys.filter((m) => !m.spendable);
 
   const sortMoneys = useCallback(() => {
@@ -57,7 +58,7 @@ export default function Unspendables() {
 
   if (sortedMoneys.length === 0) return null;
   return (
-    <Scrollable hideTotalMoney>
+    <Scrollable hideTotalMoney className={`${transferrings && "hidden"}`}>
       <motion.div
         initial={{ opacity: 0, translateY: 20 }}
         animate={{ opacity: 1, translateY: 0 }}
