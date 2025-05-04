@@ -28,7 +28,7 @@ import {
   DialogOverlay,
   DialogTitle,
   DialogTrigger,
-} from "./ui/dialog";
+} from "./animate-ui/radix/dialog";
 import { AnimatePresence, motion as m } from "framer-motion";
 import EditMoneyForm from "./forms/edit-money";
 import { ClassNameValue } from "tailwind-merge";
