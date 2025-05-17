@@ -44,7 +44,7 @@ const chartConfig = {
   },
   currentTotal: {
     label: "Total Money",
-    color: "hsl(var(--primary))",
+    color: "var(--primary)",
   },
   gainOrLoss: {
     label: "Difference",
