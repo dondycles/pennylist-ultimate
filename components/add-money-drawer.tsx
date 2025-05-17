@@ -6,10 +6,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
-  SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,

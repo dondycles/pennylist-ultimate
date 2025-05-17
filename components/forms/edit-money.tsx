@@ -13,11 +13,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Log, Money, useLogsStore, useMoneysStore } from "@/store";
+import { Money, useLogsStore, useMoneysStore } from "@/store";
 import { useEffect, useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Minus, Plus, RotateCw } from "lucide-react";
-import { Badge } from "../ui/badge";
 import CommonReasons from "../common-reasons";
 const formSchema = z.object({
   id: z.string(),
