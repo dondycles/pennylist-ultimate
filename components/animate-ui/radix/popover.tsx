@@ -120,7 +120,7 @@ function PopoverContent({
               exit={{ opacity: 0, scale: 0.5, ...initialPosition }}
               transition={transition}
               className={cn(
-                'w-72 rounded-lg border bg-popover p-4 text-popover-foreground shadow-md outline-none',
+                'w-72 rounded-lg border bg-popover p-4 text-popover-foreground shadow-md outline-hidden',
                 className,
               )}
               {...props}

@@ -51,7 +51,7 @@ export default function CommonReasons({
               type="button"
               key={r}
             >
-              <Badge variant={"outline"} className="w-fit h-fit">
+              <Badge variant={"outline-solid"} className="w-fit h-fit">
                 {r}
               </Badge>
             </button>

@@ -519,7 +519,7 @@ function MotionHighlightItem({
 
           <div
             data-slot="motion-highlight-item"
-            className={cn("relative z-[1]", className)}
+            className={cn("relative z-1", className)}
             {...dataAttributes}
           >
             {children}
@@ -578,7 +578,7 @@ function MotionHighlightItem({
       )}
 
       {React.cloneElement(element, {
-        className: cn("relative z-[1]", element.props.className),
+        className: cn("relative z-1", element.props.className),
         ...getNonOverridingDataAttributes(element, {
           ...dataAttributes,
           "data-slot": "motion-highlight-item",

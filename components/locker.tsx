@@ -42,8 +42,8 @@ export default function Locker({
 
   return (
     <Dialog open={locked}>
-      <DialogOverlay className="backdrop-blur-sm bg-black/50  z-[100]" />
-      <DialogContent className=" z-[101]">
+      <DialogOverlay className="backdrop-blur-xs bg-black/50  z-100" />
+      <DialogContent className=" z-101">
         <DialogHeader>
           <DialogTitle hideCloseBtn>Enter PIN </DialogTitle>
           <DialogDescription>Prove you are the lister.</DialogDescription>

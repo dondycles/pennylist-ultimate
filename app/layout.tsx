@@ -86,7 +86,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${readex.variable} ${raleway.variable} font-raleway font-medium antialiased h-[100dvh]`}
+        className={`${readex.variable} ${raleway.variable} font-raleway font-medium antialiased h-dvh`}
       >
         <ThemeProvider
           attribute="class"

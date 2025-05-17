@@ -251,7 +251,7 @@ const NavBar = forwardRef(function NavBar(
         ref={ref}
         layout
         className={cn(
-          `h-full max-w-[800px] w-screen duration-500 bg-transparent backdrop-blur`,
+          `h-full max-w-[800px] w-screen duration-500 bg-transparent backdrop-blur-sm`,
           className
         )}
       >
